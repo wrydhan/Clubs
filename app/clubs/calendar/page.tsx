@@ -4,9 +4,9 @@ import { getClubs, getEvents } from "@/lib/clubs";
 import { subscribeUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Club Calendar San Francisco",
+  title: "Club Calendar — Founders, Inc. Fort Mason",
   description:
-    "The Founders, Inc. club calendar in San Francisco. See what's scheduled and subscribe.",
+    "Upcoming schedule for Founders, Inc. clubs in San Francisco. Track days at Sonoma Raceway, workshop build days, pickup basketball, and paintball.",
   alternates: { canonical: "/clubs/calendar" },
 };
 
@@ -19,22 +19,38 @@ export default function CalendarPage() {
   }));
 
   return (
-    <main>
-      <section className="bg-inverse text-inverse-ink">
-        <div className="mx-auto max-w-[1200px] px-5 py-10 md:px-8 md:py-16">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-inverse-ink/60">San Francisco</p>
-          <h1 className="mt-3 font-serif text-[3.2rem] leading-[0.92] md:text-7xl">Calendar</h1>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-inverse-ink/75">
-            What&apos;s scheduled. Subscribe if you want the next one in your inbox.
-          </p>
-          <a
-            href={subscribeUrl}
-            className="mt-6 inline-flex h-12 items-center bg-inverse-ink px-5 text-[15px] text-inverse"
-          >
-            Subscribe
-          </a>
+    <main className="min-h-screen">
+      {/* Editorial Calendar Hero */}
+      <section className="relative border-b border-line bg-paper px-6 py-14 md:px-10 md:py-20 finc-grid">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+            <span className="flex items-center gap-1.5 text-accent font-semibold">
+              <span className="inline-block h-2 w-2 rounded-full bg-accent" />
+              Founders, Inc. Clubs
+            </span>
+            <span>·</span>
+            <span>Live Schedule</span>
+          </div>
+          <div className="mt-4 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <h1 className="font-serif text-[3.6rem] leading-[0.92] text-ink sm:text-6xl md:text-7xl">
+                Calendar.
+              </h1>
+              <p className="mt-4 max-w-xl text-base md:text-lg text-ink-secondary leading-relaxed font-sans">
+                Official dates for track days, workshops, and games. RSVP early as capacity is capped per session to preserve quality.
+              </p>
+            </div>
+            <a
+              href={subscribeUrl}
+              className="inline-flex h-12 items-center justify-center bg-ink px-6 text-xs font-mono font-medium uppercase tracking-wider text-paper hover:bg-accent transition-colors rounded-sm shadow-sm"
+            >
+              Subscribe to Feed →
+            </a>
+          </div>
         </div>
       </section>
+
+      {/* Main Interactive Calendar View */}
       <CalendarView
         events={events}
         clubs={clubs.filter((club) => club.status === "active").map((club) => ({ slug: club.slug, name: club.name }))}

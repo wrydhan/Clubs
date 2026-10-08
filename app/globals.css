@@ -1,51 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 :root {
-  --paper: #f4f1ea;
-  --ink: #14120e;
-  --muted: #5c564c;
-  --line: #ddd6c8;
-  --card: #fbf9f4;
+  --paper: #fbfaf7;
+  --paper-subtle: #f4f1ea;
+  --paper-muted: #ece7dc;
+  --ink: #111110;
+  --ink-secondary: #48453f;
+  --muted: #767268;
+  --line: #e3ded4;
+  --line-strong: #cac4b5;
+  --card: #ffffff;
+  --card-hover: #faf8f5;
   --accent: #1900ff;
+  --accent-hover: #1200b8;
   --chip: #1900ff;
-  --inverse: #14120e;
-  --inverse-ink: #f4f1ea;
+  --success: #059669;
+  --tag-bg: #ece7dc;
+  --inverse: #111110;
+  --inverse-ink: #fbfaf7;
+  --inverse-muted: #969288;
+  --inverse-card: #1c1a17;
+  --inverse-line: #2b2823;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #12110e;
-    --ink: #f3eee6;
-    --muted: #b7ad9e;
-    --line: #3a342c;
-    --card: #1c1a16;
-    --accent: #cfc6ff;
-    --chip: #1900ff;
-    --inverse: #241f18;
-    --inverse-ink: #f4f1ea;
+    --paper: #0e0e0d;
+    --paper-subtle: #151412;
+    --paper-muted: #1e1d1a;
+    --ink: #fbfaf7;
+    --ink-secondary: #b3afa5;
+    --muted: #827e75;
+    --line: #272521;
+    --line-strong: #3d3a34;
+    --card: #141312;
+    --card-hover: #1b1a18;
+    --accent: #4354ff;
+    --accent-hover: #6775ff;
+    --chip: #4354ff;
+    --success: #10b981;
+    --tag-bg: #211f1c;
+    --inverse: #fbfaf7;
+    --inverse-ink: #111110;
+    --inverse-muted: #737067;
+    --inverse-card: #ffffff;
+    --inverse-line: #e3ded4;
     color-scheme: dark;
   }
 }
 
 @theme inline {
   --color-paper: var(--paper);
+  --color-paper-subtle: var(--paper-subtle);
+  --color-paper-muted: var(--paper-muted);
   --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-chip: var(--chip);
+  --color-success: var(--success);
+  --color-tag-bg: var(--tag-bg);
   --color-inverse: var(--inverse);
   --color-inverse-ink: var(--inverse-ink);
-  --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  --color-inverse-muted: var(--inverse-muted);
+  --color-inverse-card: var(--inverse-card);
+  --color-inverse-line: var(--inverse-line);
+  --font-sans: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer utilities {
   .font-serif {
-    font-weight: 500;
-    letter-spacing: 0;
+    font-family: var(--font-serif);
+    letter-spacing: -0.015em;
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
   }
 
   .no-scrollbar {
@@ -55,10 +98,54 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  .finc-grid {
+    background-size: 28px 28px;
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .finc-grid {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    }
+  }
+
+  .crosshair-corner {
+    position: relative;
+  }
+
+  .crosshair-corner::before {
+    content: '+';
+    position: absolute;
+    top: -8px;
+    left: -5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .crosshair-corner::after {
+    content: '+';
+    position: absolute;
+    bottom: -8px;
+    right: -5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.6;
+    pointer-events: none;
+  }
 }
 
 html {
   background: var(--paper);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -69,7 +156,7 @@ body {
 
 ::selection {
   background: #1900ff;
-  color: #fff;
+  color: #ffffff;
 }
 
 :focus-visible {

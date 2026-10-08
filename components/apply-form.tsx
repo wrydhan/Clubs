@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { btnPrimary } from "@/lib/styles";
 
 type FieldName = "name" | "email" | "clubName" | "what" | "cadence" | "who" | "people" | "needs" | "budget";
 
@@ -28,31 +27,31 @@ const fields: {
 }[] = [
   { name: "name", label: "Your name", type: "text", autoComplete: "name" },
   { name: "email", label: "Email", type: "email", autoComplete: "email" },
-  { name: "clubName", label: "Club name", type: "text", placeholder: "Cars, climbing, film…" },
-  { name: "what", label: "What it is", type: "textarea", placeholder: "What happens when people show up." },
-  { name: "cadence", label: "Cadence", type: "text", placeholder: "Thursdays, 7pm" },
-  { name: "who", label: "Who's running it", type: "text" },
+  { name: "clubName", label: "Proposed Club Name", type: "text", placeholder: "e.g. Track Days, Climbing, Film Club, Tennis" },
+  { name: "what", label: "What happens during a session?", type: "textarea", placeholder: "Describe what happens when members show up, the format, and the experience." },
+  { name: "cadence", label: "Proposed Cadence", type: "text", placeholder: "e.g. Every Tuesday 7pm, Bi-weekly, Monthly" },
+  { name: "who", label: "Who is hosting / co-hosting?", type: "text", placeholder: "Your background and any co-leads" },
   {
     name: "people",
-    label: "Ten people who will come",
+    label: "10 people who will actually attend the first session",
     type: "textarea",
-    placeholder: "Names for the first one. It only works if they're real.",
+    placeholder: "Names and handles. The strongest applications have real people ready to show up on day one.",
   },
-  { name: "needs", label: "What you need from us", type: "textarea", placeholder: "Space, budget, both." },
-  { name: "budget", label: "Rough budget", type: "text", placeholder: "$400 a month" },
+  { name: "needs", label: "What support do you need from Founders, Inc.?", type: "textarea", placeholder: "Court bookings, Fort Mason workshop access, equipment budgets, media team coverage." },
+  { name: "budget", label: "Estimated Monthly Budget", type: "text", placeholder: "e.g. $500/month for court rentals & refreshments" },
 ];
 
 function validate(values: FormState): Partial<Record<FieldName, string>> {
   const errors: Partial<Record<FieldName, string>> = {};
-  if (!values.name.trim()) errors.name = "Add your name.";
-  if (!/^\S+@\S+\.\S+$/.test(values.email.trim())) errors.email = "Use a real email so we can write back.";
-  if (!values.clubName.trim()) errors.clubName = "Name the club.";
-  if (values.what.trim().length < 20) errors.what = "A sentence or two on what actually happens.";
-  if (!values.cadence.trim()) errors.cadence = "Give a cadence. “Thursdays at 7” is enough.";
-  if (!values.who.trim()) errors.who = "Who’s running it with you?";
-  if (values.people.trim().length < 10) errors.people = "List the people who will actually show up.";
-  if (!values.needs.trim()) errors.needs = "Tell us what you need from us.";
-  if (!values.budget.trim()) errors.budget = "A rough number is fine.";
+  if (!values.name.trim()) errors.name = "Please provide your name.";
+  if (!/^\S+@\S+\.\S+$/.test(values.email.trim())) errors.email = "Please provide a valid email.";
+  if (!values.clubName.trim()) errors.clubName = "Please name the club.";
+  if (values.what.trim().length < 20) errors.what = "Describe what happens during a session (min 20 characters).";
+  if (!values.cadence.trim()) errors.cadence = "Specify a recurring cadence.";
+  if (!values.who.trim()) errors.who = "Let us know who will run it.";
+  if (values.people.trim().length < 10) errors.people = "List real members ready for the first session.";
+  if (!values.needs.trim()) errors.needs = "Specify what resources you need.";
+  if (!values.budget.trim()) errors.budget = "Provide a rough budget estimate.";
   return errors;
 }
 
@@ -70,22 +69,32 @@ export function ApplyForm() {
       document.getElementById(first.name)?.focus();
       return;
     }
-    console.log("club application", values);
+    console.log("club application submitted", values);
     setSent(true);
   }
 
   if (sent) {
     return (
-      <div role="status" className="border border-line bg-card px-5 py-10">
-        <p className="font-serif text-4xl leading-none">Got it.</p>
-        <p className="mt-3 max-w-sm text-muted">We&apos;ll write back within a week.</p>
+      <div role="status" className="border border-line bg-card p-8 md:p-10 rounded-sm shadow-sm text-center">
+        <span className="font-mono text-xs uppercase tracking-widest text-emerald-600 font-semibold flex items-center justify-center gap-1.5 mb-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          Submission Received
+        </span>
+        <h3 className="font-serif text-4xl text-ink">Application Submitted</h3>
+        <p className="mt-3 max-w-md mx-auto text-sm text-ink-secondary leading-relaxed">
+          Our team reviews club applications weekly. If there is a strong fit, we will reach out within a week to schedule a 20-minute chat.
+        </p>
       </div>
     );
   }
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
-      <p className="text-sm text-muted">All of this is required.</p>
+      <div className="flex items-center justify-between border-b border-line/60 pb-3 font-mono text-xs text-muted">
+        <span>Founders, Inc. Club Proposal</span>
+        <span className="text-accent">* All fields required</span>
+      </div>
+
       {fields.map((field) => {
         const error = errors[field.name];
         const shared = {
@@ -103,27 +112,35 @@ export function ApplyForm() {
             setValues((current) => ({ ...current, [field.name]: value }));
           },
           className:
-            "mt-1 w-full border-b border-line bg-transparent py-3 text-lg outline-none placeholder:text-muted/70 focus:border-ink",
+            "mt-1.5 w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none placeholder:text-muted/60 focus:border-accent focus:ring-1 focus:ring-accent rounded-sm transition-colors",
         };
         return (
           <label key={field.name} className="block" htmlFor={field.name}>
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">{field.label}</span>
+            <span className="font-mono text-[11px] uppercase tracking-wider text-muted font-medium">
+              {field.label}
+            </span>
             {field.type === "textarea" ? (
-              <textarea {...shared} rows={4} />
+              <textarea {...shared} rows={3} />
             ) : (
               <input {...shared} type={field.type} />
             )}
             {error ? (
-              <span id={`${field.name}-error`} className="mt-1 block text-sm text-accent">
+              <span id={`${field.name}-error`} className="mt-1 block font-mono text-xs text-red-500">
                 {error}
               </span>
             ) : null}
           </label>
         );
       })}
-      <button type="submit" className={`${btnPrimary} mt-2 w-full sm:w-auto`}>
-        Submit application
-      </button>
+
+      <div className="pt-2">
+        <button
+          type="submit"
+          className="flex h-12 w-full items-center justify-center bg-ink px-8 text-xs font-mono font-medium uppercase tracking-wider text-paper hover:bg-accent transition-colors rounded-sm shadow-sm"
+        >
+          Submit Proposal to Founders, Inc. →
+        </button>
+      </div>
     </form>
   );
 }
