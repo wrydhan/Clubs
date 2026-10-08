@@ -89,7 +89,7 @@ export const clubs: Club[] = [
       "Track days out of San Francisco. The next one is a full day at Sonoma Raceway. The convoy leaves the Fort Mason parking lot at 7am, check-in on site is at 8, and the day runs until about 5. Bring a helmet. Drivers sign up as drivers and need approval. If you don't have a car, RSVP as a passenger. Space is limited.",
     cadence: "A few times a year",
     location: "Sonoma Raceway · convoy from Fort Mason",
-    heroImage: "/images/clubs/cars-hero.jpg",
+    heroImage: "/images/clubs/cars/cover.jpg",
     galleryImages: [
       {
         src: "/images/clubs/cars/01.jpg",
@@ -118,8 +118,8 @@ export const clubs: Club[] = [
       },
       {
         src: "/images/clubs/cars/06.jpg",
-        alt: "A white Porsche in the lot at the end of the day",
-        caption: "Last light",
+        alt: "A driver in a helmet at the wheel, hills through the windshield",
+        caption: "At the wheel",
       },
     ],
     status: "active",
@@ -178,7 +178,7 @@ const eventSeeds: EventSeed[] = [
 
 export const hubHero = {
   src: "/images/clubs/hub-hero.jpg",
-  alt: "A driver in a helmet at the wheel, hills through the windshield",
+  alt: "A white Porsche in the lot as the sun drops",
   label: "Car Club",
   caption: "Sonoma Raceway, October 26.",
 };

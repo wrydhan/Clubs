@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 :root {
   --paper: #f4f1ea;
   --ink: #14120e;
@@ -15,17 +13,19 @@
   color-scheme: light;
 }
 
-.dark {
-  --paper: #12110e;
-  --ink: #f3eee6;
-  --muted: #b7ad9e;
-  --line: #3a342c;
-  --card: #1c1a16;
-  --accent: #cfc6ff;
-  --chip: #1900ff;
-  --inverse: #241f18;
-  --inverse-ink: #f4f1ea;
-  color-scheme: dark;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12110e;
+    --ink: #f3eee6;
+    --muted: #b7ad9e;
+    --line: #3a342c;
+    --card: #1c1a16;
+    --accent: #cfc6ff;
+    --chip: #1900ff;
+    --inverse: #241f18;
+    --inverse-ink: #f4f1ea;
+    color-scheme: dark;
+  }
 }
 
 @theme inline {
@@ -39,13 +39,13 @@
   --color-inverse: var(--inverse);
   --color-inverse-ink: var(--inverse-ink);
   --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-barlow-condensed), "Arial Narrow", Impact, sans-serif;
+  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
 }
 
 @layer utilities {
   .font-serif {
     font-weight: 500;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
   }
 
   .no-scrollbar {

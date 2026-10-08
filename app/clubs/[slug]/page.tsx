@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ClubCollage } from "@/components/club-collage";
 import { ClubImage } from "@/components/club-image";
 import { ClubNav } from "@/components/club-nav";
 import { RsvpCard } from "@/components/rsvp-card";
@@ -35,6 +36,15 @@ export default async function ClubPage({ params }: Props) {
 
   const now = new Date();
   const next = getNextEvent(club.slug, now);
+  const collage =
+    club.galleryImages.length >= 4
+      ? [
+          { src: club.heroImage, alt: `${club.name} in San Francisco` },
+          ...club.galleryImages
+            .filter((image) => image.src !== club.heroImage)
+            .map((image) => ({ src: image.src, alt: image.alt })),
+        ].slice(0, 6)
+      : null;
   const jsonLd = next
     ? {
         "@context": "https://schema.org",
@@ -77,17 +87,21 @@ export default async function ClubPage({ params }: Props) {
       <ClubNav currentSlug={club.slug} />
       <div>
       <div className="relative">
-        <header className="relative">
-          <ClubImage
-            src={club.heroImage}
-            alt={`${club.name} in San Francisco`}
-            label={club.name}
-            tone={club.slug}
-            mark="corner"
-            priority
-            sizes="100vw"
-            className="h-[220px] w-full sm:h-[280px] md:h-[68vh]"
-          />
+        <header className="relative h-[260px] sm:h-[320px] md:h-[68vh]">
+          {collage ? (
+            <ClubCollage images={collage} tone={club.slug} />
+          ) : (
+            <ClubImage
+              src={club.heroImage}
+              alt={`${club.name} in San Francisco`}
+              label={club.name}
+              tone={club.slug}
+              mark="corner"
+              priority
+              sizes="100vw"
+              className="h-full w-full"
+            />
+          )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
           <div className="absolute inset-x-0 bottom-0 p-5 text-white md:p-10 md:pr-[26rem]">
             <div className="flex items-center gap-3">

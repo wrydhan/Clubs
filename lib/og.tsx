@@ -7,7 +7,7 @@ export const ogSize = { width: 1200, height: 630 };
 let fontData: Promise<ArrayBuffer> | null = null;
 
 function loadFont(): Promise<ArrayBuffer> {
-  fontData ??= readFile(path.join(process.cwd(), "assets/fonts/BarlowCondensed-Medium.ttf")).then((buf) => {
+  fontData ??= readFile(path.join(process.cwd(), "assets/fonts/Newsreader-Medium.ttf")).then((buf) => {
     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
   });
   return fontData;
@@ -34,7 +34,7 @@ export async function ogImage({
           display: "flex",
           background: "#f4f1ea",
           color: "#14120e",
-          fontFamily: "Barlow Condensed",
+          fontFamily: "Newsreader",
         }}
       >
         <div style={{ width: 18, height: "100%", background: "#1900ff" }} />
@@ -52,7 +52,7 @@ export async function ogImage({
             <span>SAN FRANCISCO</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 92, lineHeight: 0.92, letterSpacing: -2 }}>{title}</div>
+            <div style={{ fontSize: 84, lineHeight: 1, letterSpacing: -1 }}>{title}</div>
             <div style={{ marginTop: 18, fontSize: 36, lineHeight: 1.15, maxWidth: 860 }}>{subtitle}</div>
           </div>
           <div style={{ fontSize: 28 }}>{footer}</div>
@@ -61,7 +61,7 @@ export async function ogImage({
     ),
     {
       ...ogSize,
-      fonts: [{ name: "Barlow Condensed", data: font, style: "normal", weight: 500 }],
+      fonts: [{ name: "Newsreader", data: font, style: "normal", weight: 500 }],
     },
   );
 }
