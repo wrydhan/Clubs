@@ -2,49 +2,43 @@ import Link from "next/link";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur-md transition-colors">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-6 md:px-10">
-        <Link href="/clubs" className="group flex items-center gap-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-ink text-paper font-mono text-xs font-semibold tracking-tighter">
-            f.
-          </div>
-          <div className="flex flex-col">
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted leading-none">
-              Founders, Inc.
+    <header className="sticky top-0 z-40 w-full border-b border-[#e5e2da] bg-[#f9f8f5]/95 backdrop-blur-sm dark:border-[#262626] dark:bg-[#0a0a0a]/95">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6">
+          <Link href="/clubs" className="flex items-baseline gap-2.5 group">
+            <span className="font-mono text-xs font-semibold tracking-widest text-[#0a0a0a] dark:text-[#f9f8f5]">
+              FOUNDERS, INC.
             </span>
-            <span className="font-serif text-[1.4rem] leading-none text-ink tracking-tight group-hover:text-accent transition-colors">
+            <span className="text-[#a3a3a3] text-xs">/</span>
+            <span className="font-serif italic text-sm text-[#404040] dark:text-[#a3a3a3] group-hover:text-[#1900ff] transition-colors">
               Clubs
             </span>
-          </div>
-        </Link>
-        <div className="flex items-center gap-6">
-          <nav className="flex items-center gap-6 text-[14px] font-medium" aria-label="Primary">
-            <Link
-              href="/clubs"
-              className="text-ink/80 hover:text-ink transition-colors hover:underline underline-offset-4"
-            >
-              Overview
-            </Link>
-            <Link
-              href="/clubs/calendar"
-              className="text-ink/80 hover:text-ink transition-colors hover:underline underline-offset-4"
-            >
-              Calendar
-            </Link>
-            <Link
-              href="/clubs/apply"
-              className="text-ink/80 hover:text-ink transition-colors hover:underline underline-offset-4"
-            >
-              Start a Club
-            </Link>
-          </nav>
-          <div className="hidden sm:flex items-center gap-2 border-l border-line pl-6">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
-              Fort Mason, SF
-            </span>
-          </div>
+          </Link>
+          <span className="hidden sm:inline-block font-mono text-[10px] uppercase tracking-widest text-[#737373] border-l border-[#e5e2da] pl-4 dark:border-[#262626]">
+            Pier 2 · Fort Mason, SF
+          </span>
         </div>
+
+        <nav className="flex items-center gap-6 font-mono text-[11px] uppercase tracking-wider text-[#404040] dark:text-[#a3a3a3]">
+          <Link
+            href="/clubs"
+            className="hover:text-[#0a0a0a] dark:hover:text-[#f9f8f5] transition-colors"
+          >
+            Roster
+          </Link>
+          <Link
+            href="/clubs/calendar"
+            className="hover:text-[#0a0a0a] dark:hover:text-[#f9f8f5] transition-colors"
+          >
+            Calendar
+          </Link>
+          <Link
+            href="/clubs/apply"
+            className="border border-[#0a0a0a] bg-[#0a0a0a] px-3 py-1 text-[#f9f8f5] hover:bg-[#1900ff] hover:border-[#1900ff] dark:border-[#f9f8f5] dark:bg-[#f9f8f5] dark:text-[#0a0a0a] dark:hover:bg-[#1900ff] dark:hover:text-[#f9f8f5] transition-colors"
+          >
+            Start a Club
+          </Link>
+        </nav>
       </div>
     </header>
   );

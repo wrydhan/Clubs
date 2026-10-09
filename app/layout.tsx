@@ -9,11 +9,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Founders, Inc. Clubs — Fort Mason, San Francisco",
+    default: "Founders, Inc. — Clubs",
     template: "%s | Founders, Inc. Clubs",
   },
   description:
-    "Member-run clubs at Founders, Inc. in Fort Mason, San Francisco. Car Club, Basketball, Hardware Workshop, and Paintball. Built by founders, for founders.",
+    "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Car Club, Basketball, Hardware Workshop, and Paintball.",
   openGraph: {
     siteName: "Founders, Inc. Clubs",
     type: "website",
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfaf7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0e0e0d" },
+    { media: "(prefers-color-scheme: light)", color: "#f9f8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
   ],
 };
 
@@ -40,10 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="flex min-h-dvh flex-col bg-paper text-ink font-sans">
+      <body className="flex min-h-dvh flex-col bg-[#f9f8f5] text-[#0a0a0a] dark:bg-[#0a0a0a] dark:text-[#f9f8f5]">
         <a
           href="#content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:text-paper focus:px-4 focus:py-2 focus:text-sm"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-[#0a0a0a] focus:text-[#f9f8f5] focus:px-4 focus:py-2 focus:text-xs font-mono"
         >
           Skip to content
         </a>

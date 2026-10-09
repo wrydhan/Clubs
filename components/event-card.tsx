@@ -5,50 +5,63 @@ import { formatDay, formatFullDate, formatTime, formatWeekday } from "@/lib/form
 export function EventCard({ event }: { event: ClubEvent }) {
   const club = getClub(event.clubSlug);
   return (
-    <article className="group relative border border-line bg-card hover:border-line-strong transition-all p-5 hover:shadow-sm">
-      <div className="grid grid-cols-[3.5rem_1fr] gap-x-5 items-start">
-        <div className="flex flex-col items-center justify-center border border-line bg-paper-subtle py-2.5 px-1 rounded-sm">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-medium">
+    <article className="group border border-[#e5e2da] bg-white transition-colors hover:border-[#0a0a0a] dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#f9f8f5]">
+      <div className="flex flex-col sm:flex-row sm:items-stretch divide-y sm:divide-y-0 sm:divide-x divide-[#e5e2da] dark:divide-[#262626]">
+        {/* Date block */}
+        <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center p-4 sm:p-6 bg-[#f9f8f5] dark:bg-[#141414] sm:w-28 shrink-0">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373]">
             {formatWeekday(event.datetime)}
           </span>
-          <span className="font-serif text-[2.5rem] leading-none text-ink mt-0.5">
+          <span className="font-serif text-3xl sm:text-4xl leading-none text-[#0a0a0a] dark:text-[#f9f8f5]">
             {formatDay(event.datetime)}
           </span>
+          <span className="font-mono text-[10px] text-[#737373]">
+            {formatTime(event.datetime)}
+          </span>
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            {club ? (
-              <Link
-                href={`/clubs/${club.slug}`}
-                className="font-mono text-[10px] uppercase tracking-[0.16em] text-accent hover:text-accent-hover font-semibold transition-colors"
-              >
-                {club.name}
-              </Link>
-            ) : null}
-            <span className="text-muted/40 font-mono text-xs">•</span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-              {event.location.split("·")[0].trim()}
-            </span>
-          </div>
-          <h3 className="mt-1 font-serif text-[1.75rem] leading-[1.1] text-ink group-hover:text-accent transition-colors">
-            {event.title}
-          </h3>
-          <p className="mt-2 text-sm text-ink-secondary leading-relaxed line-clamp-2">
-            {event.description}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-line/60">
-            <div className="flex items-center gap-2 text-xs font-mono text-muted">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-              <span>{formatTime(event.datetime)}</span>
-              {event.capacity ? <span>· {event.capacity} spots</span> : null}
+
+        {/* Details */}
+        <div className="flex-1 p-5 sm:p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-[#737373]">
+              {club ? (
+                <Link
+                  href={`/clubs/${club.slug}`}
+                  className="font-medium text-[#0a0a0a] hover:text-[#1900ff] dark:text-[#f9f8f5] dark:hover:text-[#3b82f6] transition-colors"
+                >
+                  {club.name}
+                </Link>
+              ) : null}
+              <span>/</span>
+              <span>{event.location.split("·")[0].trim()}</span>
+              {event.capacity ? (
+                <>
+                  <span>/</span>
+                  <span>{event.capacity} cap</span>
+                </>
+              ) : null}
             </div>
+
+            <h3 className="mt-2 font-serif text-2xl text-[#0a0a0a] dark:text-[#f9f8f5] group-hover:text-[#1900ff] dark:group-hover:text-[#3b82f6] transition-colors">
+              {event.title}
+            </h3>
+
+            <p className="mt-2 text-sm text-[#404040] dark:text-[#a3a3a3] leading-relaxed">
+              {event.description}
+            </p>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-[#e5e2da] dark:border-[#262626] flex items-center justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#737373]">
+              {event.location}
+            </span>
             <a
               href={event.rsvpUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 items-center justify-center bg-ink px-4 text-xs font-medium text-paper hover:bg-accent hover:text-white transition-colors rounded-sm"
+              className="border border-[#0a0a0a] bg-[#0a0a0a] px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-wider text-[#f9f8f5] hover:bg-[#1900ff] hover:border-[#1900ff] dark:border-[#f9f8f5] dark:bg-[#f9f8f5] dark:text-[#0a0a0a] dark:hover:bg-[#1900ff] dark:hover:text-[#f9f8f5] transition-colors"
             >
-              RSVP on Luma →
+              Luma RSVP ↗
             </a>
           </div>
         </div>
