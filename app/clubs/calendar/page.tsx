@@ -21,27 +21,27 @@ export default function CalendarPage() {
   return (
     <main className="min-h-screen">
       {/* Editorial Calendar Hero */}
-      <section className="border-b border-[#e5e2da] bg-[#f9f8f5] px-4 py-16 sm:px-6 md:py-20 lg:px-8 dark:border-[#262626] dark:bg-[#0a0a0a]">
+      <section className="border-b border-[#D8D2C3] bg-[#F5F2EA] px-4 py-16 sm:px-6 md:py-20 lg:px-8 dark:border-[#2E2B22] dark:bg-[#12110C]">
         <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#737373]">
-            <span className="text-[#0a0a0a] dark:text-[#f9f8f5]">Founders, Inc. Clubs</span>
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
+            <span className="text-[#12110C] dark:text-[#F5F2EA]">Founders, Inc. Clubs</span>
             <span>/</span>
             <span>Live Schedule</span>
           </div>
 
           <div className="mt-8 flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div>
-              <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl leading-[0.95] text-[#0a0a0a] dark:text-[#f9f8f5]">
+              <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl leading-[0.95] text-[#12110C] dark:text-[#F5F2EA]">
                 Schedule.
               </h1>
-              <p className="mt-4 max-w-xl text-base md:text-lg text-[#404040] dark:text-[#a3a3a3] leading-relaxed">
+              <p className="mt-4 max-w-xl text-base md:text-lg text-[#3A3830] dark:text-[#9B978A] leading-relaxed">
                 Dates for track sessions, workshop machine hours, pickup runs, and tactical matches. Space is strictly capped per event.
               </p>
             </div>
 
             <a
               href={subscribeUrl}
-              className="border border-[#0a0a0a] bg-[#0a0a0a] px-4 py-2 font-mono text-[11px] uppercase tracking-wider text-[#f9f8f5] hover:bg-[#1900ff] hover:border-[#1900ff] dark:border-[#f9f8f5] dark:bg-[#f9f8f5] dark:text-[#0a0a0a] dark:hover:bg-[#1900ff] dark:hover:text-[#f9f8f5] transition-colors"
+              className="border border-[#12110C] bg-[#12110C] px-4 py-2 font-mono text-[11px] uppercase tracking-wider text-[#F5F2EA] hover:bg-[#E8452B] hover:border-[#E8452B] dark:border-[#F5F2EA] dark:bg-[#F5F2EA] dark:text-[#12110C] dark:hover:bg-[#E8452B] dark:hover:text-[#F5F2EA] transition-colors"
             >
               Subscribe (iCal) ↗
             </a>

@@ -5,14 +5,14 @@ export function ClubNav({ currentSlug }: { currentSlug?: string }) {
   const clubs = getClubs();
 
   return (
-    <aside className="border-b md:border-b-0 border-[#e5e2da] bg-[#f9f8f5] p-6 dark:border-[#262626] dark:bg-[#0a0a0a]">
-      <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373]">
+    <aside className="border-b md:border-b-0 border-[#D8D2C3] bg-[#F5F2EA] p-6 dark:border-[#2E2B22] dark:bg-[#12110C]">
+      <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
         Roster Index
       </span>
       <nav className="mt-4 flex flex-wrap md:flex-col gap-1 font-mono text-xs">
         <Link
           href="/clubs"
-          className="px-2 py-1.5 text-[#737373] hover:text-[#0a0a0a] dark:hover:text-[#f9f8f5] transition-colors"
+          className="px-2 py-1.5 text-[#8A8678] hover:text-[#12110C] dark:hover:text-[#F5F2EA] transition-colors"
         >
           ← All Clubs
         </Link>
@@ -24,8 +24,8 @@ export function ClubNav({ currentSlug }: { currentSlug?: string }) {
               href={`/clubs/${club.slug}`}
               className={`px-2 py-1.5 transition-colors ${
                 active
-                  ? "bg-[#0a0a0a] text-[#f9f8f5] dark:bg-[#f9f8f5] dark:text-[#0a0a0a] font-medium"
-                  : "text-[#404040] hover:text-[#0a0a0a] dark:text-[#a3a3a3] dark:hover:text-[#f9f8f5]"
+                  ? "bg-[#12110C] text-[#F5F2EA] dark:bg-[#F5F2EA] dark:text-[#12110C] font-medium"
+                  : "text-[#3A3830] hover:text-[#12110C] dark:text-[#9B978A] dark:hover:text-[#F5F2EA]"
               }`}
             >
               {club.name}

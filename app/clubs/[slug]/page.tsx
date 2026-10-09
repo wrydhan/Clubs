@@ -47,47 +47,47 @@ export default async function ClubPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
-      <div className="md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start divide-y md:divide-y-0 md:divide-x divide-[#e5e2da] dark:divide-[#262626]">
+      <div className="md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start divide-y md:divide-y-0 md:divide-x divide-[#D8D2C3] dark:divide-[#2E2B22]">
         <ClubNav currentSlug={club.slug} />
 
         <div className="min-w-0">
           {/* Header Strip */}
-          <header className="border-b border-[#e5e2da] bg-[#f9f8f5] px-6 py-12 md:px-12 md:py-16 dark:border-[#262626] dark:bg-[#0a0a0a]">
-            <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#737373]">
-              <Link href="/clubs" className="hover:text-[#0a0a0a] dark:hover:text-[#f9f8f5] transition-colors">
+          <header className="border-b border-[#D8D2C3] bg-[#F5F2EA] px-6 py-12 md:px-12 md:py-16 dark:border-[#2E2B22] dark:bg-[#12110C]">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
+              <Link href="/clubs" className="hover:text-[#12110C] dark:hover:text-[#F5F2EA] transition-colors">
                 Clubs
               </Link>
               <span>/</span>
               <span>{club.theme?.tag ?? "Club"}</span>
               <span>/</span>
-              <span className="text-[#0a0a0a] dark:text-[#f9f8f5]">
+              <span className="text-[#12110C] dark:text-[#F5F2EA]">
                 {club.status === "active" ? "Active Season" : "Incubating"}
               </span>
             </div>
 
             <div className="mt-6 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
               <div>
-                <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl leading-[0.95] text-[#0a0a0a] dark:text-[#f9f8f5]">
+                <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl leading-[0.95] text-[#12110C] dark:text-[#F5F2EA]">
                   {club.name}
                 </h1>
-                <p className="mt-3 font-mono text-xs uppercase tracking-wider text-[#737373]">
+                <p className="mt-3 font-mono text-xs uppercase tracking-wider text-[#8A8678]">
                   {club.tagline}
                 </p>
               </div>
 
               {next ? (
-                <div className="border border-[#e5e2da] bg-white p-4 dark:border-[#262626] dark:bg-[#121212] lg:w-80 shrink-0">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#1900ff] dark:text-[#3b82f6]">
+                <div className="border border-[#D8D2C3] bg-[#FCFAF5] p-4 dark:border-[#2E2B22] dark:bg-[#17150F] lg:w-80 shrink-0">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#E8452B] dark:text-[#FF6A3D]">
                     Next Session
                   </span>
-                  <p className="mt-1 font-serif text-lg text-[#0a0a0a] dark:text-[#f9f8f5] truncate">
+                  <p className="mt-1 font-serif text-lg text-[#12110C] dark:text-[#F5F2EA] truncate">
                     {next.title}
                   </p>
                   <a
                     href={next.rsvpUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 block text-center border border-[#0a0a0a] bg-[#0a0a0a] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[#f9f8f5] hover:bg-[#1900ff] hover:border-[#1900ff] dark:border-[#f9f8f5] dark:bg-[#f9f8f5] dark:text-[#0a0a0a] dark:hover:bg-[#1900ff] dark:hover:text-[#f9f8f5] transition-colors"
+                    className="mt-3 block text-center border border-[#12110C] bg-[#12110C] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[#F5F2EA] hover:bg-[#E8452B] hover:border-[#E8452B] dark:border-[#F5F2EA] dark:bg-[#F5F2EA] dark:text-[#12110C] dark:hover:bg-[#E8452B] dark:hover:text-[#F5F2EA] transition-colors"
                   >
                     Luma RSVP ↗
                   </a>
@@ -97,11 +97,11 @@ export default async function ClubPage({ params }: Props) {
           </header>
 
           {/* Photography Gallery Strip */}
-          <div className="border-b border-[#e5e2da] bg-[#f2efe9] p-6 md:p-12 dark:border-[#262626] dark:bg-[#141414]">
+          <div className="border-b border-[#D8D2C3] bg-[#EBE6D9] p-6 md:p-12 dark:border-[#2E2B22] dark:bg-[#1C1A13]">
             {collage ? (
               <ClubCollage images={collage} tone={club.slug} />
             ) : (
-              <div className="aspect-[16/9] w-full overflow-hidden border border-[#e5e2da] bg-[#f2efe9] dark:border-[#262626] dark:bg-[#1a1a1a]">
+              <div className="aspect-[16/9] w-full overflow-hidden border border-[#D8D2C3] bg-[#EBE6D9] dark:border-[#2E2B22] dark:bg-[#211F17]">
                 <ClubImage
                   src={club.heroImage}
                   alt={`${club.name} in San Francisco`}
@@ -116,44 +116,44 @@ export default async function ClubPage({ params }: Props) {
           {/* Content Ledger */}
           <div className="p-6 md:p-12 space-y-12 max-w-4xl">
             <section>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373]">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
                 01 / Overview
               </span>
-              <p className="mt-4 text-base md:text-lg leading-relaxed text-[#404040] dark:text-[#a3a3a3]">
+              <p className="mt-4 text-base md:text-lg leading-relaxed text-[#3A3830] dark:text-[#9B978A]">
                 {club.description}
               </p>
             </section>
 
-            <section className="border-t border-[#e5e2da] pt-10 dark:border-[#262626]">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373]">
+            <section className="border-t border-[#D8D2C3] pt-10 dark:border-[#2E2B22]">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
                 02 / Cadence & Details
               </span>
               <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="border border-[#e5e2da] bg-white p-5 dark:border-[#262626] dark:bg-[#121212]">
-                  <dt className="font-mono text-[9px] uppercase tracking-widest text-[#737373]">Frequency</dt>
-                  <dd className="mt-2 font-serif text-2xl text-[#0a0a0a] dark:text-[#f9f8f5]">{club.cadence}</dd>
+                <div className="border border-[#D8D2C3] bg-[#FCFAF5] p-5 dark:border-[#2E2B22] dark:bg-[#17150F]">
+                  <dt className="font-mono text-[9px] uppercase tracking-widest text-[#8A8678]">Frequency</dt>
+                  <dd className="mt-2 font-serif text-2xl text-[#12110C] dark:text-[#F5F2EA]">{club.cadence}</dd>
                 </div>
-                <div className="border border-[#e5e2da] bg-white p-5 dark:border-[#262626] dark:bg-[#121212]">
-                  <dt className="font-mono text-[9px] uppercase tracking-widest text-[#737373]">Location</dt>
-                  <dd className="mt-2 font-serif text-2xl text-[#0a0a0a] dark:text-[#f9f8f5]">{club.location}</dd>
+                <div className="border border-[#D8D2C3] bg-[#FCFAF5] p-5 dark:border-[#2E2B22] dark:bg-[#17150F]">
+                  <dt className="font-mono text-[9px] uppercase tracking-widest text-[#8A8678]">Location</dt>
+                  <dd className="mt-2 font-serif text-2xl text-[#12110C] dark:text-[#F5F2EA]">{club.location}</dd>
                 </div>
               </dl>
             </section>
 
             {club.galleryImages.length > 0 ? (
-              <section className="border-t border-[#e5e2da] pt-10 dark:border-[#262626]">
+              <section className="border-t border-[#D8D2C3] pt-10 dark:border-[#2E2B22]">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#737373]">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
                     03 / Documentation Archive
                   </span>
-                  <span className="font-mono text-[10px] text-[#737373]">
+                  <span className="font-mono text-[10px] text-[#8A8678]">
                     f.inc Media Archive
                   </span>
                 </div>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {club.galleryImages.map((img) => (
-                    <div key={img.src} className="border border-[#e5e2da] bg-white p-2 dark:border-[#262626] dark:bg-[#121212]">
-                      <div className="aspect-[3/2] w-full overflow-hidden bg-[#f2efe9] dark:bg-[#1a1a1a]">
+                    <div key={img.src} className="border border-[#D8D2C3] bg-[#FCFAF5] p-2 dark:border-[#2E2B22] dark:bg-[#17150F]">
+                      <div className="aspect-[3/2] w-full overflow-hidden bg-[#EBE6D9] dark:bg-[#211F17]">
                         <ClubImage
                           src={img.src}
                           alt={img.alt}
@@ -163,7 +163,7 @@ export default async function ClubPage({ params }: Props) {
                         />
                       </div>
                       {img.caption ? (
-                        <p className="mt-2 font-mono text-[10px] text-[#737373] uppercase tracking-wider">
+                        <p className="mt-2 font-mono text-[10px] text-[#8A8678] uppercase tracking-wider">
                           {img.caption}
                         </p>
                       ) : null}

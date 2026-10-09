@@ -1,55 +1,58 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Founders, Inc. Clubs — one design system.
+   Warm-paper brutalist editorial: tinted neutrals, serif display, mono index labels. */
 :root {
-  --ink: #000000;
-  --ink-mute: rgba(0, 0, 0, 0.40);
-  --on-dark: #FFFFFF;
+  --ink: #12110C;
+  --body: #3A3830;
+  --mute: #8A8678;
+  --on-dark: #F5F2EA;
 
-  --page: #FFFFFF;
-  --surface: #F1F1F1;
-  --surface-hover: #E7E7E7;
-  --divider: rgba(187, 187, 187, 0.15);
-  --dark: #333333;
-  --dark-ink: #212121;
+  --paper: #F5F2EA;
+  --paper-2: #EBE6D9;
+  --card: #FCFAF5;
+  --rule: #D8D2C3;
 
-  --alert: #FF3B30;
+  --dark: #12110C;
+  --dark-2: #1C1A13;
+  --dark-card: #17150F;
+  --dark-rule: #2E2B22;
+  --dark-mute: #9B978A;
 
-  --cat-b2b: #00FFD9;
-  --cat-devtools: #FF0062;
-  --cat-ai: #FF0000;
-  --cat-consumer: #FFBF00;
-  --cat-arvr: #40FF00;
-  --cat-gaming: #FF9900;
-  --cat-hardware: #0066FF;
-  --cat-web3: #AA00FF;
+  --accent: #E8452B;
+  --accent-dark: #FF6A3D;
 
   --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-ui: "Instrument Sans", -apple-system, system-ui, sans-serif;
-  --font-mono: "Fragment Mono", ui-monospace, monospace;
+  --font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, monospace;
 
   --track-default: -0.02em;
   --track-tight: -0.04em;
-  --serif-stroke: 0.05em;
-
-  --r-pill: 100px;
-  --r-card: 15px;
-  --r-ctrl: 8px;
-  --r-round: 50%;
-
-  --shadow: 0 2px 4px rgba(0,0,0,0.10), 0 1px 0 rgba(0,0,0,0.05), 0 0 0 1px rgba(255,255,255,0.15);
+  --serif-stroke: 0.04em;
 }
 
 body {
-  background-color: var(--page);
+  background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-ui);
   letter-spacing: var(--track-default);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-dark);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .font-serif {
@@ -69,6 +72,10 @@ body {
   letter-spacing: 0;
 }
 
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
 /* f.inc buttons */
 .btn {
   display: inline-flex;
@@ -81,16 +88,15 @@ body {
   letter-spacing: var(--track-tight);
   padding: 14px 22px;
   border: 0;
-  border-radius: var(--r-pill);
-  background: var(--surface);
+  border-radius: 100px;
+  background: var(--paper-2);
   color: var(--ink);
   cursor: pointer;
   transition: background 120ms ease;
   text-decoration: none;
 }
-.btn:hover {
-  background: var(--surface-hover);
-}
+.btn:hover { background: var(--rule); }
+
 .btn-dark {
   display: inline-flex;
   align-items: center;
@@ -102,44 +108,45 @@ body {
   letter-spacing: var(--track-tight);
   padding: 12px 20px;
   border: 0;
-  border-radius: var(--r-pill);
-  background: var(--dark);
+  border-radius: 100px;
+  background: var(--ink);
   color: var(--on-dark);
-  box-shadow: var(--shadow);
   cursor: pointer;
-  transition: opacity 120ms ease;
+  transition: background 120ms ease;
   text-decoration: none;
 }
-.btn-dark:hover {
-  opacity: 0.92;
-}
-.btn-compact {
-  padding: 8px 16px;
-  font-size: 14px;
-}
+.btn-dark:hover { background: var(--accent); }
+
+.btn-compact { padding: 8px 16px; font-size: 14px; }
 
 /* f.inc category pill tags */
 .tag-pill {
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  border-radius: var(--r-pill);
+  border-radius: 100px;
   font-size: 13px;
   line-height: 1.2;
   font-weight: 500;
   letter-spacing: var(--track-tight);
   color: var(--ink);
 }
-
-.tag-pill-cars { background: color-mix(in srgb, #FF0062 10%, transparent); }
-.tag-pill-basketball { background: color-mix(in srgb, #FF9900 10%, transparent); }
-.tag-pill-hardware { background: color-mix(in srgb, #0066FF 10%, transparent); }
-.tag-pill-paintball { background: color-mix(in srgb, #40FF00 10%, transparent); }
+.tag-pill-cars { background: color-mix(in srgb, #E8452B 12%, transparent); }
+.tag-pill-hardware { background: color-mix(in srgb, #EA580C 12%, transparent); }
+.tag-pill-basketball { background: color-mix(in srgb, #16A34A 12%, transparent); }
+.tag-pill-paintball { background: color-mix(in srgb, #DC2626 12%, transparent); }
 
 /* f.inc card */
 .finc-card {
-  background: var(--surface);
-  border-radius: var(--r-card);
+  background: var(--card);
+  border-radius: 15px;
   overflow: hidden;
   transition: background 120ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
