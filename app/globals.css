@@ -1,61 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&display=swap');
 @import "tailwindcss";
 
-/* The site is light-only; dark: utilities apply only under an explicit .dark ancestor. */
-@custom-variant dark (&:where(.dark, .dark *));
+/* f.inc 8 Laws Design System
+   1. Two typefaces: Instrument Serif (display), Instrument Sans (body/UI), Fragment Mono (tabular)
+   2. Serif display: line-height 1.0, tracking 0, -webkit-text-stroke 0.05em
+   3. Sans text: -0.02em tracking, -0.04em on buttons/labels/badges
+   4. Near-monochrome ink: pure #000 on #FFF, secondary rgba(0,0,0,0.40)
+   5. Fills and space, not borders: #F1F1F1 surface fill, generous whitespace, borderless
+   6. Pills for actions (rounded-full / 100px), 15px radius for cards, 8px for controls
+   7. One shadow, used sparingly: layered drop with 1px white top ring on dark surfaces
+   8. Category hues at 10% tint only behind black text
+*/
 
 @theme {
-  --color-ink: #12110C;
-  --color-body: #3A3830;
-  --color-muted: #8A8678;
-  --color-paper: #F5F2EA;
-  --color-paper-2: #EBE6D9;
-  --color-card: #FCFAF5;
-  --color-line: #D8D2C3;
-  --color-accent: #E8452B;
-  --color-accent-dark: #FF6A3D;
-  --color-inverse: #F5F2EA;
-  --color-inverse-ink: #12110C;
+  --color-ink: #000000;
+  --color-secondary: rgba(0, 0, 0, 0.40);
+  --color-tertiary: rgba(0, 0, 0, 0.60);
+  --color-surface: #F1F1F1;
+  --color-surface-hover: #E7E7E7;
+  --color-surface-card: #F7F7F7;
+  --color-canvas: #FFFFFF;
 
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-sans: "Instrument Sans", -apple-system, system-ui, sans-serif;
-  --font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Founders, Inc. Clubs — one design system.
-   Warm-paper brutalist editorial: tinted neutrals, serif display, mono index labels. */
 :root {
-  --ink: #12110C;
-  --body: #3A3830;
-  --mute: #8A8678;
-  --on-dark: #F5F2EA;
-
-  --paper: #F5F2EA;
-  --paper-2: #EBE6D9;
-  --card: #FCFAF5;
-  --rule: #D8D2C3;
-
-  --dark: #12110C;
-  --dark-2: #1C1A13;
-  --dark-card: #17150F;
-  --dark-rule: #2E2B22;
-  --dark-mute: #9B978A;
-
-  --accent: #E8452B;
-  --accent-dark: #FF6A3D;
+  --ink: #000000;
+  --ink-secondary: rgba(0, 0, 0, 0.40);
+  --ink-tertiary: rgba(0, 0, 0, 0.60);
+  --surface: #F1F1F1;
+  --surface-hover: #E7E7E7;
+  --surface-card: #F7F7F7;
+  --canvas: #FFFFFF;
 
   --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-ui: "Instrument Sans", -apple-system, system-ui, sans-serif;
-  --font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-ui: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-code: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --track-default: -0.02em;
   --track-tight: -0.04em;
-  --serif-stroke: 0.04em;
+  --serif-stroke: 0.05em;
 }
 
-body {
-  background-color: var(--paper);
-  color: var(--ink);
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #FFFFFF;
+  color: #000000;
   font-family: var(--font-ui);
   letter-spacing: var(--track-default);
   -webkit-font-smoothing: antialiased;
@@ -64,19 +59,21 @@ body {
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--on-dark);
+  background: #000000;
+  color: #FFFFFF;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid #000000;
   outline-offset: 2px;
 }
 
+/* 8 Laws Typography */
 .font-serif {
   font-family: var(--font-display);
   letter-spacing: 0;
-  line-height: 1;
+  line-height: 1.0;
+  font-weight: 400;
   -webkit-text-stroke: var(--serif-stroke) currentColor;
 }
 
@@ -86,7 +83,7 @@ body {
 }
 
 .font-mono {
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   letter-spacing: 0;
 }
 
@@ -94,72 +91,75 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* f.inc buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-ui);
-  font-size: 16px;
-  line-height: 1.2;
-  font-weight: 500;
-  letter-spacing: var(--track-tight);
-  padding: 14px 22px;
-  border: 0;
-  border-radius: 100px;
-  background: var(--paper-2);
-  color: var(--ink);
-  cursor: pointer;
-  transition: background 120ms ease;
-  text-decoration: none;
-}
-.btn:hover { background: var(--rule); }
-
-.btn-dark {
+/* f.inc Action Pills */
+.pill-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-ui);
   font-size: 14px;
   line-height: 1.2;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: var(--track-tight);
-  padding: 12px 20px;
-  border: 0;
-  border-radius: 100px;
-  background: var(--ink);
-  color: var(--on-dark);
-  cursor: pointer;
-  transition: background 120ms ease;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  background: #000000;
+  color: #FFFFFF;
   text-decoration: none;
+  cursor: pointer;
+  transition: opacity 120ms ease, transform 120ms ease;
+  border: none;
 }
-.btn-dark:hover { background: var(--accent); }
+.pill-btn:hover {
+  opacity: 0.85;
+}
 
-.btn-compact { padding: 8px 16px; font-size: 14px; }
-
-/* f.inc category pill tags */
-.tag-pill {
+.pill-btn-secondary {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
-  border-radius: 100px;
-  font-size: 13px;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 14px;
   line-height: 1.2;
   font-weight: 500;
   letter-spacing: var(--track-tight);
-  color: var(--ink);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  background: #F1F1F1;
+  color: #000000;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms ease;
+  border: none;
 }
-.tag-pill-cars { background: color-mix(in srgb, #E8452B 12%, transparent); }
-.tag-pill-hardware { background: color-mix(in srgb, #EA580C 12%, transparent); }
-.tag-pill-basketball { background: color-mix(in srgb, #16A34A 12%, transparent); }
-.tag-pill-paintball { background: color-mix(in srgb, #DC2626 12%, transparent); }
+.pill-btn-secondary:hover {
+  background: #E7E7E7;
+}
 
-/* f.inc card */
+/* Category Hues at 10% Tint only */
+.badge-car {
+  background: rgba(232, 69, 43, 0.10);
+  color: #000000;
+}
+.badge-hardware {
+  background: rgba(234, 88, 12, 0.10);
+  color: #000000;
+}
+.badge-basketball {
+  background: rgba(22, 163, 74, 0.10);
+  color: #000000;
+}
+.badge-paintball {
+  background: rgba(220, 38, 38, 0.10);
+  color: #000000;
+}
+
+/* Card Surface - 15px radius, #F1F1F1 fill, completely borderless */
 .finc-card {
-  background: var(--card);
+  background-color: #F1F1F1;
   border-radius: 15px;
   overflow: hidden;
-  transition: background 120ms ease;
+  border: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

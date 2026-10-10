@@ -27,18 +27,18 @@ const fields: {
 }[] = [
   { name: "name", label: "Your name", type: "text", autoComplete: "name" },
   { name: "email", label: "Email", type: "email", autoComplete: "email" },
-  { name: "clubName", label: "Proposed Club Name", type: "text", placeholder: "e.g. Track Days, Climbing, Film Club, Tennis" },
-  { name: "what", label: "What happens during a session?", type: "textarea", placeholder: "Describe what happens when members show up, the format, and the experience." },
-  { name: "cadence", label: "Proposed Cadence", type: "text", placeholder: "e.g. Every Tuesday 7pm, Bi-weekly, Monthly" },
+  { name: "clubName", label: "Proposed Club Name", type: "text", placeholder: "e.g. Sonoma Track Days, High-Speed Karting, Hardware Fab" },
+  { name: "what", label: "What happens during a session?", type: "textarea", placeholder: "Describe the session format, driver/member experience, safety requirements, and schedule." },
+  { name: "cadence", label: "Proposed Cadence", type: "text", placeholder: "e.g. Monthly track day, Bi-weekly workshop" },
   { name: "who", label: "Who is hosting / co-hosting?", type: "text", placeholder: "Your background and any co-leads" },
   {
     name: "people",
-    label: "10 people who will actually attend the first session",
+    label: "Initial member roster (10 people ready to attend)",
     type: "textarea",
-    placeholder: "Names and handles. The strongest applications have real people ready to show up on day one.",
+    placeholder: "Names and handles. The strongest charters have active founders ready from day one.",
   },
-  { name: "needs", label: "What support do you need from Founders, Inc.?", type: "textarea", placeholder: "Court bookings, Fort Mason workshop access, equipment budgets, media team coverage." },
-  { name: "budget", label: "Estimated Monthly Budget", type: "text", placeholder: "e.g. $500/month for court rentals & refreshments" },
+  { name: "needs", label: "What support do you need from Founders, Inc.?", type: "textarea", placeholder: "Track rental booking, Fort Mason workshop access, safety gear subsidies, media team coverage." },
+  { name: "budget", label: "Estimated Monthly Budget", type: "text", placeholder: "e.g. $1,200/session for track fees & paddock hospitality" },
 ];
 
 function validate(values: FormState): Partial<Record<FieldName, string>> {
@@ -75,24 +75,24 @@ export function ApplyForm() {
 
   if (sent) {
     return (
-      <div role="status" className="border border-line bg-card p-8 md:p-10 rounded-sm shadow-sm text-center">
-        <span className="font-mono text-xs uppercase tracking-widest text-emerald-600 font-semibold flex items-center justify-center gap-1.5 mb-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          Submission Received
+      <div role="status" className="finc-card p-8 md:p-12 text-center">
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-950 mb-3">
+          <span className="h-2 w-2 rounded-full bg-emerald-600" />
+          Charter Received
         </span>
-        <h3 className="font-serif text-4xl text-ink">Application Submitted</h3>
-        <p className="mt-3 max-w-md mx-auto text-sm text-ink-secondary leading-relaxed">
-          Our team reviews club applications weekly. If there is a strong fit, we will reach out within a week to schedule a 20-minute chat.
+        <h3 className="font-serif text-4xl text-black">Proposal Submitted</h3>
+        <p className="mt-3 max-w-md mx-auto text-sm text-black/60 leading-relaxed font-sans">
+          The campus team reviews club proposals weekly. We will reach out to schedule an in-person walkthrough at Fort Mason Pier 2.
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
-      <div className="flex items-center justify-between border-b border-line/60 pb-3 font-mono text-xs text-muted">
-        <span>Founders, Inc. Club Proposal</span>
-        <span className="text-accent">* All fields required</span>
+    <form onSubmit={onSubmit} noValidate className="finc-card p-8 sm:p-10 flex flex-col gap-6">
+      <div className="flex items-center justify-between pb-2">
+        <span className="font-mono text-xs uppercase tracking-wider text-black/40">Campus Charter Application</span>
+        <span className="font-mono text-xs text-black/40">* Required</span>
       </div>
 
       {fields.map((field) => {
@@ -112,11 +112,11 @@ export function ApplyForm() {
             setValues((current) => ({ ...current, [field.name]: value }));
           },
           className:
-            "mt-1.5 w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none placeholder:text-muted/60 focus:border-accent focus:ring-1 focus:ring-accent rounded-sm transition-colors",
+            "mt-2 w-full rounded-[8px] bg-white px-4 py-3 text-sm text-black outline-none placeholder:text-black/30 focus:ring-2 focus:ring-black border-0 transition-all font-sans",
         };
         return (
           <label key={field.name} className="block" htmlFor={field.name}>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-muted font-medium">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-black/60 font-medium">
               {field.label}
             </span>
             {field.type === "textarea" ? (
@@ -125,7 +125,7 @@ export function ApplyForm() {
               <input {...shared} type={field.type} />
             )}
             {error ? (
-              <span id={`${field.name}-error`} className="mt-1 block font-mono text-xs text-red-500">
+              <span id={`${field.name}-error`} className="mt-1.5 block font-mono text-xs text-red-600">
                 {error}
               </span>
             ) : null}
@@ -133,12 +133,12 @@ export function ApplyForm() {
         );
       })}
 
-      <div className="pt-2">
+      <div className="pt-4">
         <button
           type="submit"
-          className="flex h-12 w-full items-center justify-center bg-ink px-8 text-xs font-mono font-medium uppercase tracking-wider text-paper hover:bg-accent transition-colors rounded-sm shadow-sm"
+          className="pill-btn w-full text-center text-xs py-3"
         >
-          Submit Proposal to Founders, Inc. →
+          Submit Club Proposal to Founders, Inc. →
         </button>
       </div>
     </form>

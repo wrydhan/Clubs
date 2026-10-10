@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ClubCard } from "@/components/club-card";
 import { EventCard } from "@/components/event-card";
-import { getEvents, sortClubs } from "@/lib/clubs";
+import { getEvents, sortClubs, getClub } from "@/lib/clubs";
+import { formatMonthDay, formatTime } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Clubs — Founders, Inc. Fort Mason",
+  title: "Founders, Inc. — Clubs | Car Club & Campus Roster",
   description:
-    "Member-run clubs at Founders, Inc. in Fort Mason, San Francisco. Car Club, Basketball, Hardware Workshop, and Paintball. Track days, pickup games, and workshop builds.",
+    "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Flagship Car Club track days at Sonoma Raceway, Hardware Workshop, Basketball, and Paintball.",
   alternates: { canonical: "/clubs" },
 };
 
@@ -16,130 +18,262 @@ export default function ClubsPage() {
   const ordered = sortClubs(now);
   const upcomingEvents = getEvents(now);
   const nextEvent = upcomingEvents[0];
+  const carClub = getClub("cars");
 
   return (
-    <main className="min-h-screen">
-      {/* Editorial Header / Index Strip */}
-      <section className="border-b border-[#D8D2C3] bg-[#F5F2EA] px-4 py-16 sm:px-6 md:py-24 lg:px-8 dark:border-[#2E2B22] dark:bg-[#12110C]">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
-            <span>Pier 2, Fort Mason</span>
+    <main className="min-h-screen bg-white">
+      {/* Editorial Flagship Hero — Automotive Focus */}
+      <section className="relative px-6 pt-10 pb-16 sm:px-8 sm:pt-16 sm:pb-24 max-w-7xl mx-auto">
+        {/* Top Status Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[11px] text-black/50 mb-8 pb-4 border-b-0">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-black animate-pulse" />
+            <span className="font-semibold text-black tracking-wide">FOUNDERS, INC. CAMPUS</span>
             <span>/</span>
-            <span>San Francisco, CA</span>
-            <span>/</span>
-            <span className="text-[#12110C] dark:text-[#F5F2EA]">Founders, Inc. Campus</span>
+            <span>PIER 2, FORT MASON, SF</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline">AUTUMN TRACK SEASON</span>
+            <span>SONOMA RACEWAY & CIRCUITS</span>
+          </div>
+        </div>
+
+        {/* Hero Title & Mission */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-12">
+          <div className="lg:col-span-8">
+            <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-[6.8rem] text-black tracking-tight leading-none">
+              Drive fast.
+              <br />
+              Build things.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg sm:text-xl text-black/70 leading-relaxed font-sans">
+              Subsidized track days at Sonoma Raceway, precision machining in the hardware workshop, competitive pickup basketball, and tactical woodsball. What founders do when the laptops close.
+            </p>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-8">
-              <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.92] text-[#12110C] dark:text-[#F5F2EA] tracking-tight">
-                Campus Clubs.
-              </h1>
-              <p className="mt-8 max-w-2xl text-lg md:text-xl text-[#3A3830] dark:text-[#9B978A] leading-relaxed">
-                Founders don&apos;t just work together. We run track sessions at Sonoma, play weekly pickup, build custom machines in the workshop, and run tactical paintball. Subsidized spaces, track bookings, and resources for what you do outside of work.
-              </p>
-            </div>
-
-            <div className="lg:col-span-4 border border-[#D8D2C3] bg-[#FCFAF5] p-6 dark:border-[#2E2B22] dark:bg-[#17150F]">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
-                Club Backing
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <div className="finc-card p-6">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">
+                Next Flagship Session
               </span>
-              <p className="mt-3 text-sm text-[#3A3830] dark:text-[#9B978A] leading-relaxed">
-                Founders, Inc. sponsors venue rentals, track time, court bookings, material supplies, and hospitality for resident-led clubs.
+              <h3 className="mt-2 font-serif text-2xl text-black">
+                Sonoma Track Day
+              </h3>
+              <p className="mt-1 font-mono text-xs text-black/60">
+                Oct 26 · 7:00 AM Convoy from Pier 2
               </p>
-              <div className="mt-6 border-t border-[#D8D2C3] pt-4 dark:border-[#2E2B22]">
-                <Link
-                  href="/clubs/apply"
-                  className="inline-block border border-[#12110C] bg-[#12110C] px-4 py-2 font-mono text-[11px] uppercase tracking-wider text-[#F5F2EA] hover:bg-[#E8452B] hover:border-[#E8452B] dark:border-[#F5F2EA] dark:bg-[#F5F2EA] dark:text-[#12110C] dark:hover:bg-[#E8452B] dark:hover:text-[#F5F2EA] transition-colors"
+              <div className="mt-4 flex items-center gap-3">
+                <a
+                  href="https://luma.com/founderstrackday"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pill-btn text-xs py-2 px-4"
                 >
-                  Start a Club →
+                  Driver RSVP ↗
+                </a>
+                <Link
+                  href="/clubs/cars"
+                  className="pill-btn-secondary text-xs py-2 px-4"
+                >
+                  Car Club Details →
                 </Link>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Massive Automotive Showcase Banner */}
+        <div className="finc-card overflow-hidden relative group">
+          <div className="relative aspect-[16/9] md:aspect-[21/9] w-full bg-black/5">
+            <Image
+              src="/images/clubs/cars/cover.jpg"
+              alt="Founders, Inc. Car Club paddock staging at Sonoma Raceway"
+              fill
+              priority
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12 text-white">
+              <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-white/70 mb-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
+                  FLAGSHIP CLUB
+                </span>
+                <span>SONOMA RACEWAY PADDOCK</span>
+                <span>/</span>
+                <span>OCTOBER TRACK INVITATIONAL</span>
+              </div>
+              <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white">
+                Founders Car Club
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm sm:text-base text-white/80 leading-relaxed font-sans">
+                Full-day private track sessions at Sonoma Raceway and Thunderhill. High-speed elevation changes, paddock hospitality, timing telemetry, and morning convoys departing Pier 2 at 7:00 AM.
+              </p>
+
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/clubs/cars"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black font-medium text-xs tracking-tight hover:bg-white/90 transition-all"
+                >
+                  Enter Car Club Feature →
+                </Link>
+                <a
+                  href="https://luma.com/founderstrackday"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white/20 text-white backdrop-blur-sm font-medium text-xs tracking-tight hover:bg-white/30 transition-all"
+                >
+                  RSVP for Track Day (Luma) ↗
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Documentary Photo Strip under Car Club */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3 bg-[#EBEBEB]">
+            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
+              <Image
+                src="/images/clubs/cars/01.jpg"
+                alt="Driver prepping helmet and gloves in pit lane"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
+              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
+                Pit Lane Staging
+              </span>
+            </div>
+            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
+              <Image
+                src="/images/clubs/cars/04.jpg"
+                alt="Track car apex on circuit"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
+              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
+                Turn 2 Elevation
+              </span>
+            </div>
+            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
+              <Image
+                src="/images/clubs/cars/07.jpg"
+                alt="Turn 6 Carousel sweep"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
+              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
+                Carousel Apex
+              </span>
+            </div>
+            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
+              <Image
+                src="/images/clubs/cars/08.jpg"
+                alt="Paddock cooldown and driver debrief"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 25vw"
+              />
+              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
+                Paddock Cooldown
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* Featured Next Event */}
+      {/* Next Upcoming Track Session Event Banner */}
       {nextEvent ? (
-        <section className="border-b border-[#D8D2C3] bg-[#EBE6D9] px-4 py-8 sm:px-6 lg:px-8 dark:border-[#2E2B22] dark:bg-[#1C1A13]">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
-              <span>Next Upcoming Session</span>
-              <Link
-                href="/clubs/calendar"
-                className="text-[#12110C] hover:text-[#E8452B] dark:text-[#F5F2EA] dark:hover:text-[#FF6A3D] transition-colors"
-              >
-                Full Calendar →
-              </Link>
+        <section className="px-6 py-12 sm:px-8 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs uppercase tracking-wider text-black/40">
+                Confirmed Calendar Session
+              </span>
             </div>
-            <EventCard event={nextEvent} />
+            <Link
+              href="/clubs/calendar"
+              className="font-mono text-xs text-black hover:opacity-70 transition-opacity"
+            >
+              Full Calendar →
+            </Link>
           </div>
+          <EventCard event={nextEvent} />
         </section>
       ) : null}
 
-      {/* Clubs Roster Grid */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 border-b border-[#D8D2C3] pb-6 dark:border-[#2E2B22]">
+      {/* Campus Club Directory / Roster */}
+      <section className="px-6 py-16 sm:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-10">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
+            <span className="font-mono text-xs uppercase tracking-wider text-black/40">
               Directory
             </span>
-            <h2 className="mt-2 font-serif text-3xl sm:text-4xl text-[#12110C] dark:text-[#F5F2EA]">
-              Active Roster
+            <h2 className="mt-2 font-serif text-4xl sm:text-5xl text-black">
+              All Campus Clubs
             </h2>
           </div>
-          <span className="font-mono text-xs text-[#8A8678]">
-            {ordered.length} Member Clubs
+          <span className="font-mono text-xs text-black/50">
+            {ordered.length} Active & Chartering Clubs
           </span>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           {ordered.map((club, idx) => (
             <ClubCard key={club.slug} club={club} now={now} index={idx} />
           ))}
         </div>
       </section>
 
-      {/* Campus Tenets / Principles */}
-      <section className="border-t border-[#D8D2C3] bg-[#EBE6D9] px-4 py-16 sm:px-6 md:py-20 lg:px-8 dark:border-[#2E2B22] dark:bg-[#1C1A13]">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="border-t border-[#12110C] pt-6 dark:border-[#F5F2EA]">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
-                01 / Discipline
-              </span>
-              <h3 className="mt-3 font-serif text-2xl text-[#12110C] dark:text-[#F5F2EA]">
-                Zero Pitch Decks
-              </h3>
-              <p className="mt-3 text-sm text-[#3A3830] dark:text-[#9B978A] leading-relaxed">
-                Clubs exist strictly outside of work. No networking pitches or intros. Focus entirely on the craft, sport, or track.
+      {/* Tenets / Campus Support */}
+      <section className="px-6 py-16 sm:px-8 max-w-7xl mx-auto">
+        <div className="finc-card p-8 sm:p-14">
+          <span className="font-mono text-xs uppercase tracking-wider text-black/40">
+            Campus Sponsorship & Charter
+          </span>
+          <h2 className="mt-3 font-serif text-3xl sm:text-5xl text-black">
+            How Founders, Inc. backs your club.
+          </h2>
+
+          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="bg-white p-8 rounded-[12px]">
+              <span className="font-mono text-xs text-black/40 uppercase">01 / Culture</span>
+              <h3 className="mt-3 font-serif text-2xl text-black">Zero Pitch Decks</h3>
+              <p className="mt-3 text-sm text-black/60 leading-relaxed font-sans">
+                Clubs exist strictly outside work. No business cards, networking pitches, or investor intros. Focus entirely on the driving line, the sport, or the machine.
               </p>
             </div>
 
-            <div className="border-t border-[#12110C] pt-6 dark:border-[#F5F2EA]">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
-                02 / Resource
-              </span>
-              <h3 className="mt-3 font-serif text-2xl text-[#12110C] dark:text-[#F5F2EA]">
-                Subsidized Spaces
-              </h3>
-              <p className="mt-3 text-sm text-[#3A3830] dark:text-[#9B978A] leading-relaxed">
-                Founders, Inc. provides real budget for track rental fees, gymnasium slots, raw workshop stock, and gear.
+            <div className="bg-white p-8 rounded-[12px]">
+              <span className="font-mono text-xs text-black/40 uppercase">02 / Budget</span>
+              <h3 className="mt-3 font-serif text-2xl text-black">Subsidized Track Time</h3>
+              <p className="mt-3 text-sm text-black/60 leading-relaxed font-sans">
+                Founders, Inc. provides real budget for track rental slots at Sonoma, indoor gymnasium court bookings, raw workshop materials, and hospitality.
               </p>
             </div>
 
-            <div className="border-t border-[#12110C] pt-6 dark:border-[#F5F2EA]">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8A8678]">
-                03 / Media
-              </span>
-              <h3 className="mt-3 font-serif text-2xl text-[#12110C] dark:text-[#F5F2EA]">
-                Documented Sessions
-              </h3>
-              <p className="mt-3 text-sm text-[#3A3830] dark:text-[#9B978A] leading-relaxed">
-                Our in-house media crew documents club meets and track days with photography and film archives.
+            <div className="bg-white p-8 rounded-[12px]">
+              <span className="font-mono text-xs text-black/40 uppercase">03 / Production</span>
+              <h3 className="mt-3 font-serif text-2xl text-black">In-House Media Crew</h3>
+              <p className="mt-3 text-sm text-black/60 leading-relaxed font-sans">
+                Our resident media team captures track sessions, garage builds, and games with documentary film and photography archives.
               </p>
             </div>
+          </div>
+
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-black/5">
+            <div>
+              <h4 className="font-serif text-2xl text-black">Have an obsession you want to run?</h4>
+              <p className="text-sm text-black/60 font-sans mt-1">
+                We back resident-led initiatives. Apply for club charter, budget, and Pier 2 access.
+              </p>
+            </div>
+            <Link
+              href="/clubs/apply"
+              className="pill-btn text-xs py-3 px-6 shrink-0"
+            >
+              Start a Club at Pier 2 →
+            </Link>
           </div>
         </div>
       </section>

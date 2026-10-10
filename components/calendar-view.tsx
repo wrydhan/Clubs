@@ -112,33 +112,53 @@ export function CalendarView({
   }
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-10 md:px-10">
-      {/* Club Filter Chips */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-line pb-6" role="toolbar" aria-label="Filter by club">
-        <span className="mr-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Filter:</span>
-        <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-          All Events
-        </FilterChip>
-        {clubs.map((club) => (
-          <FilterChip key={club.slug} active={filter === club.slug} onClick={() => setFilter(club.slug)}>
-            {club.name}
-          </FilterChip>
-        ))}
+    <div className="py-6">
+      {/* Club Filter Chips (Pill styling) */}
+      <div className="flex flex-wrap items-center gap-2 mb-10" role="toolbar" aria-label="Filter by club">
+        <span className="mr-2 font-mono text-[11px] uppercase tracking-wider text-black/40">Filter:</span>
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight transition-all ${
+            filter === "all"
+              ? "bg-black text-white"
+              : "bg-[#F1F1F1] text-black/70 hover:bg-[#E7E7E7] hover:text-black"
+          }`}
+        >
+          All Sessions
+        </button>
+        {clubs.map((club) => {
+          const active = filter === club.slug;
+          return (
+            <button
+              key={club.slug}
+              type="button"
+              onClick={() => setFilter(club.slug)}
+              className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight transition-all ${
+                active
+                  ? "bg-black text-white"
+                  : "bg-[#F1F1F1] text-black/70 hover:bg-[#E7E7E7] hover:text-black"
+              }`}
+            >
+              {club.name}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] items-start">
         {/* Left Column: Agenda View */}
         <div>
           {visible.length === 0 ? (
-            <div className="border border-line bg-card p-8 rounded-sm">
-              <span className="font-mono text-xs uppercase tracking-wider text-muted">Schedule</span>
-              <p className="mt-2 font-serif text-3xl text-ink">Nothing scheduled for this filter.</p>
-              <p className="mt-3 text-sm text-ink-secondary leading-relaxed">
-                No dates posted yet. Subscribe to receive invites directly to your inbox when registration opens.
+            <div className="finc-card p-8 sm:p-12 text-center">
+              <span className="font-mono text-xs uppercase tracking-wider text-black/40">Schedule Status</span>
+              <p className="mt-3 font-serif text-3xl sm:text-4xl text-black">No sessions currently posted.</p>
+              <p className="mt-3 text-sm text-black/60 max-w-md mx-auto leading-relaxed">
+                Dates are finalized with track marshals and coordinators weekly. Subscribe to sync dates automatically to your calendar.
               </p>
               <a
                 href={subscribeUrl}
-                className="mt-6 inline-flex h-11 items-center justify-center bg-ink px-6 text-xs font-mono uppercase tracking-wider text-paper hover:bg-accent transition-colors rounded-sm"
+                className="mt-6 inline-flex pill-btn text-xs py-3 px-6"
               >
                 Subscribe to Calendar Updates →
               </a>
@@ -147,14 +167,14 @@ export function CalendarView({
             <div className="flex flex-col gap-10">
               {weeks.map((week) => (
                 <section key={ymdKey(week.start)} aria-labelledby={`week-${ymdKey(week.start)}`}>
-                  <div className="flex items-center gap-3 border-b border-line pb-3">
-                    <span className="font-mono text-xs text-accent">✦</span>
-                    <h2 id={`week-${ymdKey(week.start)}`} className="font-serif text-2xl md:text-3xl text-ink">
+                  <div className="flex items-center gap-3 pb-3">
+                    <span className="h-2 w-2 rounded-full bg-black/40" />
+                    <h2 id={`week-${ymdKey(week.start)}`} className="font-serif text-2xl sm:text-3xl text-black">
                       {weekLabel(week.start, today)}
                     </h2>
                   </div>
                   {week.events.length === 0 ? (
-                    <p className="mt-4 border border-line bg-paper-subtle px-5 py-4 text-xs font-mono text-muted rounded-sm">
+                    <p className="mt-3 finc-card px-6 py-4 text-xs font-mono text-black/50">
                       No sessions on the calendar for this week.
                     </p>
                   ) : (
@@ -163,37 +183,37 @@ export function CalendarView({
                         <li
                           key={event.id}
                           id={event.id}
-                          className="scroll-mt-24 border border-line bg-card p-6 rounded-sm hover:border-line-strong transition-all shadow-sm"
+                          className="scroll-mt-24 finc-card p-6 sm:p-8 hover:bg-[#EBEBEB] transition-colors"
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 pb-3">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
                             <Link
                               href={`/clubs/${event.clubSlug}`}
-                              className="font-mono text-xs font-semibold uppercase tracking-wider text-accent hover:underline"
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black/5 text-black hover:bg-black hover:text-white transition-colors"
                             >
                               {event.clubName}
                             </Link>
-                            <span className="font-mono text-xs text-muted">
+                            <span className="font-mono text-xs text-black/50 tnum">
                               {formatWeekday(event.datetime)} · {formatTime(event.datetime)}
                             </span>
                           </div>
 
-                          <h3 className="mt-3 font-serif text-2xl text-ink">{event.title}</h3>
-                          <p className="mt-1 font-mono text-xs text-muted">📍 {event.location}</p>
-                          <p className="mt-3 text-sm text-ink-secondary leading-relaxed">
+                          <h3 className="mt-4 font-serif text-2xl sm:text-3xl text-black">{event.title}</h3>
+                          <p className="mt-1 font-mono text-xs text-black/50">📍 {event.location}</p>
+                          <p className="mt-3 text-sm text-black/70 leading-relaxed font-sans max-w-2xl">
                             {event.description}
                           </p>
 
-                          <div className="mt-5 flex items-center justify-between pt-3 border-t border-line/50">
+                          <div className="mt-6 pt-4 flex flex-wrap items-center justify-between gap-4">
                             {event.capacity ? (
-                              <span className="font-mono text-xs text-muted">
-                                {event.capacity} capacity limit
+                              <span className="font-mono text-xs text-black/40">
+                                {event.capacity} driver capacity limit
                               </span>
                             ) : <span />}
                             <a
                               href={event.rsvpUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex h-9 items-center justify-center bg-ink px-4 text-xs font-mono uppercase tracking-wider text-paper hover:bg-accent transition-colors rounded-sm"
+                              className="pill-btn text-xs py-2 px-5"
                             >
                               RSVP on Luma →
                             </a>
@@ -210,14 +230,14 @@ export function CalendarView({
 
         {/* Right Column: Month Grid */}
         <div>
-          <div className="border border-line bg-card p-6 rounded-sm shadow-sm sticky top-20">
-            <div className="flex items-center justify-between gap-3 border-b border-line/60 pb-4">
-              <h2 className="font-serif text-2xl text-ink">{formatMonth(cursor.year, cursor.month)}</h2>
+          <div className="finc-card p-6 sm:p-8 sticky top-24">
+            <div className="flex items-center justify-between pb-4">
+              <h2 className="font-serif text-2xl text-black">{formatMonth(cursor.year, cursor.month)}</h2>
               <div className="flex gap-1.5 font-mono text-xs">
                 <button
                   type="button"
                   onClick={() => shiftMonth(-1)}
-                  className="h-8 border border-line px-2.5 hover:border-ink hover:bg-paper-subtle transition-colors rounded-sm"
+                  className="h-8 w-8 rounded-full bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors"
                   aria-label="Previous month"
                 >
                   ←
@@ -225,7 +245,7 @@ export function CalendarView({
                 <button
                   type="button"
                   onClick={() => shiftMonth(1)}
-                  className="h-8 border border-line px-2.5 hover:border-ink hover:bg-paper-subtle transition-colors rounded-sm"
+                  className="h-8 w-8 rounded-full bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors"
                   aria-label="Next month"
                 >
                   →
@@ -234,101 +254,45 @@ export function CalendarView({
             </div>
 
             <div
-              className="mt-4 grid grid-cols-7 border-r border-b border-line text-left"
+              className="mt-4 grid grid-cols-7 gap-1 text-center"
               role="grid"
               aria-label={formatMonth(cursor.year, cursor.month)}
             >
               {WEEKDAYS.map((day) => (
-                <div
-                  key={day}
-                  className="border-l border-t border-line px-1 py-1.5 font-mono text-[9px] uppercase tracking-wider text-muted text-center"
-                >
+                <div key={day} className="py-1 font-mono text-[10px] uppercase text-black/40">
                   {day}
                 </div>
               ))}
               {cells.map((cell) => {
-                const dayEvents = visible.filter((event) => sameYmd(laYmdFromIso(event.datetime), cell.ymd));
                 const isToday = sameYmd(cell.ymd, today);
+                const hasEvent = monthEvents.some((ev) => sameYmd(laYmdFromIso(ev.datetime), cell.ymd));
                 return (
                   <div
                     key={ymdKey(cell.ymd)}
-                    role="gridcell"
-                    className={`min-h-12 border-l border-t border-line p-1 text-center transition-colors ${
-                      cell.inMonth ? "bg-card" : "bg-paper-subtle/50 opacity-30"
-                    }`}
+                    className={`h-10 rounded-[8px] flex flex-col items-center justify-center text-xs font-mono transition-colors ${
+                      cell.inMonth ? "text-black" : "text-black/20"
+                    } ${isToday ? "bg-black text-white font-semibold" : hasEvent ? "bg-black/10 font-medium" : ""}`}
                   >
-                    <span
-                      className={`inline-block font-mono text-[11px] ${
-                        isToday
-                          ? "h-5 w-5 rounded-full bg-accent text-white flex items-center justify-center mx-auto"
-                          : "text-ink"
-                      }`}
-                    >
-                      {cell.ymd.day}
-                    </span>
-                    {dayEvents.length > 0 ? (
-                      <div className="mt-1 flex flex-col gap-0.5">
-                        {dayEvents.map((event) => (
-                          <a
-                            key={event.id}
-                            href={`#${event.id}`}
-                            className="block truncate rounded-sm bg-accent/10 px-1 py-0.5 font-mono text-[9px] font-medium text-accent hover:bg-accent hover:text-white transition-colors"
-                          >
-                            {event.clubName}
-                          </a>
-                        ))}
-                      </div>
+                    <span>{cell.ymd.day}</span>
+                    {hasEvent && !isToday ? (
+                      <span className="block h-1 w-1 rounded-full bg-black mt-0.5" />
                     ) : null}
                   </div>
                 );
               })}
             </div>
 
-            {monthEvents.length === 0 ? (
-              <p className="mt-4 font-mono text-xs text-muted text-center">
-                No events in {formatMonth(cursor.year, cursor.month)}.
-              </p>
-            ) : null}
-
-            <div className="mt-6 pt-5 border-t border-line/60">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted block mb-2">
-                Sync to your device
-              </span>
+            <div className="mt-8 pt-4">
               <a
                 href={subscribeUrl}
-                className="flex h-10 w-full items-center justify-center border border-line bg-paper-subtle text-xs font-mono uppercase tracking-wider text-ink hover:border-ink transition-colors rounded-sm"
+                className="pill-btn-secondary w-full text-center text-xs py-3"
               >
-                Subscribe via iCal / Google →
+                Sync with Calendar (.ics)
               </a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`h-9 px-3.5 font-mono text-xs uppercase tracking-wider transition-all rounded-sm ${
-        active
-          ? "bg-ink text-paper font-semibold shadow-sm"
-          : "border border-line bg-card text-ink/80 hover:border-ink hover:text-ink"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
