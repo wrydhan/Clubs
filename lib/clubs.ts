@@ -97,7 +97,7 @@ export const clubs: Club[] = [
       "Full-day private track sessions at Sonoma Raceway and Thunderhill. We organize morning convoys leaving Fort Mason at 7:00 AM, with paddock hospitality, run groups for novice through advanced drivers, and shared technical support. Bring your own car and approved helmet, or RSVP for passenger ride-alongs with seasoned drivers.",
     cadence: "Seasonal track days",
     location: "Sonoma Raceway · Convoy from Fort Mason Pier 2",
-    heroImage: "/images/clubs/cars-hero.jpg",
+    heroImage: "/images/clubs/cars/cover.jpg",
     galleryImages: [
       {
         src: "/images/clubs/cars/cover.jpg",
