@@ -4,8 +4,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#D8D2C3] bg-[#F5F2EA]/95 backdrop-blur-sm dark:border-[#2E2B22] dark:bg-[#12110C]/95">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
-          <Link href="/clubs" className="flex items-baseline gap-2.5 group">
+        <div className="flex min-w-0 items-center gap-6">
+          <Link href="/clubs" className="flex shrink-0 items-baseline gap-2.5 whitespace-nowrap group">
             <span className="font-mono text-xs font-semibold tracking-widest text-[#12110C] dark:text-[#F5F2EA]">
               FOUNDERS, INC.
             </span>
@@ -19,10 +19,10 @@ export function Header() {
           </span>
         </div>
 
-        <nav className="flex items-center gap-6 font-mono text-[11px] uppercase tracking-wider text-[#3A3830] dark:text-[#9B978A]">
+        <nav className="flex shrink-0 items-center gap-4 whitespace-nowrap sm:gap-6 font-mono text-[11px] uppercase tracking-wider text-[#3A3830] dark:text-[#9B978A]">
           <Link
             href="/clubs"
-            className="hover:text-[#12110C] dark:hover:text-[#F5F2EA] transition-colors"
+            className="hidden sm:inline hover:text-[#12110C] dark:hover:text-[#F5F2EA] transition-colors"
           >
             Roster
           </Link>

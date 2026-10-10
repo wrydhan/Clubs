@@ -1,8 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* The site is light-only; dark: utilities apply only under an explicit .dark ancestor. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ink: #12110C;
+  --color-body: #3A3830;
+  --color-muted: #8A8678;
+  --color-paper: #F5F2EA;
+  --color-paper-2: #EBE6D9;
+  --color-card: #FCFAF5;
+  --color-line: #D8D2C3;
+  --color-accent: #E8452B;
+  --color-accent-dark: #FF6A3D;
+  --color-inverse: #F5F2EA;
+  --color-inverse-ink: #12110C;
+
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "Instrument Sans", -apple-system, system-ui, sans-serif;
+  --font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, monospace;
+}
 
 /* Founders, Inc. Clubs — one design system.
    Warm-paper brutalist editorial: tinted neutrals, serif display, mono index labels. */
