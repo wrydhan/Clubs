@@ -1,82 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&display=swap');
 @import "tailwindcss";
 
+/* f.inc 8 Laws Design System
+   1. Two typefaces: Instrument Serif (display), Instrument Sans (body/UI), Fragment Mono (tabular)
+   2. Serif display: line-height 1.0, tracking 0, -webkit-text-stroke 0.05em
+   3. Sans text: -0.02em tracking, -0.04em on buttons/labels/badges
+   4. Near-monochrome ink: pure #000 on #FFF, secondary rgba(0,0,0,0.40)
+   5. Fills and space, not borders: #F1F1F1 surface fill, generous whitespace, borderless
+   6. Pills for actions (rounded-full / 100px), 15px radius for cards, 8px for controls
+   7. One shadow, used sparingly: layered drop with 1px white top ring on dark surfaces
+   8. Category hues at 10% tint only behind black text
+*/
+
+@theme {
+  --color-ink: #000000;
+  --color-secondary: rgba(0, 0, 0, 0.40);
+  --color-tertiary: rgba(0, 0, 0, 0.60);
+  --color-surface: #F1F1F1;
+  --color-surface-hover: #E7E7E7;
+  --color-surface-card: #F7F7F7;
+  --color-canvas: #FFFFFF;
+
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 :root {
-  --paper: #f4f1ea;
-  --ink: #14120e;
-  --muted: #5c564c;
-  --line: #ddd6c8;
-  --card: #fbf9f4;
-  --accent: #1900ff;
-  --chip: #1900ff;
-  --inverse: #14120e;
-  --inverse-ink: #f4f1ea;
-  color-scheme: light;
+  --ink: #000000;
+  --ink-secondary: rgba(0, 0, 0, 0.40);
+  --ink-tertiary: rgba(0, 0, 0, 0.60);
+  --surface: #F1F1F1;
+  --surface-hover: #E7E7E7;
+  --surface-card: #F7F7F7;
+  --canvas: #FFFFFF;
+
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-ui: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-code: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --track-default: -0.02em;
+  --track-tight: -0.04em;
+  --serif-stroke: 0.05em;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12110e;
-    --ink: #f3eee6;
-    --muted: #b7ad9e;
-    --line: #3a342c;
-    --card: #1c1a16;
-    --accent: #cfc6ff;
-    --chip: #1900ff;
-    --inverse: #241f18;
-    --inverse-ink: #f4f1ea;
-    color-scheme: dark;
-  }
+* {
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-paper: var(--paper);
-  --color-ink: var(--ink);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
-  --color-card: var(--card);
-  --color-accent: var(--accent);
-  --color-chip: var(--chip);
-  --color-inverse: var(--inverse);
-  --color-inverse-ink: var(--inverse-ink);
-  --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
-}
-
-@layer utilities {
-  .font-serif {
-    font-weight: 500;
-    letter-spacing: 0;
-  }
-
-  .no-scrollbar {
-    scrollbar-width: none;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-html {
-  background: var(--paper);
-}
-
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-sans);
+html, body {
+  background-color: #FFFFFF;
+  color: #000000;
+  font-family: var(--font-ui);
+  letter-spacing: var(--track-default);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #1900ff;
-  color: #fff;
+  background: #000000;
+  color: #FFFFFF;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
+  outline: 2px solid #000000;
+  outline-offset: 2px;
 }
 
-summary::-webkit-details-marker {
-  display: none;
+/* 8 Laws Typography */
+.font-serif {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+  line-height: 1.0;
+  font-weight: 400;
+  -webkit-text-stroke: var(--serif-stroke) currentColor;
+}
+
+.font-sans {
+  font-family: var(--font-ui);
+  letter-spacing: var(--track-default);
+}
+
+.font-mono {
+  font-family: var(--font-code);
+  letter-spacing: 0;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* f.inc Action Pills */
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  background: #000000;
+  color: #FFFFFF;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 120ms ease, transform 120ms ease;
+  border: none;
+}
+.pill-btn:hover {
+  opacity: 0.85;
+}
+
+.pill-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: var(--track-tight);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  background: #F1F1F1;
+  color: #000000;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms ease;
+  border: none;
+}
+.pill-btn-secondary:hover {
+  background: #E7E7E7;
+}
+
+/* Category Hues at 10% Tint only */
+.badge-car {
+  background: rgba(232, 69, 43, 0.10);
+  color: #000000;
+}
+.badge-hardware {
+  background: rgba(234, 88, 12, 0.10);
+  color: #000000;
+}
+.badge-basketball {
+  background: rgba(22, 163, 74, 0.10);
+  color: #000000;
+}
+.badge-paintball {
+  background: rgba(220, 38, 38, 0.10);
+  color: #000000;
+}
+
+/* Card Surface - 15px radius, #F1F1F1 fill, completely borderless */
+.finc-card {
+  background-color: #F1F1F1;
+  border-radius: 15px;
+  overflow: hidden;
+  border: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

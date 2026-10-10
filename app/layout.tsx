@@ -1,35 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Barlow, Newsreader } from "next/font/google";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
-
-const sans = Barlow({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-barlow",
-  display: "swap",
-});
-
-const display = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-newsreader",
-  display: "swap",
-});
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Clubs in San Francisco | Founders, Inc.",
-    template: "%s | Founders, Inc.",
+    default: "Founders, Inc. — Clubs",
+    template: "%s | Founders, Inc. Clubs",
   },
   description:
-    "Member-run clubs at Founders, Inc. in Fort Mason, San Francisco. Car Club is on the calendar. Hardware, basketball, and paintball are coming soon.",
+    "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Car Club track days, Hardware Workshop, Basketball, and Tactical Paintball.",
   openGraph: {
     siteName: "Founders, Inc. Clubs",
     type: "website",
@@ -39,19 +23,20 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f1ea" },
-    { media: "(prefers-color-scheme: dark)", color: "#12110e" },
-  ],
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} h-full antialiased`}>
-      <body className="flex min-h-dvh flex-col">
+    <html lang="en" className="h-full antialiased selection:bg-black selection:text-white">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
+      <body className="flex min-h-dvh flex-col bg-white text-black font-sans">
         <a
           href="#content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-paper focus:px-3 focus:py-2"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-black focus:text-white focus:px-4 focus:py-2 focus:rounded-full focus:text-xs font-mono"
         >
           Skip to content
         </a>

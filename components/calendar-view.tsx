@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   addCalendarDays,
   compareYmd,
@@ -11,8 +12,7 @@ import {
   ymdKey,
   type YMD,
 } from "@/lib/dates";
-import { formatFullDate, formatMonth, formatTime, formatYmd, laYmdFromIso } from "@/lib/format";
-import { btnPrimary } from "@/lib/styles";
+import { formatFullDate, formatMonth, formatTime, formatWeekday, formatYmd, laYmdFromIso } from "@/lib/format";
 import { subscribeUrl } from "@/lib/site";
 
 export type CalendarEvent = {
@@ -34,8 +34,8 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function weekLabel(start: YMD, today: YMD): string {
   const thisWeek = startOfWeekMonday(pacificToUtc(today.year, today.month, today.day, 12, 0));
   const nextWeek = addCalendarDays(thisWeek.year, thisWeek.month, thisWeek.day, 7);
-  if (sameYmd(start, thisWeek)) return "This week";
-  if (sameYmd(start, nextWeek)) return "Next week";
+  if (sameYmd(start, thisWeek)) return "This Week";
+  if (sameYmd(start, nextWeek)) return "Next Week";
   const end = addCalendarDays(start.year, start.month, start.day, 6);
   return `${formatYmd(start)} – ${formatYmd(end)}`;
 }
@@ -112,56 +112,112 @@ export function CalendarView({
   }
 
   return (
-    <div>
-      <div className="flex gap-2 overflow-x-auto px-5 py-4 md:px-8" role="toolbar" aria-label="Filter by club">
-        <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-          All
-        </FilterChip>
-        {clubs.map((club) => (
-          <FilterChip key={club.slug} active={filter === club.slug} onClick={() => setFilter(club.slug)}>
-            {club.name}
-          </FilterChip>
-        ))}
+    <div className="py-6">
+      {/* Club Filter Chips (Pill styling) */}
+      <div className="flex flex-wrap items-center gap-2 mb-10" role="toolbar" aria-label="Filter by club">
+        <span className="mr-2 font-mono text-[11px] uppercase tracking-wider text-black/40">Filter:</span>
+        <button
+          type="button"
+          onClick={() => setFilter("all")}
+          className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight transition-all ${
+            filter === "all"
+              ? "bg-black text-white"
+              : "bg-[#F1F1F1] text-black/70 hover:bg-[#E7E7E7] hover:text-black"
+          }`}
+        >
+          All Sessions
+        </button>
+        {clubs.map((club) => {
+          const active = filter === club.slug;
+          return (
+            <button
+              key={club.slug}
+              type="button"
+              onClick={() => setFilter(club.slug)}
+              className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight transition-all ${
+                active
+                  ? "bg-black text-white"
+                  : "bg-[#F1F1F1] text-black/70 hover:bg-[#E7E7E7] hover:text-black"
+              }`}
+            >
+              {club.name}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="mx-auto grid max-w-[1200px] gap-12 px-5 pb-16 md:px-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] items-start">
+        {/* Left Column: Agenda View */}
         <div>
           {visible.length === 0 ? (
-            <div className="border border-line px-5 py-10">
-              <p className="font-serif text-3xl leading-none">Nothing scheduled.</p>
-              <p className="mt-3 text-sm text-muted">
-                No upcoming dates for this filter. Subscribe anyway — the next one will land in the same calendar.
+            <div className="finc-card p-8 sm:p-12 text-center">
+              <span className="font-mono text-xs uppercase tracking-wider text-black/40">Schedule Status</span>
+              <p className="mt-3 font-serif text-3xl sm:text-4xl text-black">No sessions currently posted.</p>
+              <p className="mt-3 text-sm text-black/60 max-w-md mx-auto leading-relaxed">
+                Dates are finalized with track marshals and coordinators weekly. Subscribe to sync dates automatically to your calendar.
               </p>
-              <a href={subscribeUrl} className={`${btnPrimary} mt-5`}>
-                Subscribe
+              <a
+                href={subscribeUrl}
+                className="mt-6 inline-flex pill-btn text-xs py-3 px-6"
+              >
+                Subscribe to Calendar Updates →
               </a>
             </div>
           ) : (
             <div className="flex flex-col gap-10">
               {weeks.map((week) => (
                 <section key={ymdKey(week.start)} aria-labelledby={`week-${ymdKey(week.start)}`}>
-                  <h2 id={`week-${ymdKey(week.start)}`} className="font-serif text-3xl leading-none">
-                    {weekLabel(week.start, today)}
-                  </h2>
+                  <div className="flex items-center gap-3 pb-3">
+                    <span className="h-2 w-2 rounded-full bg-black/40" />
+                    <h2 id={`week-${ymdKey(week.start)}`} className="font-serif text-2xl sm:text-3xl text-black">
+                      {weekLabel(week.start, today)}
+                    </h2>
+                  </div>
                   {week.events.length === 0 ? (
-                    <p className="mt-4 border border-line px-4 py-5 text-sm text-muted">
-                      Nothing scheduled this week.
+                    <p className="mt-3 finc-card px-6 py-4 text-xs font-mono text-black/50">
+                      No sessions on the calendar for this week.
                     </p>
                   ) : (
-                    <ul className="mt-4 flex flex-col gap-3">
+                    <ul className="mt-4 flex flex-col gap-4">
                       {week.events.map((event) => (
-                        <li key={event.id} id={event.id} className="scroll-mt-24 border border-line bg-card p-4">
-                          <p className="text-[11px] uppercase tracking-[0.14em] text-muted">{event.clubName}</p>
-                          <h3 className="mt-1 font-serif text-2xl leading-tight">{event.title}</h3>
-                          <p className="mt-1 text-sm text-muted">
-                            {formatFullDate(event.datetime)} · {formatTime(event.datetime)} · {event.location}
+                        <li
+                          key={event.id}
+                          id={event.id}
+                          className="scroll-mt-24 finc-card p-6 sm:p-8 hover:bg-[#EBEBEB] transition-colors"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <Link
+                              href={`/clubs/${event.clubSlug}`}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black/5 text-black hover:bg-black hover:text-white transition-colors"
+                            >
+                              {event.clubName}
+                            </Link>
+                            <span className="font-mono text-xs text-black/50 tnum">
+                              {formatWeekday(event.datetime)} · {formatTime(event.datetime)}
+                            </span>
+                          </div>
+
+                          <h3 className="mt-4 font-serif text-2xl sm:text-3xl text-black">{event.title}</h3>
+                          <p className="mt-1 font-mono text-xs text-black/50">📍 {event.location}</p>
+                          <p className="mt-3 text-sm text-black/70 leading-relaxed font-sans max-w-2xl">
+                            {event.description}
                           </p>
-                          <a
-                            href={event.rsvpUrl}
-                            className="mt-3 inline-flex h-11 items-center bg-ink px-4 text-sm text-paper hover:opacity-90"
-                          >
-                            RSVP
-                          </a>
+
+                          <div className="mt-6 pt-4 flex flex-wrap items-center justify-between gap-4">
+                            {event.capacity ? (
+                              <span className="font-mono text-xs text-black/40">
+                                {event.capacity} driver capacity limit
+                              </span>
+                            ) : <span />}
+                            <a
+                              href={event.rsvpUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="pill-btn text-xs py-2 px-5"
+                            >
+                              RSVP on Luma →
+                            </a>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -172,80 +228,71 @@ export function CalendarView({
           )}
         </div>
 
+        {/* Right Column: Month Grid */}
         <div>
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-serif text-2xl">{formatMonth(cursor.year, cursor.month)}</h2>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => shiftMonth(-1)} className="h-10 border border-line px-3 text-sm" aria-label="Previous month">
-                Prev
-              </button>
-              <button type="button" onClick={() => shiftMonth(1)} className="h-10 border border-line px-3 text-sm" aria-label="Next month">
-                Next
-              </button>
+          <div className="finc-card p-6 sm:p-8 sticky top-24">
+            <div className="flex items-center justify-between pb-4">
+              <h2 className="font-serif text-2xl text-black">{formatMonth(cursor.year, cursor.month)}</h2>
+              <div className="flex gap-1.5 font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => shiftMonth(-1)}
+                  className="h-8 w-8 rounded-full bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+                  aria-label="Previous month"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => shiftMonth(1)}
+                  className="h-8 w-8 rounded-full bg-white flex items-center justify-center hover:bg-black hover:text-white transition-colors"
+                  aria-label="Next month"
+                >
+                  →
+                </button>
+              </div>
+            </div>
+
+            <div
+              className="mt-4 grid grid-cols-7 gap-1 text-center"
+              role="grid"
+              aria-label={formatMonth(cursor.year, cursor.month)}
+            >
+              {WEEKDAYS.map((day) => (
+                <div key={day} className="py-1 font-mono text-[10px] uppercase text-black/40">
+                  {day}
+                </div>
+              ))}
+              {cells.map((cell) => {
+                const isToday = sameYmd(cell.ymd, today);
+                const hasEvent = monthEvents.some((ev) => sameYmd(laYmdFromIso(ev.datetime), cell.ymd));
+                return (
+                  <div
+                    key={ymdKey(cell.ymd)}
+                    className={`h-10 rounded-[8px] flex flex-col items-center justify-center text-xs font-mono transition-colors ${
+                      cell.inMonth ? "text-black" : "text-black/20"
+                    } ${isToday ? "bg-black text-white font-semibold" : hasEvent ? "bg-black/10 font-medium" : ""}`}
+                  >
+                    <span>{cell.ymd.day}</span>
+                    {hasEvent && !isToday ? (
+                      <span className="block h-1 w-1 rounded-full bg-black mt-0.5" />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 pt-4">
+              <a
+                href={subscribeUrl}
+                className="pill-btn-secondary w-full text-center text-xs py-3"
+              >
+                Sync with Calendar (.ics)
+              </a>
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-7 border-r border-b border-line text-left" role="grid" aria-label={formatMonth(cursor.year, cursor.month)}>
-            {WEEKDAYS.map((day) => (
-              <div key={day} className="border-l border-t border-line px-1 py-1 text-[10px] uppercase tracking-[0.12em] text-muted">
-                {day}
-              </div>
-            ))}
-            {cells.map((cell) => {
-              const dayEvents = visible.filter((event) => sameYmd(laYmdFromIso(event.datetime), cell.ymd));
-              const isToday = sameYmd(cell.ymd, today);
-              return (
-                <div
-                  key={ymdKey(cell.ymd)}
-                  role="gridcell"
-                  className={`min-h-14 border-l border-t border-line p-1 md:min-h-20 ${cell.inMonth ? "" : "opacity-40"}`}
-                >
-                  <span className={`inline-block text-xs ${isToday ? "bg-chip px-1 text-white" : ""}`}>
-                    {cell.ymd.day}
-                  </span>
-                  <div className="mt-1 hidden md:block">
-                    {dayEvents.slice(0, 2).map((event) => (
-                      <a key={event.id} href={`#${event.id}`} className="block truncate text-[10px] leading-tight hover:underline">
-                        {event.clubName}
-                      </a>
-                    ))}
-                  </div>
-                  {dayEvents.length > 0 ? (
-                    <div className="mt-1 flex gap-0.5 md:hidden" aria-hidden>
-                      {dayEvents.slice(0, 3).map((event) => (
-                        <span key={event.id} className="h-1.5 w-1.5 bg-chip" />
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-          {monthEvents.length === 0 ? (
-            <p className="mt-3 text-sm text-muted">Nothing on the calendar this month.</p>
-          ) : null}
         </div>
       </div>
     </div>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`h-10 shrink-0 px-3 text-sm ${active ? "bg-ink text-paper" : "border border-line text-ink"}`}
-    >
-      {children}
-    </button>
   );
 }

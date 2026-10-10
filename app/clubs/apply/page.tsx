@@ -1,137 +1,112 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ApplyForm } from "@/components/apply-form";
-import { ClubImage } from "@/components/club-image";
-import { FaqList } from "@/components/faq";
-import { expectations, goodApplication, perks, steps, timeline } from "@/lib/copy";
-import { getClubs } from "@/lib/clubs";
+import { perks, steps } from "@/lib/copy";
 
 export const metadata: Metadata = {
-  title: "Start a Club in San Francisco",
+  title: "Charter a Club — Founders, Inc. Clubs",
   description:
-    "Apply to run a Founders, Inc. club in San Francisco. We fund it, give you space at Fort Mason, and you host it.",
+    "Apply to run a Founders, Inc. club in San Francisco. We provide budgets, track bookings at Sonoma, workshop space at Fort Mason, and media production.",
   alternates: { canonical: "/clubs/apply" },
 };
 
 export default function ApplyPage() {
-  const running = getClubs().filter((club) => club.status === "active");
-
   return (
-    <main>
-      <header className="mx-auto max-w-[1200px] px-5 pb-12 pt-10 md:px-8 md:pt-16">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted">Founders, Inc. · San Francisco</p>
-        <h1 className="mt-3 max-w-[12ch] font-serif text-[3.2rem] leading-[0.92] md:text-7xl">
-          Run the thing you wish existed.
-        </h1>
-        <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">
-          If you&apos;ve been the person holding a group chat together, this is how it becomes a club. We fund it.
-          You still run it.
-        </p>
+    <main className="min-h-screen bg-white">
+      {/* Header Banner */}
+      <header className="px-6 pt-12 pb-10 sm:px-8 sm:pt-16 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 font-mono text-[11px] text-black/50">
+          <span className="font-semibold text-black">FOUNDERS, INC. CAMPUS</span>
+          <span>/</span>
+          <span>CLUB CHARTER APPLICATION</span>
+        </div>
+
+        <div className="mt-8 max-w-3xl">
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl text-black leading-none">
+            Charter a Club.
+          </h1>
+          <p className="mt-6 text-lg sm:text-xl text-black/70 leading-relaxed font-sans">
+            If you have been gathering founders in group chats for track sessions, basketball runs, or workshop builds, this is how it becomes an official institution. We subsidize venue access, track days, court fees, and equipment. You run the sessions.
+          </p>
+        </div>
       </header>
 
-      <section className="border-t border-line">
-        <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-8">
-          <h2 className="font-serif text-4xl leading-none">How it works</h2>
-          <ol className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Process / Steps */}
+      <section className="px-6 py-12 sm:px-8 max-w-7xl mx-auto">
+        <div className="finc-card p-8 sm:p-12">
+          <span className="font-mono text-xs uppercase tracking-wider text-black/40">
+            Charter Process
+          </span>
+          <h2 className="mt-2 font-serif text-3xl sm:text-4xl text-black">
+            How It Works
+          </h2>
+
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((step) => (
-              <li key={step.n}>
-                <p className="font-serif text-5xl leading-none text-muted">{step.n}</p>
-                <h3 className="mt-3 font-serif text-2xl">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
-              </li>
+              <div
+                key={step.n}
+                className="bg-white p-6 rounded-[12px] flex flex-col justify-between"
+              >
+                <div>
+                  <span className="font-mono text-xs text-black/50 font-semibold">
+                    {step.n}
+                  </span>
+                  <h3 className="mt-3 font-serif text-2xl text-black">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-black/60 leading-relaxed font-sans">
+                    {step.body}
+                  </p>
+                </div>
+              </div>
             ))}
-          </ol>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1200px] px-5 pb-14 md:px-8">
-        <h2 className="font-serif text-4xl leading-none">What you get</h2>
-        <dl className="mt-6 border-b border-line">
+      {/* What Founders, Inc. Provides */}
+      <section className="px-6 py-8 sm:px-8 max-w-7xl mx-auto">
+        <div className="mb-6">
+          <span className="font-mono text-xs uppercase tracking-wider text-black/40">
+            Support & Resources
+          </span>
+          <h2 className="mt-1 font-serif text-3xl sm:text-4xl text-black">
+            What Founders, Inc. Subsidizes
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {perks.map((perk) => (
-            <div key={perk.label} className="grid gap-1 border-t border-line py-4 sm:grid-cols-[9rem_1fr] sm:gap-6">
-              <dt>{perk.label}</dt>
-              <dd className="text-sm leading-relaxed text-muted">{perk.detail}</dd>
+            <div
+              key={perk.label}
+              className="finc-card p-6 sm:p-8"
+            >
+              <span className="inline-flex px-3 py-1 rounded-full text-xs font-mono font-medium bg-black/5 text-black">
+                {perk.label}
+              </span>
+              <p className="mt-4 text-sm text-black/70 leading-relaxed font-sans">
+                {perk.detail}
+              </p>
             </div>
           ))}
-        </dl>
-      </section>
-
-      <section className="border-t border-line">
-        <div className="mx-auto grid max-w-[1200px] gap-12 px-5 py-14 md:grid-cols-2 md:px-8">
-          <div>
-            <h2 className="font-serif text-4xl leading-none">What we expect</h2>
-            <ul className="mt-6 flex flex-col gap-4">
-              {expectations.map((item) => (
-                <li key={item} className="border-t border-line pt-4 text-sm leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h2 className="font-serif text-4xl leading-none">A good application</h2>
-            <ol className="mt-6 flex flex-col gap-5">
-              {goodApplication.map((item, index) => (
-                <li key={item.title}>
-                  <p className="font-serif text-xl">
-                    <span className="text-muted">{index + 1}. </span>
-                    {item.title}
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-muted">{item.body}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1200px] px-5 pb-14 md:px-8">
-        <h2 className="font-serif text-4xl leading-none">Timeline</h2>
-        <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {timeline.map((item, index) => (
-            <li key={item.title} className="border-t border-line pt-4">
-              <p className="font-serif text-4xl leading-none text-muted">0{index + 1}</p>
-              <h3 className="mt-3 font-serif text-2xl">{item.title}</h3>
-              <p className="mt-1 text-sm text-muted">{item.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="mx-auto max-w-[1200px] px-5 pb-4 md:px-8">
-        <h2 className="mb-8 font-serif text-4xl leading-none">Questions</h2>
-        <FaqList />
-      </section>
-
-      <section className="border-t border-line bg-card">
-        <div className="mx-auto max-w-[720px] px-5 py-14 md:px-8">
-          <h2 className="font-serif text-4xl leading-none">Apply</h2>
-          <p className="mt-3 text-sm text-muted">We read these. Short and specific beats a manifesto.</p>
-          <div className="mt-8">
-            <ApplyForm />
-          </div>
+      {/* Application Form */}
+      <section id="form" className="px-6 py-16 sm:px-8 max-w-3xl mx-auto">
+        <div className="mb-8">
+          <span className="font-mono text-xs uppercase tracking-wider text-black/40">
+            Official Submission
+          </span>
+          <h2 className="mt-2 font-serif text-4xl sm:text-5xl text-black">
+            Charter Proposal
+          </h2>
+          <p className="mt-2 text-sm text-black/60 font-sans">
+            Reviewed weekly by the Founders, Inc. campus team. Approved clubs receive venue bookings, production media support, and budgets.
+          </p>
         </div>
-      </section>
 
-      <section className="mx-auto max-w-[1200px] px-5 py-14 md:px-8">
-        <h2 className="font-serif text-4xl leading-none">Already running</h2>
-        <div className="mt-8 grid gap-8 md:grid-cols-3">
-          {running.map((club) => (
-            <Link key={club.slug} href={`/clubs/${club.slug}`} className="group block">
-              <ClubImage
-                src={club.heroImage}
-                alt={club.name}
-                label={club.name}
-                tone={club.slug}
-                className="aspect-[4/3] w-full"
-                sizes="(max-width: 768px) 100vw, 30vw"
-              />
-              <h3 className="mt-3 font-serif text-2xl group-hover:underline">{club.name}</h3>
-              <p className="mt-1 text-sm text-muted">{club.tagline}</p>
-              <p className="mt-2 text-sm">{club.cadence}</p>
-            </Link>
-          ))}
-        </div>
+        <ApplyForm />
       </section>
     </main>
   );

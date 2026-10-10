@@ -10,7 +10,7 @@ export function ClubCollage({
   const tiles = images.slice(0, 6);
 
   return (
-    <div className="grid h-full grid-cols-2 grid-rows-2 gap-1 md:grid-cols-3">
+    <div className="grid aspect-[4/3] w-full grid-cols-2 md:aspect-[21/9] grid-rows-2 gap-1 md:grid-cols-3">
       {tiles.map((image, index) => (
         <ClubImage
           key={image.src}
