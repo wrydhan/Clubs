@@ -1,6 +1,6 @@
 # Collage asset pack — clubs clubhouse wall
 
-Generated 2026-10-20. 1024x1024, webp + jpg (jpg for OG/fallbacks). `_contact-sheet.jpg` shows the set.
+Generated 2026-10-20. 1024x1024, webp + jpg (jpg for OG/fallbacks). The contact sheet that shows the set lives outside the served directory, at `docs/collage/collage-contact-sheet.jpg`, so no QA artifact ships in the deploy.
 
 | asset | what it is | notes |
 | --- | --- | --- |
