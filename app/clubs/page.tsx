@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ClubhouseWall } from "@/components/collage/clubhouse-wall";
 import { StickerSheet } from "@/components/collage/sticker-sheet";
 import { PinnedNotice } from "@/components/collage/pinned-notice";
-import { ScrapTable } from "@/components/collage/scrap-table";
 import { Scrap, Tape, Pin, Stamp } from "@/components/collage/paper";
 import { getEvents, sortClubs } from "@/lib/clubs";
 
@@ -94,23 +93,42 @@ export default function ClubsPage() {
         </section>
       ) : null}
 
-      {/* the table */}
+      {/* the studio, where a club gets made */}
       <section className="border-y border-ink/10 bg-paperdeep/60 py-16 sm:py-24">
         <div className="mx-auto max-w-[1360px] px-5 sm:px-8">
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
               <span className="label">Make your own</span>
               <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.6rem]">
-                The cutting table.
+                The cutting table became the studio.
               </h2>
-              <p className="mt-4 max-w-[54ch] text-sm leading-relaxed text-ink-2">
-                A paper, a sticker, your hand. Drag the sticker across the scrap and take the
-                result as a PNG — the same table the reference site keeps in its back room.
+              <p className="mt-4 max-w-[56ch] text-sm leading-relaxed text-ink-2">
+                Starting a club now means making its sticker: spin the orbit of clubs, cut your own
+                scrap from stock, sticker, tape and lettering, then pin it to the wall. The pin is
+                the real charter — cadence, first date, ten names.
               </p>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <Link href="/clubs/apply" className="pill-btn">
+                  Open the studio →
+                </Link>
+                <Link href="/clubs/calendar" className="pill-btn-secondary">
+                  What&apos;s already pinned
+                </Link>
+              </div>
             </div>
-            <Stamp className="self-start sm:self-end">pick · cut · keep</Stamp>
+            <div className="lg:col-span-5 lg:justify-self-end">
+              <Scrap tone="kraft" rotate={1.8} className="relative w-full max-w-[320px] px-6 py-6">
+                <Tape className="-left-5 -top-3" rotate={-20} width={92} height={26} />
+                <span className="label">in the studio</span>
+                <ul className="mt-3 space-y-1.5 text-[13px] leading-snug text-ink">
+                  <li>— spin a galaxy of clubs</li>
+                  <li>— cut a sticker on the table</li>
+                  <li>— pin the charter to the wall</li>
+                </ul>
+                <Stamp className="mt-4">reviewed weekly</Stamp>
+              </Scrap>
+            </div>
           </div>
-          <ScrapTable />
         </div>
       </section>
 

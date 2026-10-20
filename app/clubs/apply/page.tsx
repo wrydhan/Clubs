@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ApplyForm } from "@/components/apply-form";
+import { ClubStudio } from "@/components/collage/club-studio";
 import { Scrap, Tape, Stamp } from "@/components/collage/paper";
 import { perks, steps } from "@/lib/copy";
 
@@ -26,15 +26,15 @@ export default function ApplyPage() {
         <div className="mt-8 grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <h1 className="font-serif text-[3rem] leading-[0.86] sm:text-[4.4rem]">
-              Charter a club.
+              Make your own club.
             </h1>
             <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ink-2 sm:text-lg">
-              If you have been gathering founders in group chats for track sessions, basketball runs
-              or workshop builds, this is how it becomes an official institution. We subsidise venue
-              access, track days, court fees and equipment. You run the sessions.
+              Starting a club means making its sticker: spin the orbit, cut the scrap, pin it to the
+              wall. The pin is a real charter — cadence, first date, ten names — and we subsidise the
+              venue, the track time, the court fees and the equipment. You run the sessions.
             </p>
-            <a href="#form" className="pill-btn mt-7">
-              Go to the form ↓
+            <a href="#studio" className="pill-btn mt-7">
+              Open the studio ↓
             </a>
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">
@@ -56,7 +56,7 @@ export default function ApplyPage() {
       <section className="mx-auto max-w-[1360px] px-5 py-8 sm:px-8 sm:py-12">
         <span className="label">Charter process</span>
         <h2 className="mt-3 font-serif text-[2.2rem] leading-[0.95] sm:text-[3rem]">
-          Four steps, about two weeks.
+          Cut, pin, wait about two weeks.
         </h2>
         <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
@@ -101,20 +101,10 @@ export default function ApplyPage() {
         </div>
       </section>
 
-      {/* the form, on paper */}
-      <section id="form" className="mx-auto max-w-3xl scroll-mt-20 px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mb-8">
-          <span className="label">Official submission</span>
-          <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.9] sm:text-[3.4rem]">
-            Charter proposal.
-          </h2>
-          <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-ink-2">
-            Reviewed weekly by the campus team. Approved clubs get venue bookings, production
-            support and a budget.
-          </p>
-        </div>
-        <ApplyForm />
-      </section>
+      {/* the studio: galaxy, cutting table, and the charter itself */}
+      <div id="studio" className="scroll-mt-20 border-t border-ink/10">
+        <ClubStudio />
+      </div>
     </main>
   );
 }

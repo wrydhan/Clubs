@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type FieldName = "name" | "email" | "clubName" | "what" | "cadence" | "who" | "people" | "needs" | "budget";
 
@@ -55,10 +55,36 @@ function validate(values: FormState): Partial<Record<FieldName, string>> {
   return errors;
 }
 
-export function ApplyForm() {
-  const [values, setValues] = useState<FormState>(empty);
+export function ApplyForm({
+  /** The name on the sticker the applicant just made — seeded, never forced. */
+  stickerName,
+  /** Scroll-offset id for the sticky header, when the form sits mid-page. */
+  heading = "Pin your club to the wall.",
+  kicker = "Official submission",
+  intro = "Reviewed weekly by the campus team. Approved clubs get venue bookings, production support and a budget.",
+  submitLabel = "Pin my club to the wall →",
+}: {
+  stickerName?: string;
+  heading?: string;
+  kicker?: string;
+  intro?: string;
+  submitLabel?: string;
+}) {
+  const [values, setValues] = useState<FormState>(() => ({
+    ...empty,
+    clubName: stickerName?.trim() ?? "",
+  }));
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [sent, setSent] = useState(false);
+  const touched = useRef<Partial<Record<FieldName, boolean>>>({});
+
+  // Keep the plate and the proposal in step while the applicant is still typing
+  // the sticker name — until they edit the club name field themselves.
+  useEffect(() => {
+    const next = stickerName?.trim() ?? "";
+    if (!next || touched.current.clubName) return;
+    setValues((current) => (current.clubName === next ? current : { ...current, clubName: next }));
+  }, [stickerName]);
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,25 +101,33 @@ export function ApplyForm() {
 
   if (sent) {
     return (
-      <div role="status" className="paper-card p-8 md:p-12 text-center">
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-950 mb-3">
-          <span className="h-2 w-2 rounded-full bg-emerald-600" />
-          Charter Received
+      <div role="status" className="paper-card studio-thump p-8 text-center md:p-12">
+        <span className="inline-flex items-center gap-2 rounded-full bg-[rgba(232,69,43,0.1)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink">
+          <span className="h-1.5 w-1.5 rounded-full bg-ink" />
+          pinned to the wall
         </span>
-        <h3 className="font-serif text-4xl text-ink">Proposal Submitted</h3>
-        <p className="mt-3 max-w-md mx-auto text-sm text-ink-2 leading-relaxed font-sans">
-          The campus team reviews club proposals weekly. We will reach out to schedule an in-person walkthrough at Fort Mason Pier 2.
+        <h3 className="mt-4 font-serif text-4xl text-ink">Your club is on the board.</h3>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-2">
+          The campus team reviews charters weekly. We will reach out to schedule an in-person
+          walkthrough at Fort Mason Pier 2.
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="paper-card p-8 sm:p-10 flex flex-col gap-6">
-      <div className="flex items-center justify-between pb-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-ink-3">Campus Charter Application</span>
-        <span className="font-mono text-xs text-ink-3">* Required</span>
+    <form onSubmit={onSubmit} noValidate className="paper-card flex flex-col gap-6 p-8 sm:p-10">
+      <div className="flex items-center justify-between gap-4 border-b border-ink/12 pb-3">
+        <div>
+          <span className="label">{kicker}</span>
+          <h2 className="mt-2 font-serif text-[2.4rem] leading-[0.9] sm:text-[3.1rem]">{heading}</h2>
+        </div>
+        <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3">
+          * required
+        </span>
       </div>
+
+      <p className="max-w-[56ch] text-sm leading-relaxed text-ink-2">{intro}</p>
 
       {fields.map((field) => {
         const error = errors[field.name];
@@ -109,6 +143,7 @@ export function ApplyForm() {
             event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
           ) => {
             const value = event.target.value;
+            touched.current[field.name] = true;
             setValues((current) => ({ ...current, [field.name]: value }));
           },
           className:
@@ -116,7 +151,7 @@ export function ApplyForm() {
         };
         return (
           <label key={field.name} className="block" htmlFor={field.name}>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-ink-2 font-medium">
+            <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-ink-2">
               {field.label}
             </span>
             {field.type === "textarea" ? (
@@ -125,7 +160,7 @@ export function ApplyForm() {
               <input {...shared} type={field.type} />
             )}
             {error ? (
-              <span id={`${field.name}-error`} className="mt-1.5 block font-mono text-xs text-red-600">
+              <span id={`${field.name}-error`} className="mt-1.5 block font-mono text-xs text-red-700">
                 {error}
               </span>
             ) : null}
@@ -133,12 +168,9 @@ export function ApplyForm() {
         );
       })}
 
-      <div className="pt-4">
-        <button
-          type="submit"
-          className="pill-btn w-full text-center text-xs py-3"
-        >
-          Submit Club Proposal to Founders, Inc. →
+      <div className="pt-2">
+        <button type="submit" className="pill-btn w-full text-center text-xs py-3">
+          {submitLabel}
         </button>
       </div>
     </form>

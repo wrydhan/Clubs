@@ -45,3 +45,55 @@ export const stickerOptions = [
 export function stickerFor(slug: string): string | undefined {
   return clubStickers[slug];
 }
+
+/* ---------- the wall's scrap → destination map ---------- */
+
+/**
+ * Every scrap on the clubhouse wall knows where it goes when it is carried off
+ * the paper. The empty wall means "nothing chosen"; the taped edge drop-zones
+ * in `dragZones` are the explicit targets.
+ */
+export type ScrapId =
+  | "wordmark"
+  | "note"
+  | "helmet"
+  | "sneaker"
+  | "badge-cars"
+  | "badge-hoops"
+  | "charter";
+
+export const scrapLabels: Record<ScrapId, string> = {
+  wordmark: "Founders, Inc. Clubs wordmark",
+  note: "Handwritten track day note",
+  helmet: "Racing helmet magazine cut-out",
+  sneaker: "Running shoe magazine cut-out",
+  "badge-cars": "Car Club sticker",
+  "badge-hoops": "Basketball Club sticker",
+  charter: "Start a club card",
+};
+
+/** Where each scrap lands when it is dropped past the wall edge. */
+export const scrapHrefs: Record<ScrapId, string> = {
+  wordmark: "/clubs",
+  note: "/clubs/calendar",
+  helmet: "/clubs/cars",
+  sneaker: "/clubs/basketball",
+  "badge-cars": "/clubs/cars",
+  "badge-hoops": "/clubs/basketball",
+  charter: "/clubs/apply",
+};
+
+export type DragZone = {
+  id: "calendar" | "club" | "roster" | "charter";
+  label: string;
+  hint: string;
+  href: string;
+};
+
+/** Taped zones that appear around the wall while a scrap is being carried. */
+export const dragZones: DragZone[] = [
+  { id: "charter", label: "Start a club", hint: "the studio", href: "/clubs/apply" },
+  { id: "calendar", label: "Calendar", hint: "every date", href: "/clubs/calendar" },
+  { id: "club", label: "Club page", hint: "Car Club", href: "/clubs/cars" },
+  { id: "roster", label: "Roster", hint: "the sticker sheet", href: "/clubs#roster" },
+];
