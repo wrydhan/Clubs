@@ -12,7 +12,7 @@
 
 @theme {
   --color-ink: #241A15;
-  --color-ink-soft: #5A4A3F;
+  --color-ink-soft: #4A3A30; /* 9.31 paper · 8.21 deep · 4.84 kraft — the .label subtitle token */
   /* Text tones for the clubhouse wall. Solid colours, not ink/@opacity, so the
      ratio is the same on paper, paperdeep, printed textures and kraft stock.
      ink-2 and ink-3 both clear 4.5:1 on paper (#f4ede1), paperdeep (#eadfcc)
@@ -39,7 +39,7 @@
 
 :root {
   --ink: #241a15;
-  --ink-soft: #5a4a3f;
+  --ink-soft: #4a3a30;
   --paper: #f4ede1;
   --paper-deep: #eadfcc;
   --kraft: #c9a87c;
@@ -263,7 +263,7 @@ body {
   font-family: var(--font-code);
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: rgba(36, 26, 21, 0.72);
+  color: #3b2c24; /* 11.48 on paper · 5.97 on bare kraft */
   border: 1.5px solid rgba(36, 26, 21, 0.5);
   border-radius: 3px;
   padding: 0.35em 0.6em;
