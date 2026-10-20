@@ -62,7 +62,7 @@ export default function ApplyPage() {
           {steps.map((step, index) => (
             <li key={step.n}>
               <Scrap
-                tone={index % 2 === 0 ? "cream" : "news"}
+                tone={index % 2 === 0 ? "kraft" : "news"}
                 rotate={index % 2 === 0 ? -1.2 : 1.4}
                 className="relative h-full px-5 py-6"
               >
