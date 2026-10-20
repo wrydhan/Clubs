@@ -12,7 +12,7 @@
 
 @theme {
   --color-ink: #241A15;
-  --color-ink-soft: #4A3A30; /* 9.31 paper · 8.21 deep · 4.66–4.70 kraft — the .label subtitle token */
+  --color-ink-soft: #453629; /* 9.96 paper · 8.79 deep · 4.87 kraft median · 4.72 darkest kraft patch — the .label token */
   /* Text tones for the clubhouse wall. Solid colours, not ink/@opacity, so the
      ratio is the same on paper, paperdeep, printed textures and kraft stock.
      The binding background is the *rendered* kraft texture, not the flat #c9a87c:
@@ -20,7 +20,7 @@
      both tones are set against that worst patch to clear 4.5:1 for 10–11px text.
      Ladder stays monotone: ink #241A15 → ink-2 → ink-3 → ink-soft. */
   --color-ink-2: #362920; /* 12.07 paper · 10.65 deep · 5.91 kraft median · 5.72 darkest kraft patch */
-  --color-ink-3: #42342A; /* 10.28 paper · 9.07 deep · 5.03 kraft median · 4.87 darkest kraft patch · 7.17 newsprint */
+  --color-ink-3: #3F3128; /* 10.73 paper · 9.47 deep · 5.25 kraft median · 5.09 darkest kraft patch · 7.49 newsprint */
   --color-paper: #F4EDE1;
   --color-paperdeep: #EADFCC;
   --color-kraft: #C9A87C;
@@ -41,7 +41,7 @@
 
 :root {
   --ink: #241a15;
-  --ink-soft: #4a3a30;
+  --ink-soft: #453629;
   --paper: #f4ede1;
   --paper-deep: #eadfcc;
   --kraft: #c9a87c;
