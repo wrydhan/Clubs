@@ -75,13 +75,13 @@ export function ApplyForm() {
 
   if (sent) {
     return (
-      <div role="status" className="finc-card p-8 md:p-12 text-center">
+      <div role="status" className="paper-card p-8 md:p-12 text-center">
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-950 mb-3">
           <span className="h-2 w-2 rounded-full bg-emerald-600" />
           Charter Received
         </span>
-        <h3 className="font-serif text-4xl text-black">Proposal Submitted</h3>
-        <p className="mt-3 max-w-md mx-auto text-sm text-black/60 leading-relaxed font-sans">
+        <h3 className="font-serif text-4xl text-ink">Proposal Submitted</h3>
+        <p className="mt-3 max-w-md mx-auto text-sm text-ink-2 leading-relaxed font-sans">
           The campus team reviews club proposals weekly. We will reach out to schedule an in-person walkthrough at Fort Mason Pier 2.
         </p>
       </div>
@@ -89,10 +89,10 @@ export function ApplyForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="finc-card p-8 sm:p-10 flex flex-col gap-6">
+    <form onSubmit={onSubmit} noValidate className="paper-card p-8 sm:p-10 flex flex-col gap-6">
       <div className="flex items-center justify-between pb-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-black/40">Campus Charter Application</span>
-        <span className="font-mono text-xs text-black/40">* Required</span>
+        <span className="font-mono text-xs uppercase tracking-wider text-ink-3">Campus Charter Application</span>
+        <span className="font-mono text-xs text-ink-3">* Required</span>
       </div>
 
       {fields.map((field) => {
@@ -112,11 +112,11 @@ export function ApplyForm() {
             setValues((current) => ({ ...current, [field.name]: value }));
           },
           className:
-            "mt-2 w-full rounded-[8px] bg-white px-4 py-3 text-sm text-black outline-none placeholder:text-black/30 focus:ring-2 focus:ring-black border-0 transition-all font-sans",
+            "mt-2 w-full rounded-[2px] bg-paper/70 px-4 py-3 text-sm text-ink outline-none placeholder:text-ink-3 focus:ring-2 focus:ring-black border-0 transition-all font-sans",
         };
         return (
           <label key={field.name} className="block" htmlFor={field.name}>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-black/60 font-medium">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-ink-2 font-medium">
               {field.label}
             </span>
             {field.type === "textarea" ? (

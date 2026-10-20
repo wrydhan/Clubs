@@ -5,34 +5,36 @@ export function ClubNav({ currentSlug }: { currentSlug?: string }) {
   const clubs = getClubs();
 
   return (
-    <aside className="p-6 md:p-8 bg-[#F1F1F1] rounded-[15px] mb-8 md:mb-0">
-      <span className="font-mono text-[10px] uppercase tracking-widest text-black/40">
-        Campus Directory
-      </span>
-      <nav className="mt-4 flex flex-wrap md:flex-col gap-2 font-mono text-xs">
-        <Link
-          href="/clubs"
-          className="px-3 py-2 rounded-full text-black/50 hover:text-black hover:bg-black/5 transition-colors"
-        >
-          ← All Clubs
-        </Link>
+    <nav className="mb-8 md:mb-0" aria-label="Campus clubs">
+      <span className="label">On the wall</span>
+      <ul className="mt-3 flex flex-wrap gap-2 md:flex-col md:items-start">
+        <li>
+          <Link
+            href="/clubs"
+            className="inline-flex min-h-[36px] items-center bg-ink/8 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-2 transition-colors hover:bg-ink/15 hover:text-ink"
+          >
+            ← The whole wall
+          </Link>
+        </li>
         {clubs.map((club) => {
           const active = club.slug === currentSlug;
           return (
-            <Link
-              key={club.slug}
-              href={`/clubs/${club.slug}`}
-              className={`px-3 py-2 rounded-full transition-all ${
-                active
-                  ? "bg-black text-white font-medium"
-                  : "text-black/70 hover:text-black hover:bg-black/5"
-              }`}
-            >
-              {club.name}
-            </Link>
+            <li key={club.slug}>
+              <Link
+                href={`/clubs/${club.slug}`}
+                aria-current={active ? "page" : undefined}
+                className={`inline-flex min-h-[36px] items-center px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors ${
+                  active
+                    ? "bg-ink text-paper"
+                    : "bg-ink/8 text-ink-2 hover:bg-ink/15 hover:text-ink"
+                }`}
+              >
+                {club.name}
+              </Link>
+            </li>
           );
         })}
-      </nav>
-    </aside>
+      </ul>
+    </nav>
   );
 }

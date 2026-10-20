@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CalendarView, type CalendarEvent } from "@/components/calendar-view";
+import { Scrap, Tape } from "@/components/collage/paper";
 import { getClubs, getEvents } from "@/lib/clubs";
 import { subscribeUrl } from "@/lib/site";
 
@@ -19,39 +21,47 @@ export default function CalendarPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Editorial Calendar Hero */}
-      <section className="px-6 pt-12 pb-8 sm:px-8 sm:pt-16 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2 font-mono text-[11px] text-black/50">
-          <span className="font-semibold text-black">FOUNDERS, INC. CLUBS</span>
+    <main className="min-h-screen">
+      <section className="mx-auto max-w-[1360px] px-5 pb-10 pt-12 sm:px-8 sm:pt-16">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+          <Link href="/clubs" className="inline-flex min-h-[32px] items-center hover:text-ink">
+            Founders, Inc. Clubs
+          </Link>
           <span>/</span>
-          <span>CAMPUS CALENDAR</span>
+          <span className="text-ink">Campus calendar</span>
         </div>
 
-        <div className="mt-8 flex flex-col md:flex-row md:items-end justify-between gap-8 pb-8 border-b-0">
-          <div>
-            <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl text-black leading-none">
-              Live Schedule.
+        <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <h1 className="font-serif text-[3rem] leading-[0.86] sm:text-[4.4rem]">
+              What&apos;s pinned this month.
             </h1>
-            <p className="mt-4 max-w-xl text-base md:text-lg text-black/70 leading-relaxed font-sans">
-              Confirmed sessions for Sonoma Raceway track days, hardware machine hours, gym runs, and tactical field days.
+            <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-ink-2">
+              Confirmed sessions: Sonoma track days, machine hours at the workshop, gym runs and
+              field days. Every date links to its Luma RSVP.
             </p>
           </div>
-
-          <a
-            href={subscribeUrl}
-            className="pill-btn text-xs py-3 px-6 shrink-0"
-          >
-            Subscribe to iCal ↗
-          </a>
+          <div className="lg:col-span-5 lg:justify-self-end">
+            <Scrap tone="news" rotate={1.6} className="relative px-6 py-5">
+              <Tape className="-left-5 -top-3" rotate={-24} width={92} height={28} />
+              <p className="label">Keep it in your calendar</p>
+              <p className="scrawl mt-2 text-[1.4rem] leading-tight">
+                dates move — subscribe, don&apos;t screenshot.
+              </p>
+              <a href={subscribeUrl} className="pill-btn mt-4">
+                Subscribe to iCal ↗
+              </a>
+            </Scrap>
+          </div>
         </div>
       </section>
 
-      {/* Main Calendar View */}
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 pb-16">
+      <div className="mx-auto max-w-[1360px] px-5 pb-16 sm:px-8">
         <CalendarView
           events={events}
-          clubs={clubs.filter((club) => club.status === "active").map((club) => ({ slug: club.slug, name: club.name }))}
+          clubs={clubs
+            .filter((club) => club.status === "active")
+            .map((club) => ({ slug: club.slug, name: club.name }))}
           todayIso={now.toISOString()}
         />
       </div>
