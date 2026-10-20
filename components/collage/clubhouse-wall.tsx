@@ -25,6 +25,10 @@ const REST_LIMIT = 90;
 /** How far the pointer must travel before a press becomes a drag, so that the
     links and buttons printed on a scrap still count as clicks. */
 const DRAG_THRESHOLD = 4;
+/** How far a scrap must actually travel before a taped drop-zone may claim it.
+    A short nudge that starts on top of a zone must move the scrap, not open a
+    page — zones are deliberate targets, not things you brush past. */
+const ZONE_TRAVEL = 32;
 
 type DragState = {
   id: ScrapId;
@@ -38,6 +42,8 @@ type DragState = {
   /** a press that never travelled is a click, not a drag */
   moved: boolean;
   captured: boolean;
+  /** where the pressed scrap sat when the press began */
+  homeRect: DOMRect | null;
   overZone: DragZone | null;
   beyondEdge: boolean;
 };
@@ -203,6 +209,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
         live: false,
         moved: false,
         captured: false,
+        homeRect: el.getBoundingClientRect(),
         overZone: null,
         beyondEdge: false,
       };
@@ -242,7 +249,18 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
         ...current,
         [id]: { x: state.ox + dx, y: state.oy + dy },
       }));
-      const zone = zoneAt(event.clientX, event.clientY);
+      // A zone only counts once the pointer has travelled far enough to read as
+      // a carry, and has left the footprint the scrap started in. Otherwise the
+      // zone sitting under a sticker would swallow a tiny nudge.
+      const travelled = Math.hypot(dx, dy) >= ZONE_TRAVEL;
+      const home = state.homeRect;
+      const stillHome =
+        !!home &&
+        event.clientX >= home.left &&
+        event.clientX <= home.right &&
+        event.clientY >= home.top &&
+        event.clientY <= home.bottom;
+      const zone = travelled && !stillHome ? zoneAt(event.clientX, event.clientY) : null;
       const outside = outsideBoard(event.clientX, event.clientY);
       state.overZone = zone;
       state.beyondEdge = outside;
@@ -457,7 +475,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
             })}
           </div>
 
-          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[660px] md:pt-12 xl:grid xl:min-h-[660px] xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)_minmax(0,1fr)] xl:grid-rows-[auto_auto_auto] xl:gap-x-6 xl:gap-y-10">
+          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[660px] md:pt-12 xl:grid xl:min-h-[660px] xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)_minmax(0,1fr)] xl:grid-rows-[auto_auto_auto] xl:gap-x-6 xl:gap-y-10 pb-24 md:pb-28 xl:pb-[7.5rem]">
             {/* THE WORDPRESS SCRAP */}
             <div
               {...dragProps("wordmark", "pan-y")}
