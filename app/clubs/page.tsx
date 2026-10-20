@@ -1,279 +1,161 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import { ClubCard } from "@/components/club-card";
-import { EventCard } from "@/components/event-card";
-import { getEvents, sortClubs, getClub } from "@/lib/clubs";
-import { formatMonthDay, formatTime } from "@/lib/format";
+import { ClubhouseWall } from "@/components/collage/clubhouse-wall";
+import { StickerSheet } from "@/components/collage/sticker-sheet";
+import { PinnedNotice } from "@/components/collage/pinned-notice";
+import { ScrapTable } from "@/components/collage/scrap-table";
+import { Scrap, Tape, Pin, Stamp } from "@/components/collage/paper";
+import { getEvents, sortClubs } from "@/lib/clubs";
 
 export const metadata: Metadata = {
-  title: "Founders, Inc. — Clubs | Car Club & Campus Roster",
+  title: "Founders, Inc. — Clubs | A wall to poke around in",
   description:
     "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Flagship Car Club track days at Sonoma Raceway, Hardware Workshop, Basketball, and Paintball.",
   alternates: { canonical: "/clubs" },
 };
 
+const tenets = [
+  {
+    n: "01",
+    kicker: "Culture",
+    title: "Zero pitch decks",
+    body: "Clubs exist outside work. No business cards, no investor intros. You are here for the driving line, the sport, or the machine.",
+    tone: "news" as const,
+    rotate: -1.4,
+  },
+  {
+    n: "02",
+    kicker: "Budget",
+    title: "Subsidised track time",
+    body: "Real money for circuit slots at Sonoma, gym bookings, raw workshop material and hospitality. Not a salary, not a blank cheque.",
+    tone: "cream" as const,
+    rotate: 1.1,
+  },
+  {
+    n: "03",
+    kicker: "Production",
+    title: "An in-house media crew",
+    body: "Our media team films track sessions, garage builds and games. That archive is how the next room fills up.",
+    tone: "kraft" as const,
+    rotate: -0.7,
+  },
+];
+
 export default function ClubsPage() {
   const now = new Date();
   const ordered = sortClubs(now);
-  const upcomingEvents = getEvents(now);
-  const nextEvent = upcomingEvents[0];
-  const carClub = getClub("cars");
+  const nextEvent = getEvents(now)[0];
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Editorial Flagship Hero — Automotive Focus */}
-      <section className="relative px-6 pt-10 pb-16 sm:px-8 sm:pt-16 sm:pb-24 max-w-7xl mx-auto">
-        {/* Top Status Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[11px] text-black/50 mb-8 pb-4 border-b-0">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-black animate-pulse" />
-            <span className="font-semibold text-black tracking-wide">FOUNDERS, INC. CAMPUS</span>
-            <span>/</span>
-            <span>PIER 2, FORT MASON, SF</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline">AUTUMN TRACK SEASON</span>
-            <span>SONOMA RACEWAY & CIRCUITS</span>
-          </div>
-        </div>
+    <main className="min-h-screen">
+      <ClubhouseWall nextEvent={nextEvent} />
 
-        {/* Hero Title & Mission */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-12">
-          <div className="lg:col-span-8">
-            <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-[6.8rem] text-black tracking-tight leading-none">
-              Drive fast.
-              <br />
-              Build things.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg sm:text-xl text-black/70 leading-relaxed font-sans">
-              Subsidized track days at Sonoma Raceway, precision machining in the hardware workshop, competitive pickup basketball, and tactical woodsball. What founders do when the laptops close.
+      {/* the roster, as a sheet of stickers */}
+      <section id="roster" className="mx-auto max-w-[1360px] scroll-mt-20 px-5 py-16 sm:px-8 sm:py-24">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <span className="label">The sticker sheet</span>
+            <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.6rem]">
+              Four clubs, all pinned.
+            </h2>
+            <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-ink/70">
+              Every club on the board is run by someone who wanted it to exist. Peeling a sticker
+              off takes you to the club.
             </p>
           </div>
-
-          <div className="lg:col-span-4 flex flex-col gap-4">
-            <div className="finc-card p-6">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">
-                Next Flagship Session
-              </span>
-              <h3 className="mt-2 font-serif text-2xl text-black">
-                Sonoma Track Day
-              </h3>
-              <p className="mt-1 font-mono text-xs text-black/60">
-                Oct 26 · 7:00 AM Convoy from Pier 2
-              </p>
-              <div className="mt-4 flex items-center gap-3">
-                <a
-                  href="https://luma.com/founderstrackday"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="pill-btn text-xs py-2 px-4"
-                >
-                  Driver RSVP ↗
-                </a>
-                <Link
-                  href="/clubs/cars"
-                  className="pill-btn-secondary text-xs py-2 px-4"
-                >
-                  Car Club Details →
-                </Link>
-              </div>
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
+              {ordered.length} clubs · season running
+            </span>
+            <Link href="/clubs/calendar" className="pill-btn-secondary">
+              The calendar →
+            </Link>
           </div>
         </div>
 
-        {/* Massive Automotive Showcase Banner */}
-        <div className="finc-card overflow-hidden relative group">
-          <div className="relative aspect-[16/9] md:aspect-[21/9] w-full bg-black/5">
-            <Image
-              src="/images/clubs/cars/cover.jpg"
-              alt="Founders, Inc. Car Club paddock staging at Sonoma Raceway"
-              fill
-              priority
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 sm:p-12 text-white">
-              <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-white/70 mb-2">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
-                  FLAGSHIP CLUB
-                </span>
-                <span>SONOMA RACEWAY PADDOCK</span>
-                <span>/</span>
-                <span>OCTOBER TRACK INVITATIONAL</span>
-              </div>
-              <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white">
-                Founders Car Club
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm sm:text-base text-white/80 leading-relaxed font-sans">
-                Full-day private track sessions at Sonoma Raceway and Thunderhill. High-speed elevation changes, paddock hospitality, timing telemetry, and morning convoys departing Pier 2 at 7:00 AM.
-              </p>
-
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Link
-                  href="/clubs/cars"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-black font-medium text-xs tracking-tight hover:bg-white/90 transition-all"
-                >
-                  Enter Car Club Feature →
-                </Link>
-                <a
-                  href="https://luma.com/founderstrackday"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white/20 text-white backdrop-blur-sm font-medium text-xs tracking-tight hover:bg-white/30 transition-all"
-                >
-                  RSVP for Track Day (Luma) ↗
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Documentary Photo Strip under Car Club */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3 bg-[#EBEBEB]">
-            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
-              <Image
-                src="/images/clubs/cars/01.jpg"
-                alt="Driver prepping helmet and gloves in pit lane"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 25vw"
-              />
-              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
-                Pit Lane Staging
-              </span>
-            </div>
-            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
-              <Image
-                src="/images/clubs/cars/04.jpg"
-                alt="Track car apex on circuit"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 25vw"
-              />
-              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
-                Turn 2 Elevation
-              </span>
-            </div>
-            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
-              <Image
-                src="/images/clubs/cars/07.jpg"
-                alt="Turn 6 Carousel sweep"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 25vw"
-              />
-              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
-                Carousel Apex
-              </span>
-            </div>
-            <div className="relative aspect-[4/3] rounded-[10px] overflow-hidden">
-              <Image
-                src="/images/clubs/cars/08.jpg"
-                alt="Paddock cooldown and driver debrief"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 25vw"
-              />
-              <span className="absolute bottom-2 left-2 text-[10px] font-mono text-white/90 bg-black/60 px-2 py-0.5 rounded">
-                Paddock Cooldown
-              </span>
-            </div>
-          </div>
+        <div className="mt-14">
+          <StickerSheet clubs={ordered} now={now} />
         </div>
       </section>
 
-      {/* Next Upcoming Track Session Event Banner */}
+      {/* next session, pinned */}
       {nextEvent ? (
-        <section className="px-6 py-12 sm:px-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-                Confirmed Calendar Session
-              </span>
-            </div>
+        <section className="mx-auto max-w-[1360px] px-5 pb-16 sm:px-8 sm:pb-24">
+          <div className="mb-8 flex items-baseline justify-between gap-4">
+            <span className="label">Pinned to the board</span>
             <Link
               href="/clubs/calendar"
-              className="font-mono text-xs text-black hover:opacity-70 transition-opacity"
+              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink/60 underline decoration-ink/25 underline-offset-4 hover:text-ink"
             >
-              Full Calendar →
+              Everything on the calendar →
             </Link>
           </div>
-          <EventCard event={nextEvent} />
+          <PinnedNotice event={nextEvent} />
         </section>
       ) : null}
 
-      {/* Campus Club Directory / Roster */}
-      <section className="px-6 py-16 sm:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-10">
-          <div>
-            <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-              Directory
-            </span>
-            <h2 className="mt-2 font-serif text-4xl sm:text-5xl text-black">
-              All Campus Clubs
-            </h2>
+      {/* the table */}
+      <section className="border-y border-ink/10 bg-paperdeep/60 py-16 sm:py-24">
+        <div className="mx-auto max-w-[1360px] px-5 sm:px-8">
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="label">Make your own</span>
+              <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.6rem]">
+                The cutting table.
+              </h2>
+              <p className="mt-4 max-w-[54ch] text-sm leading-relaxed text-ink/70">
+                A paper, a sticker, your hand. Drag the sticker across the scrap and take the
+                result as a PNG — the same table the reference site keeps in its back room.
+              </p>
+            </div>
+            <Stamp className="self-start sm:self-end">pick · cut · keep</Stamp>
           </div>
-          <span className="font-mono text-xs text-black/50">
-            {ordered.length} Active & Chartering Clubs
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-          {ordered.map((club, idx) => (
-            <ClubCard key={club.slug} club={club} now={now} index={idx} />
-          ))}
+          <ScrapTable />
         </div>
       </section>
 
-      {/* Tenets / Campus Support */}
-      <section className="px-6 py-16 sm:px-8 max-w-7xl mx-auto">
-        <div className="finc-card p-8 sm:p-14">
-          <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-            Campus Sponsorship & Charter
-          </span>
-          <h2 className="mt-3 font-serif text-3xl sm:text-5xl text-black">
-            How Founders, Inc. backs your club.
-          </h2>
-
-          <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-            <div className="bg-white p-8 rounded-[12px]">
-              <span className="font-mono text-xs text-black/40 uppercase">01 / Culture</span>
-              <h3 className="mt-3 font-serif text-2xl text-black">Zero Pitch Decks</h3>
-              <p className="mt-3 text-sm text-black/60 leading-relaxed font-sans">
-                Clubs exist strictly outside work. No business cards, networking pitches, or investor intros. Focus entirely on the driving line, the sport, or the machine.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-[12px]">
-              <span className="font-mono text-xs text-black/40 uppercase">02 / Budget</span>
-              <h3 className="mt-3 font-serif text-2xl text-black">Subsidized Track Time</h3>
-              <p className="mt-3 text-sm text-black/60 leading-relaxed font-sans">
-                Founders, Inc. provides real budget for track rental slots at Sonoma, indoor gymnasium court bookings, raw workshop materials, and hospitality.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-[12px]">
-              <span className="font-mono text-xs text-black/40 uppercase">03 / Production</span>
-              <h3 className="mt-3 font-serif text-2xl text-black">In-House Media Crew</h3>
-              <p className="mt-3 text-sm text-black/60 leading-relaxed font-sans">
-                Our resident media team captures track sessions, garage builds, and games with documentary film and photography archives.
-              </p>
+      {/* how f.inc backs it */}
+      <section className="mx-auto max-w-[1360px] px-5 py-16 sm:px-8 sm:py-24">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
+          <div className="lg:col-span-4">
+            <span className="label">Why these exist</span>
+            <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.4rem]">
+              Founders, Inc. backs the room.
+            </h2>
+            <p className="mt-4 max-w-[38ch] text-sm leading-relaxed text-ink/70">
+              A budget, space at Pier 2, and a media team. You run the sessions on the schedule
+              you promised.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/clubs/apply" className="pill-btn">
+                Start a club
+              </Link>
+              <Link href="/clubs/cars" className="pill-btn-secondary">
+                Car Club first
+              </Link>
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-6 pt-8 border-t border-black/5">
-            <div>
-              <h4 className="font-serif text-2xl text-black">Have an obsession you want to run?</h4>
-              <p className="text-sm text-black/60 font-sans mt-1">
-                We back resident-led initiatives. Apply for club charter, budget, and Pier 2 access.
-              </p>
+          <div className="relative lg:col-span-8 lg:pl-10">
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {tenets.map((tenet) => (
+                <Scrap
+                  key={tenet.n}
+                  tone={tenet.tone}
+                  rotate={tenet.rotate}
+                  className="relative px-5 py-6"
+                >
+                  <Tape className="-top-3 left-5" rotate={-14} width={72} height={24} />
+                  <span className="label">{tenet.kicker}</span>
+                  <h3 className="mt-3 font-serif text-[1.7rem] leading-[0.95]">{tenet.title}</h3>
+                  <p className="mt-3 text-[13px] leading-relaxed text-ink/70">{tenet.body}</p>
+                  <span className="mt-4 block font-mono text-[10px] tracking-[0.14em] text-ink/40">
+                    {tenet.n}
+                  </span>
+                </Scrap>
+              ))}
             </div>
-            <Link
-              href="/clubs/apply"
-              className="pill-btn text-xs py-3 px-6 shrink-0"
-            >
-              Start a Club at Pier 2 →
-            </Link>
+            <Pin className="right-2 top-10 hidden lg:block" />
           </div>
         </div>
       </section>

@@ -4,8 +4,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ClubNav } from "@/components/club-nav";
 import { RsvpCard } from "@/components/rsvp-card";
+import { Scrap, Tape, Stamp, Sticker } from "@/components/collage/paper";
+import { stickerFor } from "@/lib/collage";
 import { getClub, getClubs, getNextEvent } from "@/lib/clubs";
-import { formatMonthDay, formatTime } from "@/lib/format";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const club = getClub(slug);
   if (!club) return { title: "Club" };
   const title = `${club.name} — Founders, Inc. Clubs`;
-  const description = `${club.tagline} Private track sessions at Sonoma Raceway and Fort Mason facilities. ${club.cadence}, ${club.location}.`;
+  const description = `${club.tagline} ${club.cadence}, ${club.location}.`;
   return {
     title,
     description,
@@ -28,6 +29,50 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const itinerary = [
+  {
+    time: "07:00",
+    title: "Convoy departs Pier 2",
+    body: "Group roll-out over the Golden Gate and up 101/37 to Sonoma, radios on channel 4.",
+  },
+  {
+    time: "08:00",
+    title: "Paddock check-in",
+    body: "Torque check, tyre pressure baselines, transponders handed out, espresso in the garage.",
+  },
+  {
+    time: "08:30",
+    title: "Driver briefing",
+    body: "Flags, passing zones, point-bys and the elevation notes for turns 2 through 4.",
+  },
+  {
+    time: "09:00",
+    title: "Green flag",
+    body: "Three rotating run groups, 20 minutes each, coaches riding with novice drivers.",
+  },
+  {
+    time: "17:00",
+    title: "Checkered flag",
+    body: "Cool-down laps, telemetry review, then the dinner convoy back to San Francisco.",
+  },
+];
+
+const specs = [
+  ["Track length", "2.52 miles · 12 turns"],
+  ["Elevation", "160 ft (T2 to T4)"],
+  ["Safety spec", "Snell SA2015+ helmet"],
+  ["Run groups", "Novice / Solo / Open"],
+  ["Convoy", "Pier 2, Fort Mason"],
+  ["Cost", "Subsidised by f.inc"],
+];
+
+const checklist = [
+  "Valid licence and signed waiver",
+  "Snell or DOT helmet (loaners available)",
+  "Brake pads over 50%, fresh fluid",
+  "Closed-toe shoes and long trousers",
+];
+
 export default async function ClubPage({ params }: Props) {
   const { slug } = await params;
   const club = getClub(slug);
@@ -36,388 +81,261 @@ export default async function ClubPage({ params }: Props) {
   const now = new Date();
   const next = getNextEvent(club.slug, now);
   const isCars = club.slug === "cars";
+  const sticker = stickerFor(club.slug);
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Top Breadcrumb Bar */}
-      <div className="mx-auto max-w-7xl px-6 pt-8 pb-4 sm:px-8">
-        <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-black/40">
-          <Link href="/clubs" className="hover:text-black transition-colors">
-            Campus Clubs
+    <main className="min-h-screen">
+      {/* breadcrumb */}
+      <div className="mx-auto max-w-[1360px] px-5 pt-8 sm:px-8">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
+          <Link href="/clubs" className="hover:text-ink">
+            The wall
           </Link>
           <span>/</span>
-          <span className="text-black font-medium">{club.name}</span>
+          <span className="text-ink">{club.name}</span>
           <span>/</span>
-          <span className="uppercase text-[11px]">
-            {club.status === "active" ? "Active Season" : "Chartering"}
-          </span>
+          <span>{club.status === "active" ? "Running" : "Chartering"}</span>
         </div>
       </div>
 
-      {isCars ? (
-        /* ========================================================
-           FLAGSHIP AUTOMOTIVE EDITORIAL SHOWCASE (CAR CLUB)
-           ======================================================== */
-        <article className="mx-auto max-w-7xl px-6 sm:px-8 pb-20">
-          {/* Hero Banner Header */}
-          <div className="mt-4 grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pb-10">
-            <div className="lg:col-span-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium badge-car mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-black animate-pulse" />
-                FOUNDERS MOTORSPORT DIVISION · PIER 2 FORT MASON
-              </div>
-              <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-black leading-none tracking-tight">
-                Car Club.
-              </h1>
-              <p className="mt-6 text-xl sm:text-2xl text-black/70 leading-relaxed font-sans max-w-2xl">
-                Private track days, morning convoys, and paddock telemetry for founders who drive.
-              </p>
-            </div>
+      {/* club header: sticker, torn title, pin */}
+      <section className="mx-auto max-w-[1360px] px-5 pb-12 pt-6 sm:px-8">
+        <div className="relative">
+          <Scrap tone="cream" rotate={-0.6} className="relative px-6 py-9 sm:px-10 sm:py-12">
+            <Tape className="-left-6 -top-4 z-20" rotate={-26} width={140} height={38} />
+            <Tape className="-right-4 -top-3 z-20" rotate={18} width={104} height={30} />
 
-            <div className="lg:col-span-4 flex flex-col gap-4">
-              <div className="finc-card p-6">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">
-                  Confirmed Session
-                </span>
-                <h3 className="mt-1 font-serif text-2xl text-black">
-                  Sonoma Raceway Track Day
-                </h3>
-                <p className="mt-1 font-mono text-xs text-black/60">
-                  Monday, Oct 26 · 7:00 AM Convoy Departure
+            <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="bg-ink/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/70">
+                    {club.theme?.tag ?? "Campus club"}
+                  </span>
+                  <Stamp>{club.status === "active" ? "season running" : "chartering"}</Stamp>
+                </div>
+                <h1 className="mt-5 font-serif text-[3.4rem] leading-[0.84] sm:text-[5rem]">
+                  {club.name}
+                </h1>
+                <p className="scrawl mt-4 max-w-[26ch] text-[1.5rem] leading-tight text-ink/85">
+                  {club.tagline}
                 </p>
-                <div className="mt-5 flex items-center gap-3">
-                  <a
-                    href="https://luma.com/founderstrackday"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="pill-btn text-xs py-2.5 px-5"
-                  >
-                    RSVP on Luma ↗
-                  </a>
-                  <a
-                    href="#circuit"
-                    className="pill-btn-secondary text-xs py-2.5 px-4"
-                  >
-                    Circuit Specs ↓
-                  </a>
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  {next ? (
+                    <a href={next.rsvpUrl} target="_blank" rel="noreferrer" className="pill-btn">
+                      RSVP on Luma ↗
+                    </a>
+                  ) : (
+                    <Link href="/clubs/apply" className="pill-btn">
+                      Join the next session
+                    </Link>
+                  )}
+                  {isCars ? (
+                    <a href="#circuit" className="pill-btn-secondary">
+                      Circuit specs ↓
+                    </a>
+                  ) : (
+                    <Link href="/clubs/calendar" className="pill-btn-secondary">
+                      Calendar
+                    </Link>
+                  )}
                 </div>
               </div>
+
+              {sticker ? (
+                <div className="justify-self-start md:justify-self-end">
+                  <Sticker
+                    src={sticker}
+                    alt={`${club.name} sticker`}
+                    size={240}
+                    rotate={-6}
+                    priority
+                  />
+                </div>
+              ) : null}
             </div>
+          </Scrap>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-[1360px] px-5 pb-20 sm:px-8">
+        <div className="grid gap-10 md:grid-cols-12 md:items-start">
+          <div className="md:col-span-3">
+            <ClubNav currentSlug={club.slug} />
           </div>
 
-          {/* Cinematic Full-Bleed Photography Hero */}
-          <div className="finc-card overflow-hidden relative aspect-[16/9] md:aspect-[21/9] w-full bg-black/5 mb-16">
-            <Image
-              src="/images/clubs/cars/cover.jpg"
-              alt="Sonoma Raceway paddock staging line"
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-8 sm:p-12 text-white">
-              <span className="font-mono text-xs text-white/60 uppercase tracking-widest mb-1">
-                Field Report · Sonoma, California
-              </span>
-              <p className="font-serif text-2xl sm:text-4xl text-white max-w-2xl">
-                "No pitch decks, no business cards. Just clean apexes, tire pressures, and morning fog over the circuit."
-              </p>
-            </div>
-          </div>
-
-          {/* Asymmetric Editorial Columns: Overview & Logistics */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
-            {/* Left 7 cols: Editorial Story & Format */}
-            <div className="lg:col-span-7 space-y-12">
-              <section>
-                <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-                  01 / Track Discipline
-                </span>
-                <h2 className="mt-2 font-serif text-4xl text-black">
-                  Built for founders who take driving seriously.
+          <div className="space-y-12 md:col-span-9">
+            {/* about + photo */}
+            <div className="grid gap-8 lg:grid-cols-12">
+              <div className="lg:col-span-7">
+                <span className="label">About this club</span>
+                <h2 className="mt-3 font-serif text-[2.2rem] leading-[0.95] sm:text-[2.8rem]">
+                  {isCars ? "Built for founders who take driving seriously." : "What happens here."}
                 </h2>
-                <div className="mt-6 text-base sm:text-lg leading-relaxed text-black/75 space-y-4 font-sans">
-                  <p>
-                    Full-day private track takeovers at Sonoma Raceway and Thunderhill Park. We subsidize circuit fees, staging facilities, timing transponders, and full technical paddock hospitality so founders can test machinery and driver craft.
-                  </p>
-                  <p>
-                    Every session features three distinct run groups ranging from novice drivers accompanied by seasoned coaches to open-passing advanced groups. Passenger ride-alongs are welcome for founders seeking circuit experience before bringing their own cars.
-                  </p>
-                </div>
-              </section>
+                <p className="mt-4 text-[15px] leading-relaxed text-ink/80">{club.description}</p>
 
-              {/* Day-of Itinerary / Format */}
-              <section className="finc-card p-8 sm:p-10">
-                <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-                  Schedule of Run
-                </span>
-                <h3 className="mt-2 font-serif text-3xl text-black">
-                  Sonoma Track Day Itinerary
-                </h3>
-
-                <div className="mt-8 space-y-6">
-                  <div className="flex items-start gap-4">
-                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded bg-black text-white shrink-0">
-                      07:00 AM
-                    </span>
-                    <div>
-                      <h4 className="font-medium text-black text-sm">Convoy Departure · Pier 2 Fort Mason</h4>
-                      <p className="text-xs text-black/60 font-sans mt-0.5">
-                        Group roll-out through Marin Headlands up Highway 101/37 to Sonoma.
-                      </p>
-                    </div>
+                <dl className="mt-7 grid grid-cols-2 gap-6 border-t border-ink/15 pt-5">
+                  <div>
+                    <dt className="label">Cadence</dt>
+                    <dd className="mt-1.5 font-serif text-[1.5rem] leading-tight">{club.cadence}</dd>
                   </div>
-
-                  <div className="flex items-start gap-4">
-                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded bg-black text-white shrink-0">
-                      08:00 AM
-                    </span>
-                    <div>
-                      <h4 className="font-medium text-black text-sm">Paddock Check-in & Technical Inspection</h4>
-                      <p className="text-xs text-black/60 font-sans mt-0.5">
-                        Torque checks, tire pressure baselines, transponder distribution, and espresso in the garage.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded bg-black text-white shrink-0">
-                      08:30 AM
-                    </span>
-                    <div>
-                      <h4 className="font-medium text-black text-sm">Mandatory Driver Safety Briefing</h4>
-                      <p className="text-xs text-black/60 font-sans mt-0.5">
-                        Circuit flags, passing zones, point-bys, and elevation transition analysis.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded bg-black text-white shrink-0">
-                      09:00 AM
-                    </span>
-                    <div>
-                      <h4 className="font-medium text-black text-sm">Green Flag · First Run Groups On Track</h4>
-                      <p className="text-xs text-black/60 font-sans mt-0.5">
-                        20-minute rotating run group sessions throughout the morning and afternoon.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded bg-black text-white shrink-0">
-                      05:00 PM
-                    </span>
-                    <div>
-                      <h4 className="font-medium text-black text-sm">Checkered Flag & Paddock Debrief</h4>
-                      <p className="text-xs text-black/60 font-sans mt-0.5">
-                        Cooldown laps, telemetry review, and evening dinner convoy back to San Francisco.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            {/* Right 5 cols: Specs Ledger & RSVP */}
-            <div className="lg:col-span-5 space-y-6">
-              <RsvpCard club={club} event={next} />
-
-              <div id="circuit" className="finc-card p-8">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">
-                  Circuit Specs
-                </span>
-                <h3 className="mt-2 font-serif text-3xl text-black">
-                  Sonoma Raceway
-                </h3>
-
-                <dl className="mt-6 space-y-4 font-mono text-xs">
-                  <div className="flex justify-between py-2 border-b border-black/5">
-                    <dt className="text-black/50">Track Length</dt>
-                    <dd className="font-semibold text-black">2.52 Miles (12 Turns)</dd>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-black/5">
-                    <dt className="text-black/50">Elevation Delta</dt>
-                    <dd className="font-semibold text-black">160 ft (Turn 2 to Turn 4)</dd>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-black/5">
-                    <dt className="text-black/50">Safety Spec</dt>
-                    <dd className="font-semibold text-black">Snell SA2015+ Helmet</dd>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-black/5">
-                    <dt className="text-black/50">Run Groups</dt>
-                    <dd className="font-semibold text-black">Novice / Solo / Open</dd>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-black/5">
-                    <dt className="text-black/50">Host Convoy</dt>
-                    <dd className="font-semibold text-black">Pier 2 Fort Mason, SF</dd>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <dt className="text-black/50">Cost & Subsidies</dt>
-                    <dd className="font-semibold text-black">100% Subsidized by f.inc</dd>
+                  <div>
+                    <dt className="label">Location</dt>
+                    <dd className="mt-1.5 font-serif text-[1.5rem] leading-tight">{club.location}</dd>
                   </div>
                 </dl>
               </div>
 
-              {/* Requirements & Checklist */}
-              <div className="bg-[#F1F1F1] p-8 rounded-[15px]">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">
-                  Driver Checklist
-                </span>
-                <h3 className="mt-2 font-serif text-2xl text-black">
-                  What You Need
-                </h3>
-
-                <ul className="mt-4 space-y-2.5 text-xs text-black/70 font-sans">
-                  <li className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-black shrink-0" />
-                    Valid driver&apos;s license and signed waiver
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-black shrink-0" />
-                    Snell or DOT certified motorsport helmet (loaners available)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-black shrink-0" />
-                    Inspected vehicle: brake pads &gt;50%, fresh brake fluid
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-black shrink-0" />
-                    Closed-toe driving shoes and long pants
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Documentary Photo Archive */}
-          <section className="mt-20">
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 mb-8">
-              <div>
-                <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-                  Media Production Archive
-                </span>
-                <h2 className="mt-2 font-serif text-4xl sm:text-5xl text-black">
-                  Documented on Circuit
-                </h2>
-              </div>
-              <span className="font-mono text-xs text-black/50">
-                Founders, Inc. In-House Media Team
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {club.galleryImages.map((image) => (
-                <div
-                  key={image.src}
-                  className="finc-card overflow-hidden group"
-                >
-                  <div className="relative aspect-[4/3] w-full bg-black/5">
+              <div className="lg:col-span-5">
+                <div className="relative bg-white/60 p-3 shadow-[var(--shadow-scrap)]" style={{ transform: "rotate(1.6deg)" }}>
+                  <Tape className="-top-4 left-1/2 -translate-x-1/2" rotate={-6} width={92} height={28} />
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-paperdeep">
                     <Image
-                      src={image.src}
-                      alt={image.alt}
+                      src={club.heroImage}
+                      alt={club.name}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
+                      priority
+                      sizes="(max-width: 1024px) 90vw, 34vw"
+                      className="object-cover"
                     />
                   </div>
-                  {image.caption ? (
-                    <div className="p-4">
-                      <p className="font-mono text-xs text-black/70 uppercase tracking-wider">
-                        {image.caption}
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Back to All Clubs Nav */}
-          <div className="mt-24 pt-8 border-t border-black/10 flex items-center justify-between">
-            <Link
-              href="/clubs"
-              className="font-mono text-xs text-black/60 hover:text-black transition-colors"
-            >
-              ← Back to Campus Roster
-            </Link>
-            <Link
-              href="/clubs/apply"
-              className="pill-btn text-xs py-2 px-4"
-            >
-              Start Another Club →
-            </Link>
-          </div>
-        </article>
-      ) : (
-        /* ========================================================
-           STANDARD CLUB DETAIL TEMPLATE (HARDWARE, HOOPS, ETC.)
-           ======================================================== */
-        <div className="mx-auto max-w-7xl px-6 sm:px-8 pb-20">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
-            <div className="md:col-span-3">
-              <ClubNav currentSlug={club.slug} />
-            </div>
-
-            <div className="md:col-span-9 space-y-12">
-              <header className="finc-card p-8 sm:p-12">
-                <span className="inline-flex px-3 py-1 rounded-full text-xs font-mono font-medium bg-black/5 text-black mb-4">
-                  {club.theme?.tag ?? "Campus Club"}
-                </span>
-                <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl text-black leading-none">
-                  {club.name}
-                </h1>
-                <p className="mt-4 text-xl text-black/70 font-sans max-w-2xl">
-                  {club.tagline}
-                </p>
-
-                <div className="mt-8 flex flex-wrap gap-4">
-                  <Link href="/clubs/apply" className="pill-btn text-xs py-2.5 px-5">
-                    Join this Club Session →
-                  </Link>
-                  <Link href="/clubs/calendar" className="pill-btn-secondary text-xs py-2.5 px-5">
-                    View Calendar
-                  </Link>
-                </div>
-              </header>
-
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[15px] bg-black/5">
-                <Image
-                  src={club.heroImage}
-                  alt={club.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 70vw"
-                />
-              </div>
-
-              <div className="finc-card p-8 sm:p-12 space-y-8">
-                <div>
-                  <span className="font-mono text-xs uppercase tracking-wider text-black/40">
-                    About this Club
-                  </span>
-                  <p className="mt-4 text-base sm:text-lg leading-relaxed text-black/80 font-sans">
-                    {club.description}
+                  <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ink/50">
+                    Pier 2 field archive · {club.slug}
                   </p>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-black/5">
-                  <div className="bg-white p-6 rounded-[12px]">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">Cadence</span>
-                    <span className="mt-1 block font-serif text-2xl text-black">{club.cadence}</span>
-                  </div>
-                  <div className="bg-white p-6 rounded-[12px]">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-black/40">Location</span>
-                    <span className="mt-1 block font-serif text-2xl text-black">{club.location}</span>
-                  </div>
-                </div>
               </div>
+            </div>
 
+            {/* itinerary, typewritten */}
+            {isCars ? (
+              <Scrap tone="news" rotate={-0.8} className="relative px-6 py-8 sm:px-9">
+                <Tape className="-left-5 -top-3" rotate={-24} width={104} height={30} />
+                <span className="label">Schedule of the day</span>
+                <h2 className="mt-3 font-serif text-[2rem] leading-none">Sonoma track day.</h2>
+                <ol className="mt-7 space-y-5">
+                  {itinerary.map((item) => (
+                    <li key={item.time} className="flex items-start gap-5 border-t border-ink/12 pt-4">
+                      <span className="w-16 shrink-0 font-mono text-[12px] tnum text-ink/70">
+                        {item.time}
+                      </span>
+                      <div>
+                        <h3 className="text-[14px] font-medium text-ink">{item.title}</h3>
+                        <p className="mt-1 text-[13px] leading-relaxed text-ink/70">{item.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </Scrap>
+            ) : null}
+
+            {/* RSVP + specs */}
+            <div className="grid gap-8 lg:grid-cols-2">
               <RsvpCard club={club} event={next} />
+
+              {isCars ? (
+                <div id="circuit" className="scroll-mt-24">
+                  <Scrap tone="kraft" rotate={0.9} className="relative h-full px-6 py-7">
+                    <Tape className="-right-4 -top-3" rotate={22} width={90} height={26} />
+                    <span className="label">Circuit specs</span>
+                    <h2 className="mt-2 font-serif text-[1.8rem] leading-none">Sonoma Raceway.</h2>
+                    <dl className="mt-5 space-y-2.5 font-mono text-[11.5px]">
+                      {specs.map(([term, value]) => (
+                        <div
+                          key={term}
+                          className="flex items-baseline justify-between gap-4 border-b border-ink/15 pb-2 last:border-0"
+                        >
+                          <dt className="text-ink/60">{term}</dt>
+                          <dd className="text-right font-medium text-ink">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </Scrap>
+                </div>
+              ) : (
+                <Scrap tone="kraft" rotate={0.9} className="relative h-full px-6 py-7">
+                  <Tape className="-right-4 -top-3" rotate={22} width={90} height={26} />
+                  <span className="label">Bring</span>
+                  <h2 className="mt-2 font-serif text-[1.8rem] leading-none">What you need.</h2>
+                  <ul className="mt-4 space-y-2 text-[13px] leading-relaxed text-ink/80">
+                    {checklist.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span aria-hidden>—</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </Scrap>
+              )}
+            </div>
+
+            {isCars ? (
+              <Scrap tone="cream" rotate={-0.5} className="relative px-6 py-7">
+                <span className="label">Driver checklist</span>
+                <ul className="mt-4 grid gap-2.5 text-[13px] text-ink/80 sm:grid-cols-2">
+                  {checklist.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span aria-hidden>—</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </Scrap>
+            ) : null}
+
+            {/* gallery as pinned prints */}
+            {club.galleryImages.length > 0 ? (
+              <section>
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <div>
+                    <span className="label">Field archive</span>
+                    <h2 className="mt-2 font-serif text-[2.2rem] leading-none sm:text-[2.8rem]">
+                      Prints from the last one.
+                    </h2>
+                  </div>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/45">
+                    Founders, Inc. media team
+                  </span>
+                </div>
+                <ul className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3">
+                  {club.galleryImages.slice(0, 9).map((image, index) => (
+                    <li
+                      key={image.src}
+                      className="relative bg-white/70 p-2 shadow-[var(--shadow-scrap)]"
+                      style={{ transform: `rotate(${index % 2 === 0 ? -1.6 : 1.4}deg)` }}
+                    >
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-paperdeep">
+                        <Image
+                          src={image.src}
+                          alt={image.alt}
+                          fill
+                          sizes="(max-width: 640px) 45vw, 30vw"
+                          className="object-cover"
+                        />
+                      </div>
+                      {image.caption ? (
+                        <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ink/55">
+                          {image.caption}
+                        </p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/15 pt-6">
+              <Link
+                href="/clubs"
+                className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink/60 underline decoration-ink/25 underline-offset-4 hover:text-ink"
+              >
+                ← Back to the wall
+              </Link>
+              <Link href="/clubs/apply" className="pill-btn">
+                Start another club
+              </Link>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </main>
   );
 }

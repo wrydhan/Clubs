@@ -1,25 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&display=swap');
 @import "tailwindcss";
 
-/* f.inc 8 Laws Design System
-   1. Two typefaces: Instrument Serif (display), Instrument Sans (body/UI), Fragment Mono (tabular)
-   2. Serif display: line-height 1.0, tracking 0, -webkit-text-stroke 0.05em
-   3. Sans text: -0.02em tracking, -0.04em on buttons/labels/badges
-   4. Near-monochrome ink: pure #000 on #FFF, secondary rgba(0,0,0,0.40)
-   5. Fills and space, not borders: #F1F1F1 surface fill, generous whitespace, borderless
-   6. Pills for actions (rounded-full / 100px), 15px radius for cards, 8px for controls
-   7. One shadow, used sparingly: layered drop with 1px white top ring on dark surfaces
-   8. Category hues at 10% tint only behind black text
-*/
+/* Founders, Inc. Clubs — Clubhouse Wall
+   Editorial f.inc skeleton (Instrument Serif / Instrument Sans / Fragment Mono,
+   ink on paper, pills for actions) dressed as a physical clubhouse pinboard:
+   kraft, newsprint, cork, torn scraps, tape, stamps.
+
+   Palette: paper #F4EDE1 · paper-deep #EADFCC · kraft #C9A87C · ink #241A15
+   Accents appear only as 10% tints behind ink at display sizes, or as the
+   club's own sticker (which is printed, not UI colour). */
 
 @theme {
-  --color-ink: #000000;
-  --color-secondary: rgba(0, 0, 0, 0.40);
-  --color-tertiary: rgba(0, 0, 0, 0.60);
+  --color-ink: #241A15;
+  --color-ink-soft: #5A4A3F;
+  --color-paper: #F4EDE1;
+  --color-paperdeep: #EADFCC;
+  --color-kraft: #C9A87C;
+  --color-line: rgba(36, 26, 21, 0.14);
+
+  /* legacy aliases kept so untouched components still resolve */
   --color-surface: #F1F1F1;
   --color-surface-hover: #E7E7E7;
   --color-surface-card: #F7F7F7;
   --color-canvas: #FFFFFF;
+  --color-secondary: rgba(0, 0, 0, 0.4);
+  --color-tertiary: rgba(0, 0, 0, 0.6);
 
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -27,13 +32,12 @@
 }
 
 :root {
-  --ink: #000000;
-  --ink-secondary: rgba(0, 0, 0, 0.40);
-  --ink-tertiary: rgba(0, 0, 0, 0.60);
-  --surface: #F1F1F1;
-  --surface-hover: #E7E7E7;
-  --surface-card: #F7F7F7;
-  --canvas: #FFFFFF;
+  --ink: #241a15;
+  --ink-soft: #5a4a3f;
+  --paper: #f4ede1;
+  --paper-deep: #eadfcc;
+  --kraft: #c9a87c;
+  --rule: rgba(36, 26, 21, 0.14);
 
   --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-ui: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -42,15 +46,23 @@
   --track-default: -0.02em;
   --track-tight: -0.04em;
   --serif-stroke: 0.05em;
+
+  /* paper shadows: short and soft — paper is thin */
+  --shadow-scrap: 0 1px 1px rgba(36, 26, 21, 0.16), 0 3px 5px -2px rgba(36, 26, 21, 0.22),
+    0 12px 22px -18px rgba(36, 26, 21, 0.65);
+  --shadow-lift: 0 2px 2px rgba(36, 26, 21, 0.16), 0 8px 12px -6px rgba(36, 26, 21, 0.26),
+    0 22px 34px -24px rgba(36, 26, 21, 0.6);
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.25, 1);
 }
 
 * {
   box-sizing: border-box;
 }
 
-html, body {
-  background-color: #FFFFFF;
-  color: #000000;
+html,
+body {
+  background-color: var(--paper);
+  color: var(--ink);
   font-family: var(--font-ui);
   letter-spacing: var(--track-default);
   -webkit-font-smoothing: antialiased;
@@ -59,20 +71,20 @@ html, body {
 }
 
 ::selection {
-  background: #000000;
-  color: #FFFFFF;
+  background: var(--ink);
+  color: var(--paper);
 }
 
 :focus-visible {
-  outline: 2px solid #000000;
-  outline-offset: 2px;
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
 
-/* 8 Laws Typography */
+/* Typography */
 .font-serif {
   font-family: var(--font-display);
   letter-spacing: 0;
-  line-height: 1.0;
+  line-height: 1;
   font-weight: 400;
   -webkit-text-stroke: var(--serif-stroke) currentColor;
 }
@@ -91,33 +103,193 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
-/* f.inc Action Pills */
+.label {
+  font-family: var(--font-code);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Hand-written accent, in the f.inc serif italic — no third typeface */
+.scrawl {
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: 0;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+/* ---------- paper surfaces ---------- */
+
+.tex-kraft {
+  background-image: url("/collage/paper-kraft.webp");
+  background-size: cover;
+  background-position: center;
+}
+.tex-news {
+  background-image: url("/collage/paper-newsprint.webp");
+  background-size: cover;
+  background-position: center;
+}
+.tex-cork {
+  background-image: url("/collage/paper-cork.webp");
+  background-size: 720px auto;
+  background-repeat: repeat;
+}
+
+.paper-card {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--paper);
+  border-radius: 2px;
+  box-shadow: var(--shadow-scrap);
+}
+.paper-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: url("/collage/paper-kraft.webp");
+  background-size: 560px auto;
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* the old f.inc card, re-cut as a sheet of paper */
+.finc-card {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--paper);
+  box-shadow: var(--shadow-scrap);
+  border: none;
+  border-radius: 2px;
+}
+.finc-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: url("/collage/paper-kraft.webp");
+  background-size: 560px auto;
+  opacity: 0.14;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* torn deckle edges */
+.torn {
+  -webkit-clip-path: polygon(
+    0% 2%, 3% 0.8%, 7% 1.8%, 11% 0.4%, 16% 1.4%, 21% 0.3%, 27% 1.6%, 33% 0.5%, 39% 1.5%,
+    45% 0.2%, 52% 1.4%, 58% 0.6%, 64% 1.7%, 70% 0.3%, 77% 1.5%, 84% 0.4%, 90% 1.6%, 96% 0.5%,
+    100% 1.8%, 98.6% 6%, 100% 11%, 98.4% 17%, 99.6% 23%, 98.2% 30%, 100% 37%, 98.5% 44%,
+    99.7% 52%, 98.3% 60%, 100% 68%, 98.4% 76%, 99.6% 84%, 98.2% 91%, 99.4% 97%, 100% 100%,
+    95% 98.6%, 89% 99.7%, 83% 98.4%, 77% 99.6%, 70% 98.2%, 63% 99.5%, 56% 98.3%, 49% 99.7%,
+    42% 98.4%, 35% 99.6%, 28% 98.2%, 21% 99.5%, 14% 98.4%, 8% 99.6%, 3% 98.5%, 0% 100%,
+    1.4% 94%, 0% 87%, 1.6% 80%, 0.3% 72%, 1.5% 64%, 0.2% 56%, 1.7% 48%, 0.4% 40%, 1.6% 32%,
+    0.3% 24%, 1.5% 16%, 0.2% 8%
+  );
+  clip-path: polygon(
+    0% 2%, 3% 0.8%, 7% 1.8%, 11% 0.4%, 16% 1.4%, 21% 0.3%, 27% 1.6%, 33% 0.5%, 39% 1.5%,
+    45% 0.2%, 52% 1.4%, 58% 0.6%, 64% 1.7%, 70% 0.3%, 77% 1.5%, 84% 0.4%, 90% 1.6%, 96% 0.5%,
+    100% 1.8%, 98.6% 6%, 100% 11%, 98.4% 17%, 99.6% 23%, 98.2% 30%, 100% 37%, 98.5% 44%,
+    99.7% 52%, 98.3% 60%, 100% 68%, 98.4% 76%, 99.6% 84%, 98.2% 91%, 99.4% 97%, 100% 100%,
+    95% 98.6%, 89% 99.7%, 83% 98.4%, 77% 99.6%, 70% 98.2%, 63% 99.5%, 56% 98.3%, 49% 99.7%,
+    42% 98.4%, 35% 99.6%, 28% 98.2%, 21% 99.5%, 14% 98.4%, 8% 99.6%, 3% 98.5%, 0% 100%,
+    1.4% 94%, 0% 87%, 1.6% 80%, 0.3% 72%, 1.5% 64%, 0.2% 56%, 1.7% 48%, 0.4% 40%, 1.6% 32%,
+    0.3% 24%, 1.5% 16%, 0.2% 8%
+  );
+}
+
+.torn-soft {
+  -webkit-clip-path: polygon(
+    0% 1%, 6% 0.2%, 13% 1.1%, 20% 0%, 28% 1%, 36% 0.1%, 44% 1.2%, 52% 0%, 60% 1%, 68% 0.2%,
+    76% 1.1%, 84% 0%, 92% 1%, 100% 0.3%, 99.2% 8%, 100% 17%, 99% 26%, 100% 35%, 99.2% 45%,
+    100% 55%, 99% 65%, 100% 75%, 99.2% 85%, 100% 94%, 99.3% 100%, 92% 99%, 84% 100%, 76% 98.9%,
+    68% 100%, 60% 99%, 52% 100%, 44% 98.9%, 36% 100%, 28% 99%, 20% 100%, 13% 98.9%, 6% 100%,
+    0% 99.2%, 1% 90%, 0% 80%, 1.1% 70%, 0% 60%, 1% 50%, 0.2% 40%, 1.1% 30%, 0% 20%, 0.9% 10%
+  );
+  clip-path: polygon(
+    0% 1%, 6% 0.2%, 13% 1.1%, 20% 0%, 28% 1%, 36% 0.1%, 44% 1.2%, 52% 0%, 60% 1%, 68% 0.2%,
+    76% 1.1%, 84% 0%, 92% 1%, 100% 0.3%, 99.2% 8%, 100% 17%, 99% 26%, 100% 35%, 99.2% 45%,
+    100% 55%, 99% 65%, 100% 75%, 99.2% 85%, 100% 94%, 99.3% 100%, 92% 99%, 84% 100%, 76% 98.9%,
+    68% 100%, 60% 99%, 52% 100%, 44% 98.9%, 36% 100%, 28% 99%, 20% 100%, 13% 98.9%, 6% 100%,
+    0% 99.2%, 1% 90%, 0% 80%, 1.1% 70%, 0% 60%, 1% 50%, 0.2% 40%, 1.1% 30%, 0% 20%, 0.9% 10%
+  );
+}
+
+/* masking tape: the scan is on white, multiply drops the ground */
+.tape {
+  background-image: url("/collage/tape-strip.webp");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  mix-blend-mode: multiply;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.pin {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #8d7b6d 0%, #4a3a30 55%, #241a15 100%);
+  box-shadow: 0 2px 2px rgba(36, 26, 21, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.stamp {
+  font-family: var(--font-code);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(36, 26, 21, 0.72);
+  border: 1.5px solid rgba(36, 26, 21, 0.5);
+  border-radius: 3px;
+  padding: 0.35em 0.6em;
+  transform: rotate(-6deg);
+  mix-blend-mode: multiply;
+}
+
+/* sticker: the asset already carries its own paper scrap; multiply lets the
+   paper fibre show through instead of sitting on a flat rectangle */
+.sticker-img {
+  mix-blend-mode: multiply;
+  filter: saturate(0.96) contrast(1.02);
+}
+
+/* ---------- actions: ink pills, still f.inc ---------- */
+
 .pill-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4em;
   font-family: var(--font-ui);
   font-size: 14px;
   line-height: 1.2;
   font-weight: 500;
   letter-spacing: var(--track-tight);
-  padding: 10px 20px;
+  padding: 11px 22px;
   border-radius: 9999px;
-  background: #000000;
-  color: #FFFFFF;
+  background: var(--ink);
+  color: var(--paper);
   text-decoration: none;
   cursor: pointer;
-  transition: opacity 120ms ease, transform 120ms ease;
+  transition: transform 160ms var(--ease-paper), background-color 160ms var(--ease-paper);
   border: none;
 }
 .pill-btn:hover {
-  opacity: 0.85;
+  background: #3b2c24;
+  transform: translateY(-1px);
 }
 
 .pill-btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4em;
   font-family: var(--font-ui);
   font-size: 14px;
   line-height: 1.2;
@@ -125,46 +297,85 @@ html, body {
   letter-spacing: var(--track-tight);
   padding: 10px 20px;
   border-radius: 9999px;
-  background: #F1F1F1;
-  color: #000000;
+  background: transparent;
+  color: var(--ink);
   text-decoration: none;
   cursor: pointer;
-  transition: background 120ms ease;
-  border: none;
+  transition: background-color 160ms var(--ease-paper), transform 160ms var(--ease-paper);
+  border: 1px solid rgba(36, 26, 21, 0.35);
 }
 .pill-btn-secondary:hover {
-  background: #E7E7E7;
+  background: rgba(36, 26, 21, 0.07);
+  transform: translateY(-1px);
 }
 
-/* Category Hues at 10% Tint only */
-.badge-car {
-  background: rgba(232, 69, 43, 0.10);
-  color: #000000;
-}
-.badge-hardware {
-  background: rgba(234, 88, 12, 0.10);
-  color: #000000;
-}
-.badge-basketball {
-  background: rgba(22, 163, 74, 0.10);
-  color: #000000;
-}
-.badge-paintball {
-  background: rgba(220, 38, 38, 0.10);
-  color: #000000;
-}
-
-/* Card Surface - 15px radius, #F1F1F1 fill, completely borderless */
-.finc-card {
-  background-color: #F1F1F1;
-  border-radius: 15px;
-  overflow: hidden;
+.pill-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-code);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  background: rgba(36, 26, 21, 0.08);
+  color: var(--ink);
+  text-decoration: none;
   border: none;
+}
+.pill-btn-ghost:hover {
+  background: rgba(36, 26, 21, 0.14);
+}
+
+/* legacy category tints (kept; no new UI relies on colour for hierarchy) */
+.badge-car { background: rgba(232, 69, 43, 0.1); color: #241a15; }
+.badge-hardware { background: rgba(234, 88, 12, 0.1); color: #241a15; }
+.badge-basketball { background: rgba(22, 163, 74, 0.1); color: #241a15; }
+.badge-paintball { background: rgba(220, 38, 38, 0.1); color: #241a15; }
+
+/* form fields sit on the paper, not on white */
+.paper-field {
+  width: 100%;
+  border-radius: 2px;
+  background: rgba(255, 252, 246, 0.72);
+  border: 1px solid rgba(36, 26, 21, 0.16);
+  padding: 12px 14px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: var(--track-default);
+}
+.paper-field::placeholder {
+  color: rgba(36, 26, 21, 0.35);
+}
+.paper-field:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(36, 26, 21, 0.12);
+}
+
+/* -------------------- motion -------------------- */
+
+@keyframes peel-in {
+  from { opacity: 0; transform: translateY(10px) rotate(var(--r, 0deg)); }
+  to { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
+}
+
+.peel-in {
+  animation: peel-in 620ms var(--ease-paper) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .peel-in {
+    animation: none;
   }
 }
