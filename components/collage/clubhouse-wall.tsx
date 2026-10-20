@@ -16,6 +16,8 @@ const START: Record<ScrapId, { x: number; y: number }> = {
   sneaker: { x: 0, y: 0 },
   "badge-cars": { x: 0, y: 0 },
   "badge-hoops": { x: 0, y: 0 },
+  "badge-hardware": { x: 0, y: 0 },
+  "badge-paintball": { x: 0, y: 0 },
   charter: { x: 0, y: 0 },
 };
 
@@ -51,6 +53,23 @@ type DragState = {
 function clampRest(value: number): number {
   return Math.max(-REST_LIMIT, Math.min(REST_LIMIT, value));
 }
+
+/** The roster, pinned along the bottom of the board — one sticker per club,
+    each carried off the wall to its own page. This rail is the only place the
+    landing page names all four clubs, so it is also the `#roster` target. */
+const clubBadges: {
+  id: ScrapId;
+  name: string;
+  src: string;
+  rotate: number;
+  depth: number;
+  tape: number;
+}[] = [
+  { id: "badge-cars", name: "Car Club", src: "/collage/sticker-cars.webp", rotate: -3.5, depth: 1.2, tape: -4 },
+  { id: "badge-hoops", name: "Basketball", src: "/collage/sticker-hoops.webp", rotate: 2.8, depth: 0.6, tape: 9 },
+  { id: "badge-hardware", name: "Hardware", src: "/collage/sticker-hardware.webp", rotate: -2.2, depth: 0.9, tape: -9 },
+  { id: "badge-paintball", name: "Paintball", src: "/collage/sticker-paintball.webp", rotate: 3.2, depth: 0.7, tape: 7 },
+];
 
 const prefersFullUrl = (href: string) => /^(https?:)?\/\//.test(href);
 
@@ -396,7 +415,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
   return (
     <section
       aria-labelledby="wall-heading"
-      className="relative w-full overflow-hidden border-b border-line/60"
+      className="relative flex w-full flex-1 flex-col overflow-hidden border-b border-line/60"
     >
       <div className="absolute inset-0 -z-10">
         <Image
@@ -416,7 +435,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
 
       <div
         ref={boardRef}
-        className="relative mx-auto max-w-[1360px] px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
+        className="relative mx-auto flex w-full max-w-[1360px] flex-1 flex-col justify-center px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
         style={{ ["--px" as string]: 0, ["--py" as string]: 0 }}
       >
         {/* the board itself: a big sheet of cream stock on the cork */}
@@ -475,7 +494,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
             })}
           </div>
 
-          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[660px] md:pt-12 xl:grid xl:min-h-[660px] xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)_minmax(0,1fr)] xl:grid-rows-[auto_auto_auto] xl:gap-x-6 xl:gap-y-10 pb-24 md:pb-28 xl:pb-[7.5rem]">
+          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[560px] md:pt-8 xl:grid xl:min-h-[560px] xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)_minmax(0,1fr)] xl:grid-rows-[auto_auto_auto] xl:gap-x-6 xl:gap-y-8 pb-24 md:pb-28 xl:pb-14">
             {/* THE WORDPRESS SCRAP */}
             <div
               {...dragProps("wordmark", "pan-y")}
@@ -508,7 +527,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                 </p>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
                   <a href="#roster" className="pill-btn">
-                    See the wall ↓
+                    The four clubs ↓
                   </a>
                   {nextEvent ? (
                     <a
@@ -601,70 +620,67 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                 />
               </div>
 
-              {/* club stickers, pinned to the board */}
+              {/* the roster rail — every club on the wall, sticker + name */}
               <div
-                {...dragProps("badge-cars")}
-                className={`relative z-20 mt-8 w-[140px] cursor-grab select-none sm:w-[160px] xl:mt-0 xl:col-start-1 xl:row-start-3 xl:justify-self-start xl:self-center ${
-                  active === "badge-cars" ? "z-40" : ""
-                }`}
-                style={{
-                  touchAction: "none",
-                  transform: `${layer(1.2)} rotate(-3.5deg) translate(${offsets["badge-cars"].x}px, ${offsets["badge-cars"].y}px)`,
-                }}
+                id="roster"
+                className="relative z-20 mt-8 flex scroll-mt-24 flex-wrap items-end justify-center gap-x-6 gap-y-5 sm:justify-start xl:col-span-3 xl:row-start-3 xl:mt-0 xl:items-end xl:justify-between xl:gap-4"
               >
-                <Tape className="-top-3 left-1/2 z-30 -translate-x-1/2" rotate={-4} width={70} height={24} />
-                <Image
-                  src="/collage/sticker-cars.webp"
-                  alt="Car Club sticker: orange racing helmet"
-                  width={1024}
-                  height={1024}
-                  sizes="160px"
-                  draggable={false}
-                  onDragStart={(event) => event.preventDefault()}
-                  className="sticker-img pointer-events-none w-full select-none"
-                />
-              </div>
+                {clubBadges.map((badge) => {
+                  const id = badge.id;
+                  return (
+                    <div
+                      key={badge.id}
+                      {...dragProps(id)}
+                      className={`group relative w-[124px] cursor-grab select-none sm:w-[140px] xl:w-[150px] ${
+                        active === id ? "z-40" : ""
+                      }`}
+                      style={{
+                        touchAction: "none",
+                        transform: `${layer(badge.depth)} rotate(${badge.rotate}deg) translate(${offsets[id].x}px, ${offsets[id].y}px)`,
+                      }}
+                    >
+                      <Tape
+                        className="left-1/2 top-[-10px] z-30 -translate-x-1/2"
+                        rotate={badge.tape}
+                        width={66}
+                        height={22}
+                      />
+                      <Image
+                        src={badge.src}
+                        alt={`${badge.name} sticker`}
+                        width={1024}
+                        height={1024}
+                        sizes="150px"
+                        draggable={false}
+                        onDragStart={(event) => event.preventDefault()}
+                        className="sticker-img pointer-events-none w-full select-none transition-transform duration-300 ease-[var(--ease-paper)] motion-reduce:transition-none group-hover:rotate-[-1.5deg]"
+                      />
+                      <span className="mt-1.5 block text-center font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
+                        {badge.name}
+                      </span>
+                    </div>
+                  );
+                })}
 
-              <div
-                {...dragProps("badge-hoops")}
-                className={`relative z-20 mt-8 ml-auto w-[132px] cursor-grab select-none sm:w-[150px] xl:mt-0 xl:ml-0 xl:col-start-3 xl:row-start-3 xl:justify-self-end xl:self-center ${
-                  active === "badge-hoops" ? "z-40" : ""
-                }`}
-                style={{
-                  touchAction: "none",
-                  transform: `${layer(0.6)} rotate(3.5deg) translate(${offsets["badge-hoops"].x}px, ${offsets["badge-hoops"].y}px)`,
-                }}
-              >
-                <Image
-                  src="/collage/sticker-hoops.webp"
-                  alt="Basketball Club sticker: chain-link hoop"
-                  width={1024}
-                  height={1024}
-                  sizes="150px"
-                  draggable={false}
-                  onDragStart={(event) => event.preventDefault()}
-                  className="sticker-img pointer-events-none w-full select-none"
-                />
-              </div>
-
-              {/* the index card that charters a new club */}
-              <div
-                {...dragProps("charter")}
-                className={`relative z-20 mt-8 w-[190px] cursor-grab select-none xl:mt-0 xl:col-start-2 xl:row-start-3 xl:justify-self-center xl:self-center ${
-                  active === "charter" ? "z-40" : ""
-                }`}
-                style={{
-                  touchAction: "none",
-                  transform: `${layer(0.5)} rotate(-2deg) translate(${offsets.charter.x}px, ${offsets.charter.y}px)`,
-                }}
-              >
-                <Tape className="-right-6 -top-3 z-30" rotate={18} width={78} height={24} />
-                <div className="bg-paper px-4 py-3 shadow-[var(--shadow-scrap)]">
-                  <span className="label">index card · 3×5</span>
-                  <p className="scrawl mt-1 text-[1.35rem] leading-[1.02]">Start a club</p>
-                  <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
-                    cut your own sticky →
-                  </p>
+                {/* the index card that charters a new club */}
+                <div
+                  {...dragProps("charter")}
+                  className={`relative w-[176px] cursor-grab select-none sm:w-[186px] xl:w-[180px] ${
+                    active === "charter" ? "z-40" : ""
+                  }`}
+                  style={{
+                    touchAction: "none",
+                    transform: `${layer(0.5)} rotate(-2deg) translate(${offsets.charter.x}px, ${offsets.charter.y}px)`,
+                  }}
+                >
+                  <Tape className="-right-6 -top-3 z-30" rotate={18} width={78} height={24} />
+                  <div className="bg-paper px-4 py-3 shadow-[var(--shadow-scrap)]">
+                    <span className="label">index card · 3×5</span>
+                    <p className="scrawl mt-1 text-[1.35rem] leading-[1.02]">Start a club</p>
+                    <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
+                      cut your own sticky →
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

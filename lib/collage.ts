@@ -60,6 +60,8 @@ export type ScrapId =
   | "sneaker"
   | "badge-cars"
   | "badge-hoops"
+  | "badge-hardware"
+  | "badge-paintball"
   | "charter";
 
 export const scrapLabels: Record<ScrapId, string> = {
@@ -69,6 +71,8 @@ export const scrapLabels: Record<ScrapId, string> = {
   sneaker: "Running shoe magazine cut-out",
   "badge-cars": "Car Club sticker",
   "badge-hoops": "Basketball Club sticker",
+  "badge-hardware": "Hardware Club sticker",
+  "badge-paintball": "Paintball Club sticker",
   charter: "Start a club card",
 };
 
@@ -80,6 +84,8 @@ export const scrapHrefs: Record<ScrapId, string> = {
   sneaker: "/clubs/basketball",
   "badge-cars": "/clubs/cars",
   "badge-hoops": "/clubs/basketball",
+  "badge-hardware": "/clubs/hardware",
+  "badge-paintball": "/clubs/paintball",
   charter: "/clubs/apply",
 };
 
@@ -95,5 +101,5 @@ export const dragZones: DragZone[] = [
   { id: "charter", label: "Start a club", hint: "the studio", href: "/clubs/apply" },
   { id: "calendar", label: "Calendar", hint: "every date", href: "/clubs/calendar" },
   { id: "club", label: "Club page", hint: "Car Club", href: "/clubs/cars" },
-  { id: "roster", label: "Roster", hint: "the sticker sheet", href: "/clubs#roster" },
+  { id: "roster", label: "Roster", hint: "four clubs pinned", href: "/clubs#roster" },
 ];
