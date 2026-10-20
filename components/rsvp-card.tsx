@@ -11,7 +11,7 @@ export function RsvpCard({ club, event }: { club: Club; event: ClubEvent | undef
         <Tape className="-right-4 -top-3" rotate={20} width={90} height={26} />
         <span className="label">Charter status</span>
         <h2 className="mt-2 font-serif text-[1.9rem] leading-none">Not on the calendar yet.</h2>
-        <p className="mt-3 text-[13px] leading-relaxed text-ink/75">
+        <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
           Car Club has confirmed track dates at Sonoma. {club.name} is still finalising schedule
           and facilities at Fort Mason.
         </p>
@@ -29,7 +29,7 @@ export function RsvpCard({ club, event }: { club: Club; event: ClubEvent | undef
         <Tape className="-right-4 -top-3" rotate={20} width={90} height={26} />
         <span className="label">Next session</span>
         <h2 className="mt-2 font-serif text-[1.9rem] leading-none">Schedule TBA.</h2>
-        <p className="mt-3 text-[13px] leading-relaxed text-ink/75">
+        <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
           {club.name} has no upcoming session posted. Subscribe and the date lands in your calendar
           the moment it drops.
         </p>
@@ -39,7 +39,7 @@ export function RsvpCard({ club, event }: { club: Club; event: ClubEvent | undef
         {club.lead ? (
           <a
             href={`mailto:${club.lead.contact}`}
-            className="mt-4 block text-center font-mono text-[10px] uppercase tracking-[0.1em] text-ink/55 underline underline-offset-4 hover:text-ink"
+            className="mt-4 block text-center font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 underline underline-offset-4 hover:text-ink"
           >
             {club.lead.name.split(" ")[0]} · {club.lead.contact}
           </a>
@@ -54,20 +54,20 @@ export function RsvpCard({ club, event }: { club: Club; event: ClubEvent | undef
       <div className="flex items-center justify-between gap-3">
         <span className="label">Next session</span>
         {event.capacity ? (
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">
+          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3">
             {event.capacity} cap
           </span>
         ) : null}
       </div>
 
       <h2 className="mt-3 font-serif text-[1.9rem] leading-[0.95]">{event.title}</h2>
-      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/60">
+      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-2">
         {formatFullDate(event.datetime)} · {formatTime(event.datetime)}
       </p>
-      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">
+      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3">
         {event.location}
       </p>
-      <p className="mt-4 text-[13px] leading-relaxed text-ink/75">{event.description}</p>
+      <p className="mt-4 text-[13px] leading-relaxed text-ink-2">{event.description}</p>
 
       <a
         href={event.rsvpUrl}
@@ -79,7 +79,7 @@ export function RsvpCard({ club, event }: { club: Club; event: ClubEvent | undef
       </a>
       <Link
         href="/clubs/calendar"
-        className="mt-3 block text-center font-mono text-[10px] uppercase tracking-[0.1em] text-ink/55 underline underline-offset-4 hover:text-ink"
+        className="mt-3 flex min-h-[36px] items-center justify-center text-center font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3 underline underline-offset-4 hover:text-ink"
       >
         Add it to your calendar
       </Link>

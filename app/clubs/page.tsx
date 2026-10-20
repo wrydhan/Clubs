@@ -58,13 +58,13 @@ export default function ClubsPage() {
             <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.6rem]">
               Four clubs, all pinned.
             </h2>
-            <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-ink/70">
+            <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-ink-2">
               Every club on the board is run by someone who wanted it to exist. Peeling a sticker
               off takes you to the club.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
               {ordered.length} clubs · season running
             </span>
             <Link href="/clubs/calendar" className="pill-btn-secondary">
@@ -85,7 +85,7 @@ export default function ClubsPage() {
             <span className="label">Pinned to the board</span>
             <Link
               href="/clubs/calendar"
-              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink/60 underline decoration-ink/25 underline-offset-4 hover:text-ink"
+              className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2 underline decoration-ink/25 underline-offset-4 hover:text-ink"
             >
               Everything on the calendar →
             </Link>
@@ -103,7 +103,7 @@ export default function ClubsPage() {
               <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.6rem]">
                 The cutting table.
               </h2>
-              <p className="mt-4 max-w-[54ch] text-sm leading-relaxed text-ink/70">
+              <p className="mt-4 max-w-[54ch] text-sm leading-relaxed text-ink-2">
                 A paper, a sticker, your hand. Drag the sticker across the scrap and take the
                 result as a PNG — the same table the reference site keeps in its back room.
               </p>
@@ -122,7 +122,7 @@ export default function ClubsPage() {
             <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.92] sm:text-[3.4rem]">
               Founders, Inc. backs the room.
             </h2>
-            <p className="mt-4 max-w-[38ch] text-sm leading-relaxed text-ink/70">
+            <p className="mt-4 max-w-[38ch] text-sm leading-relaxed text-ink-2">
               A budget, space at Pier 2, and a media team. You run the sessions on the schedule
               you promised.
             </p>
@@ -148,8 +148,8 @@ export default function ClubsPage() {
                   <Tape className="-top-3 left-5" rotate={-14} width={72} height={24} />
                   <span className="label">{tenet.kicker}</span>
                   <h3 className="mt-3 font-serif text-[1.7rem] leading-[0.95]">{tenet.title}</h3>
-                  <p className="mt-3 text-[13px] leading-relaxed text-ink/70">{tenet.body}</p>
-                  <span className="mt-4 block font-mono text-[10px] tracking-[0.14em] text-ink/40">
+                  <p className="mt-3 text-[13px] leading-relaxed text-ink-2">{tenet.body}</p>
+                  <span className="mt-4 block font-mono text-[10px] tracking-[0.14em] text-ink-3">
                     {tenet.n}
                   </span>
                 </Scrap>

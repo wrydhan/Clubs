@@ -17,7 +17,7 @@ export function ClubCard({ club, now, index = 0 }: { club: Club; now: Date; inde
       <Tape className="-left-4 -top-3" rotate={-26} width={92} height={28} />
       <div className="flex items-start justify-between gap-3">
         <span className="label">{club.theme?.tag ?? "Campus club"}</span>
-        <span className="label tnum text-ink/40">{String(index + 1).padStart(2, "0")}</span>
+        <span className="label tnum text-ink-3">{String(index + 1).padStart(2, "0")}</span>
       </div>
 
       <div className="relative mt-4 aspect-[16/10] w-full overflow-hidden bg-paperdeep">
@@ -31,10 +31,10 @@ export function ClubCard({ club, now, index = 0 }: { club: Club; now: Date; inde
       </div>
 
       <h3 className="mt-5 font-serif text-[2rem] leading-none">{club.name}</h3>
-      <p className="mt-2 text-[13px] leading-relaxed text-ink/70">{club.description}</p>
+      <p className="mt-2 text-[13px] leading-relaxed text-ink-2">{club.description}</p>
 
       <div className="mt-5 flex items-end justify-between gap-4 border-t border-ink/12 pt-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/55">
+        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3">
           {next ? formatMonthDay(next.datetime) : "Schedule TBA"}
         </span>
         <Link href={`/clubs/${club.slug}`} className="pill-btn text-[12px]">

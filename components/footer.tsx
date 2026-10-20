@@ -11,18 +11,18 @@ export function Footer() {
               <span className="font-mono text-[11px] font-semibold tracking-[0.16em] text-ink">
                 FOUNDERS, INC.
               </span>
-              <span aria-hidden className="text-ink/30">
+              <span aria-hidden className="text-ink-3">
                 /
               </span>
-              <span className="font-serif text-lg italic leading-none text-ink/80">Clubs</span>
+              <span className="font-serif text-lg italic leading-none text-ink">Clubs</span>
             </div>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-ink/70">
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-2">
               Private track days, workshop nights, competitive pickup, and tactical field days.
               Chartered by founders, subsidised at Fort Mason Pier 2, San Francisco.
             </p>
             <div className="mt-5 inline-flex items-center gap-2 bg-ink/8 px-3 py-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-ink/70" />
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/60">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2">
                 Season running · Pier 2
               </span>
             </div>
@@ -40,7 +40,7 @@ export function Footer() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="text-ink/70 underline decoration-ink/25 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
+                    className="inline-flex min-h-[36px] items-center text-ink-2 underline decoration-ink/30 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
                   >
                     {item.label}
                   </Link>
@@ -51,7 +51,7 @@ export function Footer() {
 
           <div className="lg:col-span-3">
             <h4 className="label">Fort Mason Pier 2</h4>
-            <p className="mt-4 font-mono text-[11px] leading-relaxed text-ink/60">
+            <p className="mt-4 font-mono text-[11px] leading-relaxed text-ink-2">
               Founders, Inc. Campus
               <br />
               Pier 2, Fort Mason Center
@@ -63,7 +63,7 @@ export function Footer() {
                 href="https://f.inc"
                 target="_blank"
                 rel="noreferrer"
-                className="text-ink/60 underline underline-offset-4 hover:text-ink"
+                className="inline-flex min-h-[36px] items-center text-ink-2 underline underline-offset-4 hover:text-ink"
               >
                 f.inc ↗
               </a>
@@ -71,7 +71,7 @@ export function Footer() {
                 href="https://f.inc/campus"
                 target="_blank"
                 rel="noreferrer"
-                className="text-ink/60 underline underline-offset-4 hover:text-ink"
+                className="inline-flex min-h-[36px] items-center text-ink-2 underline underline-offset-4 hover:text-ink"
               >
                 Campus ↗
               </a>
@@ -79,7 +79,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="relative mt-14 flex flex-col items-start justify-between gap-4 pt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/45 sm:flex-row sm:items-center">
+        <div className="relative mt-14 flex flex-col items-start justify-between gap-4 pt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3 sm:flex-row sm:items-center">
           <span>© {new Date().getFullYear()} Founders, Inc. All rights reserved.</span>
           <span>Pier 2 · Fort Mason · San Francisco</span>
         </div>
@@ -91,7 +91,7 @@ export function Footer() {
             className="absolute left-0 top-0 w-[290px] px-4 py-2"
           >
             <Tape className="-top-3 left-6" rotate={-18} width={70} height={24} />
-            <p className="scrawl text-[15px] leading-tight text-ink/80">
+            <p className="scrawl text-[15px] leading-tight text-ink">
               the wall gets re-pinned every season.
             </p>
           </Scrap>

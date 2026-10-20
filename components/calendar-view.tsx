@@ -115,14 +115,14 @@ export function CalendarView({
     <div className="py-6">
       {/* Club Filter Chips (Pill styling) */}
       <div className="flex flex-wrap items-center gap-2 mb-10" role="toolbar" aria-label="Filter by club">
-        <span className="mr-2 font-mono text-[11px] uppercase tracking-wider text-ink/40">Filter:</span>
+        <span className="mr-2 font-mono text-[11px] uppercase tracking-wider text-ink-3">Filter:</span>
         <button
           type="button"
           onClick={() => setFilter("all")}
           className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight transition-all ${
             filter === "all"
               ? "bg-ink text-paper"
-              : "bg-paperdeep text-ink/70 hover:bg-ink/10 hover:text-ink"
+              : "bg-paperdeep text-ink-2 hover:bg-ink/10 hover:text-ink"
           }`}
         >
           All Sessions
@@ -137,7 +137,7 @@ export function CalendarView({
               className={`px-4 py-2 rounded-full text-xs font-medium tracking-tight transition-all ${
                 active
                   ? "bg-ink text-paper"
-                  : "bg-paperdeep text-ink/70 hover:bg-ink/10 hover:text-ink"
+                  : "bg-paperdeep text-ink-2 hover:bg-ink/10 hover:text-ink"
               }`}
             >
               {club.name}
@@ -151,9 +151,9 @@ export function CalendarView({
         <div>
           {visible.length === 0 ? (
             <div className="paper-card p-8 sm:p-12 text-center">
-              <span className="font-mono text-xs uppercase tracking-wider text-ink/40">Schedule Status</span>
+              <span className="font-mono text-xs uppercase tracking-wider text-ink-3">Schedule Status</span>
               <p className="mt-3 font-serif text-3xl sm:text-4xl text-ink">No sessions currently posted.</p>
-              <p className="mt-3 text-sm text-ink/60 max-w-md mx-auto leading-relaxed">
+              <p className="mt-3 text-sm text-ink-2 max-w-md mx-auto leading-relaxed">
                 Dates are finalized with track marshals and coordinators weekly. Subscribe to sync dates automatically to your calendar.
               </p>
               <a
@@ -174,7 +174,7 @@ export function CalendarView({
                     </h2>
                   </div>
                   {week.events.length === 0 ? (
-                    <p className="mt-3 paper-card px-6 py-4 text-xs font-mono text-ink/50">
+                    <p className="mt-3 paper-card px-6 py-4 text-xs font-mono text-ink-3">
                       No sessions on the calendar for this week.
                     </p>
                   ) : (
@@ -188,24 +188,24 @@ export function CalendarView({
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <Link
                               href={`/clubs/${event.clubSlug}`}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-ink/5 text-ink hover:bg-ink hover:text-paper transition-colors"
+                              className="inline-flex min-h-[36px] items-center px-3 py-1 rounded-full text-xs font-medium bg-ink/5 text-ink hover:bg-ink hover:text-paper transition-colors"
                             >
                               {event.clubName}
                             </Link>
-                            <span className="font-mono text-xs text-ink/50 tnum">
+                            <span className="font-mono text-xs text-ink-3 tnum">
                               {formatWeekday(event.datetime)} · {formatTime(event.datetime)}
                             </span>
                           </div>
 
                           <h3 className="mt-4 font-serif text-2xl sm:text-3xl text-ink">{event.title}</h3>
-                          <p className="mt-1 font-mono text-xs text-ink/50">📍 {event.location}</p>
-                          <p className="mt-3 text-sm text-ink/70 leading-relaxed font-sans max-w-2xl">
+                          <p className="mt-1 font-mono text-xs text-ink-3">📍 {event.location}</p>
+                          <p className="mt-3 text-sm text-ink-2 leading-relaxed font-sans max-w-2xl">
                             {event.description}
                           </p>
 
                           <div className="mt-6 pt-4 flex flex-wrap items-center justify-between gap-4">
                             {event.capacity ? (
-                              <span className="font-mono text-xs text-ink/40">
+                              <span className="font-mono text-xs text-ink-3">
                                 {event.capacity} driver capacity limit
                               </span>
                             ) : <span />}
@@ -259,7 +259,7 @@ export function CalendarView({
               aria-label={formatMonth(cursor.year, cursor.month)}
             >
               {WEEKDAYS.map((day) => (
-                <div key={day} className="py-1 font-mono text-[10px] uppercase text-ink/40">
+                <div key={day} className="py-1 font-mono text-[10px] uppercase text-ink-3">
                   {day}
                 </div>
               ))}
@@ -270,7 +270,7 @@ export function CalendarView({
                   <div
                     key={ymdKey(cell.ymd)}
                     className={`h-10 rounded-[2px] flex flex-col items-center justify-center text-xs font-mono transition-colors ${
-                      cell.inMonth ? "text-ink" : "text-ink/20"
+                      cell.inMonth ? "text-ink" : "text-ink-3"
                     } ${isToday ? "bg-ink text-paper font-semibold" : hasEvent ? "bg-ink/10 font-medium" : ""}`}
                   >
                     <span>{cell.ymd.day}</span>

@@ -15,8 +15,8 @@ export default function ApplyPage() {
   return (
     <main className="min-h-screen">
       <section className="mx-auto max-w-[1360px] px-5 pb-12 pt-12 sm:px-8 sm:pt-16">
-        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
-          <Link href="/clubs" className="hover:text-ink">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+          <Link href="/clubs" className="inline-flex min-h-[32px] items-center hover:text-ink">
             Founders, Inc. Campus
           </Link>
           <span>/</span>
@@ -28,7 +28,7 @@ export default function ApplyPage() {
             <h1 className="font-serif text-[3rem] leading-[0.86] sm:text-[4.4rem]">
               Charter a club.
             </h1>
-            <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ink/70 sm:text-lg">
+            <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ink-2 sm:text-lg">
               If you have been gathering founders in group chats for track sessions, basketball runs
               or workshop builds, this is how it becomes an official institution. We subsidise venue
               access, track days, court fees and equipment. You run the sessions.
@@ -41,7 +41,7 @@ export default function ApplyPage() {
             <Scrap tone="kraft" rotate={-2} className="relative px-6 py-6">
               <Tape className="-right-5 -top-3" rotate={26} width={96} height={28} />
               <p className="label">What gets approved</p>
-              <ul className="mt-3 space-y-2 text-[13px] leading-snug text-ink/85">
+              <ul className="mt-3 space-y-2 text-[13px] leading-snug text-ink">
                 <li>— a specific cadence</li>
                 <li>— a real first date</li>
                 <li>— ten names who will show</li>
@@ -67,9 +67,9 @@ export default function ApplyPage() {
                 className="relative h-full px-5 py-6"
               >
                 <Tape className="-top-3 left-4" rotate={index % 2 === 0 ? -18 : 14} width={68} height={22} />
-                <span className="font-mono text-[11px] tracking-[0.14em] text-ink/45">{step.n}</span>
+                <span className="font-mono text-[11px] tracking-[0.14em] text-ink-3">{step.n}</span>
                 <h3 className="mt-3 font-serif text-[1.7rem] leading-[0.95]">{step.title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-ink/70">{step.body}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-ink-2">{step.body}</p>
               </Scrap>
             </li>
           ))}
@@ -84,17 +84,17 @@ export default function ApplyPage() {
             <h2 className="mt-3 font-serif text-[2.2rem] leading-[0.95] sm:text-[3rem]">
               What Founders, Inc. subsidises.
             </h2>
-            <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-ink/70">
+            <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-ink-2">
               Enough to run the thing properly. Not a salary and not a blank cheque.
             </p>
           </div>
           <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:col-span-8">
             {perks.map((perk) => (
               <li key={perk.label} className="border-t border-ink/15 pt-4">
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
                   {perk.label}
                 </span>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-ink/80">{perk.detail}</p>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-ink">{perk.detail}</p>
               </li>
             ))}
           </ul>
@@ -108,7 +108,7 @@ export default function ApplyPage() {
           <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.9] sm:text-[3.4rem]">
             Charter proposal.
           </h2>
-          <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-ink/70">
+          <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-ink-2">
             Reviewed weekly by the campus team. Approved clubs get venue bookings, production
             support and a budget.
           </p>

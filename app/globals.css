@@ -13,6 +13,12 @@
 @theme {
   --color-ink: #241A15;
   --color-ink-soft: #5A4A3F;
+  /* Text tones for the clubhouse wall. Solid colours, not ink/@opacity, so the
+     ratio is the same on paper, paperdeep, printed textures and kraft stock.
+     ink-2 and ink-3 both clear 4.5:1 on paper (#f4ede1), paperdeep (#eadfcc)
+     and the textured scraps; ink-2 also clears it on bare kraft (#c9a87c). */
+  --color-ink-2: #4A3A30; /* 9.31 paper · 8.21 deep · 4.84 kraft */
+  --color-ink-3: #6B584A; /* 5.78 paper · 5.10 deep · 5.17 textured */
   --color-paper: #F4EDE1;
   --color-paperdeep: #EADFCC;
   --color-kraft: #C9A87C;
@@ -57,6 +63,19 @@
 
 * {
   box-sizing: border-box;
+}
+
+/* Tape, pins and rotated scraps are deliberately allowed to overhang their
+   paper, which pushed the document past the viewport width on phones. `clip`
+   keeps the overhang visible inside the page while removing the horizontal
+   scrollbar, and (unlike `hidden`) does not turn the root into a scroll
+   container, so the sticky header keeps working. */
+html {
+  overflow-x: clip;
+}
+
+body {
+  overflow-x: clip;
 }
 
 html,

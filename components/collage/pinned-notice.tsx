@@ -13,7 +13,7 @@ export function PinnedNotice({ event }: { event: ClubEvent }) {
       <Pin className="-top-1.5 left-1/2 -translate-x-1/2" />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/60">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-2">
           Pinned to the board · next session
         </span>
         <Stamp>{event.capacity ? `${event.capacity} driver cap` : "Open field"}</Stamp>
@@ -42,13 +42,13 @@ export function PinnedNotice({ event }: { event: ClubEvent }) {
             />
           </svg>
           <div className="relative text-center">
-            <span className="block font-mono text-[10px] uppercase tracking-[0.16em] text-ink/60">
+            <span className="block font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2">
               {formatWeekday(event.datetime)}
             </span>
             <span className="block font-serif text-[3.4rem] leading-none">
               {formatDay(event.datetime)}
             </span>
-            <span className="block font-mono text-[11px] tnum text-ink/70">
+            <span className="block font-mono text-[11px] tnum text-ink-2">
               {formatTime(event.datetime)}
             </span>
           </div>
@@ -58,11 +58,11 @@ export function PinnedNotice({ event }: { event: ClubEvent }) {
           <h3 className="font-serif text-[2rem] leading-[0.95] sm:text-[2.6rem]">
             {event.title}
           </h3>
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink/60">
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2">
             {event.location}
             {club ? ` · ${club.name}` : ""}
           </p>
-          <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink/75">
+          <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-2">
             {event.description}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">

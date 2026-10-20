@@ -31,7 +31,7 @@ export function StickerSheet({ clubs, now }: { clubs: Club[]; now: Date }) {
 
                 <div className="flex items-start justify-between gap-3">
                   <span className="label">{club.theme?.tag ?? "Campus club"}</span>
-                  <span className="label tnum text-ink/45">
+                  <span className="label tnum text-ink-3">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                 </div>
@@ -54,28 +54,28 @@ export function StickerSheet({ clubs, now }: { clubs: Club[]; now: Date }) {
 
                 <div className="mt-4">
                   <h3 className="font-serif text-[2rem] leading-none">{club.name}</h3>
-                  <p className="mt-2 text-[13px] leading-relaxed text-ink/70">
+                  <p className="mt-2 text-[13px] leading-relaxed text-ink-2">
                     {club.tagline}
                   </p>
                 </div>
 
-                <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-ink/10 pt-3 font-mono text-[10px] uppercase tracking-[0.1em] text-ink/55">
+                <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-ink/10 pt-3 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-3">
                   <div>
                     <dt>Cadence</dt>
-                    <dd className="mt-1 normal-case tracking-normal text-[12px] text-ink/80">
+                    <dd className="mt-1 normal-case tracking-normal text-[12px] text-ink">
                       {club.cadence}
                     </dd>
                   </div>
                   <div className="min-w-0">
                     <dt>Next</dt>
-                    <dd className="mt-1 truncate normal-case tracking-normal text-[12px] text-ink/80">
+                    <dd className="mt-1 truncate normal-case tracking-normal text-[12px] text-ink">
                       {next ? formatMonthDay(next.datetime) : "TBA"}
                     </dd>
                   </div>
                 </dl>
 
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-3">
                     {club.status === "active" ? "Running" : "Chartering"}
                   </span>
                   <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink underline decoration-ink/30 underline-offset-4">

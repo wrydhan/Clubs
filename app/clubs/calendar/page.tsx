@@ -23,8 +23,8 @@ export default function CalendarPage() {
   return (
     <main className="min-h-screen">
       <section className="mx-auto max-w-[1360px] px-5 pb-10 pt-12 sm:px-8 sm:pt-16">
-        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
-          <Link href="/clubs" className="hover:text-ink">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+          <Link href="/clubs" className="inline-flex min-h-[32px] items-center hover:text-ink">
             Founders, Inc. Clubs
           </Link>
           <span>/</span>
@@ -36,7 +36,7 @@ export default function CalendarPage() {
             <h1 className="font-serif text-[3rem] leading-[0.86] sm:text-[4.4rem]">
               What&apos;s pinned this month.
             </h1>
-            <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-ink/70">
+            <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-ink-2">
               Confirmed sessions: Sonoma track days, machine hours at the workshop, gym runs and
               field days. Every date links to its Luma RSVP.
             </p>

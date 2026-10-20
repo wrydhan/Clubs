@@ -87,8 +87,8 @@ export default async function ClubPage({ params }: Props) {
     <main className="min-h-screen">
       {/* breadcrumb */}
       <div className="mx-auto max-w-[1360px] px-5 pt-8 sm:px-8">
-        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
-          <Link href="/clubs" className="hover:text-ink">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+          <Link href="/clubs" className="inline-flex min-h-[32px] items-center hover:text-ink">
             The wall
           </Link>
           <span>/</span>
@@ -108,7 +108,7 @@ export default async function ClubPage({ params }: Props) {
             <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="bg-ink/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/70">
+                  <span className="bg-ink/8 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2">
                     {club.theme?.tag ?? "Campus club"}
                   </span>
                   <Stamp>{club.status === "active" ? "season running" : "chartering"}</Stamp>
@@ -116,7 +116,7 @@ export default async function ClubPage({ params }: Props) {
                 <h1 className="mt-5 font-serif text-[3.4rem] leading-[0.84] sm:text-[5rem]">
                   {club.name}
                 </h1>
-                <p className="scrawl mt-4 max-w-[26ch] text-[1.5rem] leading-tight text-ink/85">
+                <p className="scrawl mt-4 max-w-[26ch] text-[1.5rem] leading-tight text-ink">
                   {club.tagline}
                 </p>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -171,7 +171,7 @@ export default async function ClubPage({ params }: Props) {
                 <h2 className="mt-3 font-serif text-[2.2rem] leading-[0.95] sm:text-[2.8rem]">
                   {isCars ? "Built for founders who take driving seriously." : "What happens here."}
                 </h2>
-                <p className="mt-4 text-[15px] leading-relaxed text-ink/80">{club.description}</p>
+                <p className="mt-4 text-[15px] leading-relaxed text-ink">{club.description}</p>
 
                 <dl className="mt-7 grid grid-cols-2 gap-6 border-t border-ink/15 pt-5">
                   <div>
@@ -198,7 +198,7 @@ export default async function ClubPage({ params }: Props) {
                       className="object-cover"
                     />
                   </div>
-                  <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ink/50">
+                  <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-3">
                     Pier 2 field archive · {club.slug}
                   </p>
                 </div>
@@ -214,12 +214,12 @@ export default async function ClubPage({ params }: Props) {
                 <ol className="mt-7 space-y-5">
                   {itinerary.map((item) => (
                     <li key={item.time} className="flex items-start gap-5 border-t border-ink/12 pt-4">
-                      <span className="w-16 shrink-0 font-mono text-[12px] tnum text-ink/70">
+                      <span className="w-16 shrink-0 font-mono text-[12px] tnum text-ink-2">
                         {item.time}
                       </span>
                       <div>
                         <h3 className="text-[14px] font-medium text-ink">{item.title}</h3>
-                        <p className="mt-1 text-[13px] leading-relaxed text-ink/70">{item.body}</p>
+                        <p className="mt-1 text-[13px] leading-relaxed text-ink-2">{item.body}</p>
                       </div>
                     </li>
                   ))}
@@ -243,7 +243,7 @@ export default async function ClubPage({ params }: Props) {
                           key={term}
                           className="flex items-baseline justify-between gap-4 border-b border-ink/15 pb-2 last:border-0"
                         >
-                          <dt className="text-ink/60">{term}</dt>
+                          <dt className="text-ink-2">{term}</dt>
                           <dd className="text-right font-medium text-ink">{value}</dd>
                         </div>
                       ))}
@@ -255,7 +255,7 @@ export default async function ClubPage({ params }: Props) {
                   <Tape className="-right-4 -top-3" rotate={22} width={90} height={26} />
                   <span className="label">Bring</span>
                   <h2 className="mt-2 font-serif text-[1.8rem] leading-none">What you need.</h2>
-                  <ul className="mt-4 space-y-2 text-[13px] leading-relaxed text-ink/80">
+                  <ul className="mt-4 space-y-2 text-[13px] leading-relaxed text-ink">
                     {checklist.map((item) => (
                       <li key={item} className="flex gap-2">
                         <span aria-hidden>—</span>
@@ -270,7 +270,7 @@ export default async function ClubPage({ params }: Props) {
             {isCars ? (
               <Scrap tone="cream" rotate={-0.5} className="relative px-6 py-7">
                 <span className="label">Driver checklist</span>
-                <ul className="mt-4 grid gap-2.5 text-[13px] text-ink/80 sm:grid-cols-2">
+                <ul className="mt-4 grid gap-2.5 text-[13px] text-ink sm:grid-cols-2">
                   {checklist.map((item) => (
                     <li key={item} className="flex gap-2">
                       <span aria-hidden>—</span>
@@ -291,7 +291,7 @@ export default async function ClubPage({ params }: Props) {
                       Prints from the last one.
                     </h2>
                   </div>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/45">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
                     Founders, Inc. media team
                   </span>
                 </div>
@@ -312,7 +312,7 @@ export default async function ClubPage({ params }: Props) {
                         />
                       </div>
                       {image.caption ? (
-                        <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ink/55">
+                        <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
                           {image.caption}
                         </p>
                       ) : null}
@@ -325,7 +325,7 @@ export default async function ClubPage({ params }: Props) {
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/15 pt-6">
               <Link
                 href="/clubs"
-                className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink/60 underline decoration-ink/25 underline-offset-4 hover:text-ink"
+                className="inline-flex min-h-[36px] items-center font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink"
               >
                 ← Back to the wall
               </Link>

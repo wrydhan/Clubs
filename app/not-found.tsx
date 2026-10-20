@@ -9,7 +9,7 @@ export default function NotFound() {
           <Tape className="-left-5 -top-3" rotate={-22} width={96} height={28} />
           <span className="label">404 · scrap not found</span>
           <h1 className="mt-4 font-serif text-[2.8rem] leading-[0.9]">This one fell off the board.</h1>
-          <p className="mt-4 text-sm leading-relaxed text-ink/70">
+          <p className="mt-4 text-sm leading-relaxed text-ink-2">
             The club may have ended, or the link is off the pin.
           </p>
           <Link href="/clubs" className="pill-btn mt-7">

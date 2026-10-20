@@ -81,7 +81,7 @@ export function ApplyForm() {
           Charter Received
         </span>
         <h3 className="font-serif text-4xl text-ink">Proposal Submitted</h3>
-        <p className="mt-3 max-w-md mx-auto text-sm text-ink/60 leading-relaxed font-sans">
+        <p className="mt-3 max-w-md mx-auto text-sm text-ink-2 leading-relaxed font-sans">
           The campus team reviews club proposals weekly. We will reach out to schedule an in-person walkthrough at Fort Mason Pier 2.
         </p>
       </div>
@@ -91,8 +91,8 @@ export function ApplyForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="paper-card p-8 sm:p-10 flex flex-col gap-6">
       <div className="flex items-center justify-between pb-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-ink/40">Campus Charter Application</span>
-        <span className="font-mono text-xs text-ink/40">* Required</span>
+        <span className="font-mono text-xs uppercase tracking-wider text-ink-3">Campus Charter Application</span>
+        <span className="font-mono text-xs text-ink-3">* Required</span>
       </div>
 
       {fields.map((field) => {
@@ -112,11 +112,11 @@ export function ApplyForm() {
             setValues((current) => ({ ...current, [field.name]: value }));
           },
           className:
-            "mt-2 w-full rounded-[2px] bg-paper/70 px-4 py-3 text-sm text-ink outline-none placeholder:text-ink/35 focus:ring-2 focus:ring-black border-0 transition-all font-sans",
+            "mt-2 w-full rounded-[2px] bg-paper/70 px-4 py-3 text-sm text-ink outline-none placeholder:text-ink-3 focus:ring-2 focus:ring-black border-0 transition-all font-sans",
         };
         return (
           <label key={field.name} className="block" htmlFor={field.name}>
-            <span className="font-mono text-[11px] uppercase tracking-wider text-ink/60 font-medium">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-ink-2 font-medium">
               {field.label}
             </span>
             {field.type === "textarea" ? (

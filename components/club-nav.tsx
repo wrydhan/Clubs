@@ -11,7 +11,7 @@ export function ClubNav({ currentSlug }: { currentSlug?: string }) {
         <li>
           <Link
             href="/clubs"
-            className="inline-block bg-ink/8 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink/60 transition-colors hover:bg-ink/15 hover:text-ink"
+            className="inline-flex min-h-[36px] items-center bg-ink/8 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-2 transition-colors hover:bg-ink/15 hover:text-ink"
           >
             ← The whole wall
           </Link>
@@ -23,10 +23,10 @@ export function ClubNav({ currentSlug }: { currentSlug?: string }) {
               <Link
                 href={`/clubs/${club.slug}`}
                 aria-current={active ? "page" : undefined}
-                className={`inline-block px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors ${
+                className={`inline-flex min-h-[36px] items-center px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors ${
                   active
                     ? "bg-ink text-paper"
-                    : "bg-ink/8 text-ink/70 hover:bg-ink/15 hover:text-ink"
+                    : "bg-ink/8 text-ink-2 hover:bg-ink/15 hover:text-ink"
                 }`}
               >
                 {club.name}

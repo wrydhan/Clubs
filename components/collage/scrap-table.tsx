@@ -156,7 +156,7 @@ export function ScrapTable() {
       <div className="paper-card px-5 py-6">
         <span className="label">The table</span>
         <h3 className="mt-2 font-serif text-[1.9rem] leading-none">Cut your own scrap.</h3>
-        <p className="mt-2 text-[13px] leading-relaxed text-ink/70">
+        <p className="mt-2 text-[13px] leading-relaxed text-ink-2">
           Pick a paper, pick a sticker, drag it into place. Take it to your downloads.
         </p>
 
@@ -167,7 +167,7 @@ export function ScrapTable() {
               <label
                 key={key}
                 className={`cursor-pointer rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] transition-colors ${
-                  paper === key ? "bg-ink text-paper" : "bg-ink/10 text-ink/70 hover:bg-ink/20"
+                  paper === key ? "bg-ink text-paper" : "bg-ink/10 text-ink-2 hover:bg-ink/20"
                 }`}
               >
                 <input
@@ -226,7 +226,7 @@ export function ScrapTable() {
             max={24}
             value={angle}
             onChange={(event) => setAngle(Number(event.target.value))}
-            className="mt-2 w-full accent-[#241a15]"
+            className="mt-2 h-7 w-full accent-[#241a15]"
           />
         </div>
 
@@ -246,7 +246,7 @@ export function ScrapTable() {
             Start over
           </button>
         </div>
-        <p aria-live="polite" className="mt-3 font-mono text-[10px] leading-relaxed text-ink/55">
+        <p aria-live="polite" className="mt-3 font-mono text-[10px] leading-relaxed text-ink-3">
           {note}
         </p>
       </div>

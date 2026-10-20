@@ -222,7 +222,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                 <p className="scrawl mt-4 max-w-[34ch] text-xl sm:text-2xl">
                   a wall to poke around in, and a table to cut your own.
                 </p>
-                <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-ink/70">
+                <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-ink-2">
                   Track days, workshop nights, pickup runs and field days, run by members of the
                   Pier 2 campus. Nothing on this board is a networking event.
                 </p>
