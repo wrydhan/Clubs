@@ -350,7 +350,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
           </div>
         </div>
 
-        <p className="relative z-20 mt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-[#f0e4d2]/80">
+        <p className="relative z-20 mt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
           Drag a scrap, or tab to it and use the arrow keys · press R to put it back
         </p>
         <p aria-live="polite" className="sr-only">
