@@ -12,7 +12,7 @@ import {
   ymdKey,
   type YMD,
 } from "@/lib/dates";
-import { formatFullDate, formatMonth, formatTime, formatWeekday, formatYmd, laYmdFromIso } from "@/lib/format";
+import { formatMonth, formatTime, formatWeekday, formatYmd, laYmdFromIso } from "@/lib/format";
 import { subscribeUrl } from "@/lib/site";
 
 export type CalendarEvent = {
