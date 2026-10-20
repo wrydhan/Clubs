@@ -35,6 +35,8 @@ type DragState = {
   oy: number;
   /** true once the press has travelled past DRAG_THRESHOLD */
   live: boolean;
+  /** a press that never travelled is a click, not a drag */
+  moved: boolean;
   captured: boolean;
   overZone: DragZone | null;
   beyondEdge: boolean;
@@ -198,17 +200,21 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
         startY: event.clientY,
         ox: offsets[id].x,
         oy: offsets[id].y,
-        // Touch has no hover: a touch press is a drag straight away, and the
-        // capture has to happen now so the finger keeps steering the scrap.
-        live: event.pointerType !== "mouse",
+        live: false,
+        moved: false,
         captured: false,
         overZone: null,
         beyondEdge: false,
       };
-      if (drag.current.live) {
-        el.setPointerCapture(event.pointerId);
-        drag.current.captured = true;
-        setActive(id);
+      // Touch has no hover, so the capture happens on press; the scrap only
+      // counts as picked up once the finger has actually travelled.
+      if (event.pointerType !== "mouse") {
+        try {
+          el.setPointerCapture(event.pointerId);
+          drag.current.captured = true;
+        } catch {
+          /* capture is a nicety; the element still receives the moves */
+        }
       }
     };
   }
@@ -222,6 +228,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
       if (!state.live) {
         if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
         state.live = true;
+        state.moved = true;
         try {
           event.currentTarget.setPointerCapture(event.pointerId);
           state.captured = true;
@@ -273,6 +280,15 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
         setAnnounce(`Carried ${scrapLabels[id]} off the wall — opening ${href.replace(/^https?:\/\//, "")}.`);
         resetOne(id);
         go(href);
+        return;
+      }
+      // A press that never travelled is a click: peel the sticker off, i.e. open
+      // the page it belongs to. The hero sheet is exempt — its own links and
+      // buttons do the talking, and it would only navigate to itself.
+      if (!state.live && id !== "wordmark") {
+        setAnnounce(`Opening ${scrapLabels[id]} — ${destinations[id]}.`);
+        resetOne(id);
+        go(destinations[id]);
         return;
       }
       // Dropped back inside: settle home and clamp so it stays on the paper.
@@ -347,7 +363,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
     tabIndex: 0,
     role: "group" as const,
     draggable: false as const,
-    "aria-label": `${scrapLabels[id]} — drag it to move it, arrow keys to nudge, R to put it back, Enter to open ${destinations[id]}`,
+    "aria-label": `${scrapLabels[id]} — click or press Enter to open ${destinations[id]}, drag it to move it, arrow keys to nudge, R to put it back`,
     "data-dragging": active === id || undefined,
     style: { touchAction, WebkitUserSelect: "none" as const },
   });
@@ -441,11 +457,11 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
             })}
           </div>
 
-          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[660px] md:pt-12">
+          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[660px] md:pt-12 xl:grid xl:min-h-[660px] xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)_minmax(0,1fr)] xl:grid-rows-[auto_auto_auto] xl:gap-x-6 xl:gap-y-10">
             {/* THE WORDPRESS SCRAP */}
             <div
               {...dragProps("wordmark", "pan-y")}
-              className={`relative z-20 w-full max-w-[620px] cursor-grab select-none active:cursor-grabbing md:ml-6 ${
+              className={`relative z-20 w-full max-w-[620px] cursor-grab select-none active:cursor-grabbing xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-span-2 xl:self-start xl:justify-self-start ${
                 active === "wordmark" ? "z-40 cursor-grabbing" : ""
               }`}
               style={{
@@ -495,16 +511,16 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
             </div>
 
             {/* the rest of the board */}
-            <div className="relative z-10 md:absolute md:inset-0">
+            <div className="relative z-10 xl:contents">
               {/* handwritten note */}
               <div
                 {...dragProps("note")}
-                className={`relative z-20 mt-8 w-[220px] cursor-grab select-none sm:w-[260px] md:absolute md:right-[3%] md:top-[6%] md:mt-0 ${
+                className={`relative z-20 mt-8 w-[220px] cursor-grab select-none sm:w-[260px] xl:mt-0 xl:col-start-2 xl:row-start-1 xl:justify-self-end xl:self-start ${
                   active === "note" ? "z-40" : ""
                 }`}
                 style={{
                   touchAction: "none",
-                  transform: `${layer(0.75)} rotate(2.4deg) translate(${offsets.note.x}px, ${offsets.note.y}px)`,
+                  transform: `${layer(0.75)} rotate(1.6deg) translate(${offsets.note.x}px, ${offsets.note.y}px)`,
                 }}
               >
                 <Tape className="-left-8 -top-3 z-30" rotate={-8} width={104} height={30} />
@@ -525,12 +541,12 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
               {/* magazine cut-outs, multiply so the print sits in the paper */}
               <div
                 {...dragProps("helmet")}
-                className={`relative z-10 mt-8 hidden cursor-grab select-none sm:block md:absolute md:right-[16%] md:top-[46%] md:mt-0 ${
+                className={`relative z-10 mt-8 hidden w-fit cursor-grab select-none sm:block xl:mt-0 xl:col-start-3 xl:row-start-1 xl:justify-self-start xl:self-center ${
                   active === "helmet" ? "z-40" : ""
                 }`}
                 style={{
                   touchAction: "none",
-                  transform: `${layer(1)} rotate(-5deg) translate(${offsets.helmet.x}px, ${offsets.helmet.y}px)`,
+                  transform: `${layer(1)} rotate(-3deg) translate(${offsets.helmet.x}px, ${offsets.helmet.y}px)`,
                 }}
               >
                 <Image
@@ -547,12 +563,12 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
 
               <div
                 {...dragProps("sneaker")}
-                className={`relative z-10 mt-8 hidden cursor-grab select-none sm:block md:absolute md:right-[2%] md:top-[68%] md:mt-0 ${
+                className={`relative z-10 mt-8 hidden w-fit cursor-grab select-none sm:block xl:mt-0 xl:col-start-2 xl:col-end-4 xl:row-start-2 xl:justify-self-center xl:self-center ${
                   active === "sneaker" ? "z-40" : ""
                 }`}
                 style={{
                   touchAction: "none",
-                  transform: `${layer(0.9)} rotate(4.5deg) translate(${offsets.sneaker.x}px, ${offsets.sneaker.y}px)`,
+                  transform: `${layer(0.9)} rotate(3deg) translate(${offsets.sneaker.x}px, ${offsets.sneaker.y}px)`,
                 }}
               >
                 <Image
@@ -570,12 +586,12 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
               {/* club stickers, pinned to the board */}
               <div
                 {...dragProps("badge-cars")}
-                className={`relative z-20 mt-8 w-[140px] cursor-grab select-none sm:w-[160px] md:absolute md:bottom-[6%] md:left-[11%] md:mt-0 ${
+                className={`relative z-20 mt-8 w-[140px] cursor-grab select-none sm:w-[160px] xl:mt-0 xl:col-start-1 xl:row-start-3 xl:justify-self-start xl:self-center ${
                   active === "badge-cars" ? "z-40" : ""
                 }`}
                 style={{
                   touchAction: "none",
-                  transform: `${layer(1.2)} rotate(-8deg) translate(${offsets["badge-cars"].x}px, ${offsets["badge-cars"].y}px)`,
+                  transform: `${layer(1.2)} rotate(-3.5deg) translate(${offsets["badge-cars"].x}px, ${offsets["badge-cars"].y}px)`,
                 }}
               >
                 <Tape className="-top-3 left-1/2 z-30 -translate-x-1/2" rotate={-4} width={70} height={24} />
@@ -593,12 +609,12 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
 
               <div
                 {...dragProps("badge-hoops")}
-                className={`relative z-20 mt-8 ml-auto w-[132px] cursor-grab select-none sm:w-[150px] md:absolute md:bottom-[3%] md:right-[30%] md:mt-0 ${
+                className={`relative z-20 mt-8 ml-auto w-[132px] cursor-grab select-none sm:w-[150px] xl:mt-0 xl:ml-0 xl:col-start-3 xl:row-start-3 xl:justify-self-end xl:self-center ${
                   active === "badge-hoops" ? "z-40" : ""
                 }`}
                 style={{
                   touchAction: "none",
-                  transform: `${layer(0.6)} rotate(7deg) translate(${offsets["badge-hoops"].x}px, ${offsets["badge-hoops"].y}px)`,
+                  transform: `${layer(0.6)} rotate(3.5deg) translate(${offsets["badge-hoops"].x}px, ${offsets["badge-hoops"].y}px)`,
                 }}
               >
                 <Image
@@ -616,12 +632,12 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
               {/* the index card that charters a new club */}
               <div
                 {...dragProps("charter")}
-                className={`relative z-20 mt-8 w-[190px] cursor-grab select-none md:absolute md:bottom-[10%] md:left-[40%] md:mt-0 ${
+                className={`relative z-20 mt-8 w-[190px] cursor-grab select-none xl:mt-0 xl:col-start-2 xl:row-start-3 xl:justify-self-center xl:self-center ${
                   active === "charter" ? "z-40" : ""
                 }`}
                 style={{
                   touchAction: "none",
-                  transform: `${layer(0.5)} rotate(-2.6deg) translate(${offsets.charter.x}px, ${offsets.charter.y}px)`,
+                  transform: `${layer(0.5)} rotate(-2deg) translate(${offsets.charter.x}px, ${offsets.charter.y}px)`,
                 }}
               >
                 <Tape className="-right-6 -top-3 z-30" rotate={18} width={78} height={24} />
@@ -638,8 +654,8 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
         </div>
 
         <p className="relative z-20 mt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-          Drag a scrap across the wall — drop it on a taped zone, or carry it off the paper to open
-          that page · arrow keys nudge · R puts it back
+          Click a scrap and it peels off the wall and opens its page · or drag one across the paper,
+          drop it on a taped zone, or carry it off the edge · arrow keys nudge · R puts it back
         </p>
         <p aria-live="polite" className="sr-only">
           {announce}
