@@ -110,7 +110,14 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
     if (!board) return false;
     const rect = board.getBoundingClientRect();
     const margin = 16;
+    // On a phone the board is full-bleed, so its own left and right edges sit
+    // outside the viewport and "carry it off the wall" could never fire. There
+    // the screen edge is the wall edge: a scrap taken to the side of the screen
+    // is off the paper.
+    const fullBleed = rect.left <= margin && rect.right >= window.innerWidth - margin;
+    const atScreenEdge = fullBleed && (x <= 2 || x >= window.innerWidth - 2);
     return (
+      atScreenEdge ||
       x < rect.left - margin ||
       x > rect.right + margin ||
       y < rect.top - margin ||
