@@ -81,7 +81,9 @@ const wallNotes = [
 
 export function DeskScene() {
   const spinRef = useRef(0);
-  const turn = useRef<{ id: number; x: number; base: number } | null>(null);
+  const turn = useRef<{ id: number; x: number; base: number; captured: boolean } | null>(null);
+  /** A press that has not passed the drag threshold yet: let its click through. */
+  const dragged = useRef(false);
   const nameTouched = useRef(false);
 
   const [emblem, setEmblem] = useState<string>(stickerOptions[0].id);
@@ -150,27 +152,50 @@ export function DeskScene() {
     setNote(`${target.name} cut out and laid on the table.`);
   }
 
+  /** Pixels of horizontal travel before a press becomes a drag. Below it, a press is a tap. */
+  const DRAG_THRESHOLD = 6;
+
   function onStagePointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (event.button !== 0) return;
-    turn.current = { id: event.pointerId, x: event.clientX, base: spinRef.current };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    dragged.current = false;
+    turn.current = { id: event.pointerId, x: event.clientX, base: spinRef.current, captured: false };
     setGliding(false);
   }
 
   function onStagePointerMove(event: React.PointerEvent<HTMLDivElement>) {
     const state = turn.current;
     if (!state || state.id !== event.pointerId) return;
-    applySpin(state.base + (event.clientX - state.x) * 0.55, false);
+    const travel = event.clientX - state.x;
+    // Capture only once this is unmistakably a drag, so a press that starts on a
+    // club card keeps its click and can still reach pickOrbit.
+    if (!state.captured) {
+      if (Math.abs(travel) < DRAG_THRESHOLD) return;
+      state.captured = true;
+      dragged.current = true;
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        /* capture unavailable */
+      }
+    }
+    applySpin(state.base + travel * 0.55, false);
   }
 
   function onStagePointerUp(event: React.PointerEvent<HTMLDivElement>) {
     const state = turn.current;
-    if (!state) return;
+    if (!state || state.id !== event.pointerId) return;
     turn.current = null;
-    try {
-      event.currentTarget.releasePointerCapture(state.id);
-    } catch {
-      /* already released */
+    if (state.captured) {
+      try {
+        event.currentTarget.releasePointerCapture(state.id);
+      } catch {
+        /* already released */
+      }
+    }
+    // A tap: the card's own click runs pickOrbit, so leave the ring and the note alone.
+    if (!dragged.current) {
+      const onCard = (event.target as HTMLElement | null)?.closest?.("[data-orbit-card]");
+      if (onCard) return;
     }
     const snapped = Math.round(spinRef.current / 90) * 90;
     applySpin(snapped, true);
@@ -265,6 +290,10 @@ export function DeskScene() {
               onPointerMove={onStagePointerMove}
               onPointerUp={onStagePointerUp}
               onPointerCancel={onStagePointerUp}
+              onClick={() => {
+                // Any click, on a card or on the stage, ends the press.
+                dragged.current = false;
+              }}
               onKeyDown={(event) => {
                 if (event.key === "ArrowLeft") {
                   event.preventDefault();
@@ -312,7 +341,15 @@ export function DeskScene() {
                       >
                         <button
                           type="button"
-                          onClick={() => pickOrbit(item.slug)}
+                          data-orbit-card={item.slug}
+                          onClick={() => {
+                            // A press that turned into a drag must not also pick the card.
+                            if (dragged.current) {
+                              dragged.current = false;
+                              return;
+                            }
+                            pickOrbit(item.slug);
+                          }}
                           aria-pressed={chosen}
                           className={`group relative flex w-full flex-col items-stretch bg-paper px-3 pb-2.5 pt-2 text-left shadow-[var(--shadow-lift)] transition-transform duration-200 ease-[var(--ease-paper)] hover:-translate-y-1 motion-reduce:transition-none ${
                             chosen ? "outline outline-2 outline-offset-2 outline-paper" : ""
