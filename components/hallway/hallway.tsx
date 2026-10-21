@@ -3,165 +3,254 @@
 /**
  * The hallway — the Clubs entrance at `/clubs`.
  *
- * One continuous camera in three beats, all real 3D geometry in CSS (no library,
- * so nothing to lazy-load and no bundle cost on the other routes):
+ * Two layers, one page:
  *
- *   walk      scroll dollies the eye down a corridor at walking pace, with a
- *             head-bob and sway so it reads as feet, not a dolly. Floor, ceiling,
- *             doors, lockers and the window run are actual planes in a common
- *             perspective space, so the vanishing point converges for real.
- *   double    the eye overshoots the pinboard by a step, then pivots back to face
- *   take      it square-on (with a small lean-in), which is the moment Waleed asked
- *             for: you walk past, notice, turn back.
- *   board     the pinned flyers unpin into a legible sheet, with the funnel through
- *             to the club page. The board itself is server-rendered markup below the
- *             walk: the corridor never hides content from a crawler, a slow phone or
- *             `prefers-reduced-motion`.
+ *   ≥768px  the 3D corridor (lazily imported, see `hallway-corridor.tsx`): scroll
+ *           dollies the eye down a real CSS-3D corridor, overshoots the pinboard,
+ *           turns back and settles with the board filling the frame.
+ *   <768px  the corridor does not run at all — the spec forbids it on phones. The
+ *           page is a still of the hallway at walking eye level (drawn in single-
+ *           point perspective, no 3D, no chunk) and then the board as a normal
+ *           scrollable grid. The 3D chunk is never fetched at that width.
  *
- * Only `transform` and `opacity` are written, once per animation frame, from a
- * passive scroll listener.
+ * Below both: the board itself is server-rendered DOM — the content layer, crawlable
+ * and keyboard-reachable, and the elements that open the flyer sheet.
  */
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pin } from "@/components/collage/paper";
+import type { HallwayClub } from "./types";
 
-export type HallwayClub = {
-  slug: string;
-  name: string;
-  tagline: string;
-  description: string;
-  cadence: string;
-  location: string;
-  tag: string;
-  status: "active" | "coming-soon";
-  lead?: { name: string; role: string };
-  nextEvent?: { title: string; when: string; href: string };
-};
+export type { HallwayClub };
 
-/* ------------------------------------------------------------------ geometry */
+const Corridor = dynamic(() => import("./hallway-corridor"), { ssr: false });
 
-const HALL_HALF = 520; // walls at x = ±520
-const FLOOR_Y = 330; // floor 330 below the eye
-const CEIL_Y = -300;
-const HALL_LEN = 7600;
-const BOARD_Z = -2400; // the pinboard on the end wall, offset right of centre
-const BOARD_X = 150;
-const WALK_END_Z = -2280; // walking pace stops just short of it
-const OVERSHOOT_Z = -2380; // two steps further, drifting off its centre line
-const SETTLE_Z = -1960; // then back off so the board fills the frame
-const SETTLE_X = 90;
+/* ------------------------------------------------------- the still (phones) */
 
-type PlaneProps = {
-  w: number;
-  h: number;
-  x?: number;
-  y?: number;
-  z?: number;
-  rx?: number;
-  ry?: number;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
-};
+/* Single-point perspective for the poster: `t` runs 0 (near edge) → 1 (end wall),
+   and every surface is a lerp toward the far frame, so the vanishing point is real
+   rather than drawn on. */
+const VP = { x: 395, y: 240 };
+const FAR = { x0: 330, x1: 460, y0: 200, y1: 280 };
+const W = 720;
+const H = 480;
 
-/** A rectangle in world space. Eye at the origin, looking down −z. */
-function Plane({ w, h, x = 0, y = 0, z = 0, rx = 0, ry = 0, className = "", style, children }: PlaneProps) {
+const wallY = (v: number, t: number) => VP.y + (v - VP.y) * (1 - (200 / 240) * t);
+const leftX = (t: number) => FAR.x0 * t;
+const rightX = (t: number) => W - (W - FAR.x1) * t;
+const floorY = (t: number) => H - (H - FAR.y1) * t;
+const ceilY = (t: number) => FAR.y0 * t;
+const floorX = (xn: number, t: number) => xn + (VP.x + (xn - VP.x) * (40 / 240) - xn) * t;
+
+const quad = (pts: [number, number][]) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+
+function HallwayStill({ clubs }: { clubs: HallwayClub[] }) {
+  // window run on the left wall, three openings that taper with the wall
+  const windows = [0.04, 0.34, 0.62].map((t0) => {
+    const t1 = t0 + 0.2;
+    return quad([
+      [leftX(t0), wallY(96, t0)],
+      [leftX(t1), wallY(96, t1)],
+      [leftX(t1), wallY(300, t1)],
+      [leftX(t0), wallY(300, t0)],
+    ]);
+  });
+
+  // the light those windows throw across the floor
+  const pools = [0.06, 0.36, 0.64].map((t0) => {
+    const t1 = t0 + 0.16;
+    return quad([
+      [floorX(30, t0), floorY(t0)],
+      [floorX(250, t0), floorY(t0)],
+      [floorX(250, t1), floorY(t1)],
+      [floorX(30, t1), floorY(t1)],
+    ]);
+  });
+
   return (
-    <div
-      aria-hidden
-      className={`absolute left-1/2 top-1/2 ${className}`}
-      style={{
-        width: w,
-        height: h,
-        transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateX(${rx}deg) rotateY(${ry}deg)`,
-        ...style,
-      }}
-    >
-      {children}
-    </div>
+    <section aria-label="The hallway" className="relative overflow-hidden bg-[#e6dbc9] px-4 pb-10 pt-4 sm:px-8">
+      <div className="mx-auto max-w-[720px]">
+        <div className="flex items-start justify-between gap-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">
+            second floor · hallway east
+          </p>
+          <a
+            href="#board"
+            className="pill-btn-secondary inline-flex min-h-[40px] shrink-0 items-center px-4 text-[11px]"
+          >
+            Skip to the board ↓
+          </a>
+        </div>
+
+        <div className="relative mt-4 overflow-hidden rounded-[15px] shadow-[var(--shadow-lift)]">
+          <svg
+            viewBox={`0 0 ${W} ${H}`}
+            role="img"
+            aria-label="The Pier 2 hallway, seen at walking eye level: a window run on the left, lockers on the right, and the club pinboard at the far end."
+            className="block h-auto w-full"
+          >
+            <defs>
+              <linearGradient id="hall-haze" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#fff8e4" stopOpacity="0.5" />
+                <stop offset="46%" stopColor="#fff8e4" stopOpacity="0" />
+                <stop offset="100%" stopColor="#241a15" stopOpacity="0.16" />
+              </linearGradient>
+              <radialGradient id="hall-warm" cx="18%" cy="42%" r="70%">
+                <stop offset="0%" stopColor="#fff8e4" stopOpacity="0.55" />
+                <stop offset="100%" stopColor="#fff8e4" stopOpacity="0" />
+              </radialGradient>
+              <pattern id="hall-boards" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M40 0H0V40" fill="none" stroke="rgba(64,46,30,0.18)" strokeWidth="1" />
+              </pattern>
+            </defs>
+
+            <rect width={W} height={H} fill="#ddccae" />
+
+            {/* ceiling */}
+            <polygon points={quad([[0, 0], [W, 0], [FAR.x1, FAR.y0], [FAR.x0, FAR.y0]])} fill="#f0e7d8" />
+            {[0.22, 0.5, 0.74].map((t) => {
+              const t1 = t + 0.1;
+              return (
+                <polygon
+                  key={`light-${t}`}
+                  points={quad([
+                    [floorX(300, t), ceilY(t)],
+                    [floorX(420, t), ceilY(t)],
+                    [floorX(420, t1), ceilY(t1)],
+                    [floorX(300, t1), ceilY(t1)],
+                  ])}
+                  fill="#fffdf4"
+                  opacity="0.95"
+                />
+              );
+            })}
+
+            {/* floor */}
+            <polygon points={quad([[0, H], [W, H], [FAR.x1, FAR.y1], [FAR.x0, FAR.y1]])} fill="#ddccae" />
+            <polygon
+              points={quad([[0, H], [W, H], [FAR.x1, FAR.y1], [FAR.x0, FAR.y1]])}
+              fill="url(#hall-boards)"
+              opacity="0.5"
+            />
+            {pools.map((points, i) => (
+              <polygon key={`pool-${i}`} points={points} fill="#fff6da" opacity="0.45" />
+            ))}
+
+            {/* left wall: windows */}
+            <polygon points={quad([[0, 0], [FAR.x0, FAR.y0], [FAR.x0, FAR.y1], [0, H]])} fill="#d8c6a9" />
+            <polygon points={quad([[0, 0], [FAR.x0, FAR.y0], [FAR.x0, FAR.y1], [0, H]])} fill="#b39a78" opacity="0.28" />
+            {windows.map((points, i) => (
+              <g key={`win-${i}`}>
+                <polygon points={points} fill="#fffcf0" opacity="0.95" />
+                <polygon points={points} fill="none" stroke="rgba(72,52,33,0.45)" strokeWidth="2" />
+              </g>
+            ))}
+            {/* left wall doors */}
+            {[0.18, 0.46, 0.72].map((t) => {
+              const t1 = t + 0.09;
+              return (
+                <polygon
+                  key={`door-${t}`}
+                  points={quad([
+                    [leftX(t), wallY(300, t)],
+                    [leftX(t1), wallY(300, t1)],
+                    [leftX(t1), wallY(430, t1)],
+                    [leftX(t), wallY(430, t)],
+                  ])}
+                  fill="#8a6b4d"
+                />
+              );
+            })}
+
+            {/* right wall: lockers */}
+            <polygon points={quad([[W, 0], [FAR.x1, FAR.y0], [FAR.x1, FAR.y1], [W, H]])} fill="#d9c8ac" />
+            <polygon
+              points={quad([[W, 0], [FAR.x1, FAR.y0], [FAR.x1, FAR.y1], [W, H]])}
+              fill="#b39a78"
+              opacity="0.2"
+            />
+            <polygon
+              points={quad([
+                [W, wallY(150, 0)],
+                [FAR.x1, wallY(150, 1)],
+                [FAR.x1, wallY(370, 1)],
+                [W, wallY(370, 0)],
+              ])}
+              fill="#708478"
+              opacity="0.32"
+            />
+            {[0.12, 0.26, 0.4, 0.54, 0.68, 0.82].map((t) => (
+              <line
+                key={`locker-${t}`}
+                x1={rightX(t)}
+                y1={wallY(150, t)}
+                x2={rightX(t)}
+                y2={wallY(370, t)}
+                stroke="rgba(52,58,52,0.35)"
+                strokeWidth="2"
+              />
+            ))}
+
+            {/* end wall: fire door + the pinboard */}
+            <rect
+              x={FAR.x0}
+              y={FAR.y0}
+              width={FAR.x1 - FAR.x0}
+              height={FAR.y1 - FAR.y0}
+              fill="#cdbb9f"
+            />
+            <rect x={VP.x - 22} y={FAR.y0 + 22} width={44} height={FAR.y1 - FAR.y0 - 22} fill="#7a5c40" />
+            <rect x={VP.x - 22} y={FAR.y1 - 52} width={44} height={12} fill="#1f6b4a" />
+            {/* the board, on the end wall, four sheets pinned */}
+            <rect x={FAR.x0 + 6} y={FAR.y0 + 8} width={72} height={46} fill="#6b4b2e" />
+            <rect x={FAR.x0 + 9} y={FAR.y0 + 11} width={66} height={40} fill="#7a5836" />
+            {[0, 1, 2, 3].map((i) => (
+              <rect
+                key={`sheet-${i}`}
+                x={FAR.x0 + 13 + (i % 2) * 33}
+                y={FAR.y0 + 15 + Math.floor(i / 2) * 18}
+                width={28}
+                height={15}
+                fill="#fdfbf4"
+                transform={`rotate(${i % 2 ? 1.6 : -2} ${FAR.x0 + 27 + (i % 2) * 33} ${FAR.y0 + 22 + Math.floor(i / 2) * 18})`}
+              />
+            ))}
+
+            <rect width={W} height={H} fill="url(#hall-warm)" />
+            <rect width={W} height={H} fill="url(#hall-haze)" />
+          </svg>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-3">
+            <span className="bg-paper/92 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft shadow-[var(--shadow-scrap)]">
+              the board is at the end of the hall · {clubs.length} sheets
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
+          <p className="max-w-[30ch] font-serif text-[1.55rem] leading-[0.95] text-ink">
+            The hallway, at walking eye level.
+          </p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2">
+            tap a flyer to unpin it ↓
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
-/** Kraft / cork / paper grain, so the corridor is the same world as the board. */
-function Grain({ src, size = 420, opacity = 0.3 }: { src: string; size?: number; opacity?: number }) {
-  return (
-    <span
-      className="pointer-events-none absolute inset-0"
-      style={{
-        backgroundImage: `url(${src})`,
-        backgroundSize: `${size}px`,
-        opacity,
-        mixBlendMode: "multiply",
-      }}
-    />
-  );
+/* ------------------------------------------------------ the fallback shell */
+
+/** Painted before the corridor chunk lands, at the corridor's exact height, so
+    mounting it shifts nothing. */
+function StageShell() {
+  return <div aria-hidden className="h-[calc(100dvh-4rem)] bg-[#e6dbc9] md:h-[calc(190dvh-4rem)]" />;
 }
 
-/* ------------------------------------------------------------------ the walk */
-
-const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
-const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-
-/* WP2 pins the mapping: walk 0 → 0.60, overshoot + turn-back 0.60 → 0.85,
-   settle 0.85 → 1.0. The overshoot sits inside beat 2 (0.60 → 0.68) so the
-   double take survives without moving the pinned beat boundaries. */
-const WALK_END = 0.60;
-const TURN_START = 0.68;
-const TURN_END = 0.85;
-
-type Camera = { x: number; y: number; z: number; yaw: number; roll: number };
-const ORIGIN: Camera = { x: 0, y: 0, z: 0, yaw: 0, roll: 0 };
-
-/** Scroll progress → eye position and head angle. Pure, so it is testable. */
-export function cameraAt(p: number): Camera {
-  const t = clamp(p);
-
-  if (t <= WALK_END) {
-    // Walk: the eye travels the corridor, feet doing the bob.
-    const k = easeInOut(t / WALK_END);
-    return {
-      x: 0,
-      y: Math.sin(k * Math.PI * 11) * 7 * (1 - k * 0.35),
-      z: WALK_END_Z * k,
-      yaw: Math.sin(k * Math.PI * 5.5) * 1.6,
-      roll: Math.sin(k * Math.PI * 2.75) * 0.7,
-    };
-  }
-
-  if (t <= TURN_START) {
-    // Overshoot: two more steps past the board, head still forward.
-    const k = (t - WALK_END) / (TURN_START - WALK_END);
-    return { x: -260 * k, y: 0, z: WALK_END_Z + (OVERSHOOT_Z - WALK_END_Z) * k, yaw: 3.2 * k, roll: -0.4 * k };
-  }
-
-  if (t <= TURN_END) {
-    // The double take: turn back onto the board, a beat past square, then settle.
-    const k = (t - TURN_START) / (TURN_END - TURN_START);
-    const turn = easeOut(k);
-    const over = Math.sin(Math.PI * k) * 2.4 * (1 - k);
-    return {
-      x: -260 + (SETTLE_X + 260) * turn,
-      y: 0,
-      z: OVERSHOOT_Z + (SETTLE_Z - OVERSHOOT_Z) * turn,
-      yaw: 3.2 * (1 - turn) + over,
-      roll: -0.5 * Math.sin(Math.PI * k),
-    };
-  }
-
-  // Settled on the board, with the last of the sway dying out.
-  const s = (t - TURN_END) / (1 - TURN_END);
-  return {
-    x: SETTLE_X,
-    y: 0,
-    z: SETTLE_Z - 40 * s,
-    yaw: Math.exp(-s * 4.2) * 1.6 * Math.sin(s * 13),
-    roll: Math.exp(-s * 4.2) * 0.35 * Math.sin(s * 13),
-  };
-}
-
-/* ------------------------------------------------------- the flyer + sheet */
+/* ------------------------------------------------------------------- the flyer */
 
 const TILT = [-2.6, 3.1, 1.9, -3.4];
 
@@ -199,9 +288,7 @@ function Flyer({
           </span>
         </span>
 
-        <span
-          className={`mt-2 block font-serif leading-[0.9] text-ink ${board ? "text-[1.9rem]" : "text-[2.3rem]"}`}
-        >
+        <span className={`mt-2 block font-serif leading-[0.9] text-ink ${board ? "text-[1.9rem]" : "text-[2.3rem]"}`}>
           {club.name}
         </span>
         <span className={`scrawl mt-1.5 block text-ink ${board ? "text-[15px] leading-[1.15]" : "text-[18px] leading-[1.15]"}`}>
@@ -228,92 +315,25 @@ function Flyer({
   );
 }
 
-/** The pinboard face used in the corridor: real flyers, small, non-interactive
-    (the same four are the interactive board below the walk). */
-function CorridorBoard({ clubs }: { clubs: HallwayClub[] }) {
-  return (
-    <div className="h-full w-full p-[12px]" style={{ background: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)" }}>
-      <div className="tex-cork relative h-full w-full overflow-hidden shadow-[inset_0_2px_26px_rgba(52,34,18,0.5)]">
-        <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.26),transparent_62%)]" />
-
-        <div className="absolute inset-x-0 top-[4%] flex items-start justify-between px-[3%]">
-          <span className="bg-paper px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.16em] text-ink-2 shadow-[var(--shadow-scrap)]">
-            founders, inc. · pier 2
-          </span>
-          <span className="rotate-[-2deg] bg-paper/90 px-2 py-1 font-mono text-[8px] uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]">
-            the four clubs
-          </span>
-        </div>
-
-        <div className="absolute inset-x-[3%] bottom-[5%] top-[14%] grid grid-cols-2 grid-rows-2 gap-x-[4%] gap-y-[4%]">
-          {clubs.map((club, index) => (
-            <div
-              key={club.slug}
-              className={`relative bg-paper px-2 py-1.5 shadow-[0_6px_14px_-8px_rgba(36,26,21,0.7)] ${
-                index % 2 ? "translate-y-[6%]" : ""
-              }`}
-              style={{ transform: `rotate(${TILT[index % TILT.length]}deg)` }}
-            >
-              <span className="block font-mono text-[6px] uppercase tracking-[0.16em] text-ink-3">{club.tag}</span>
-              <span className="mt-0.5 block font-serif text-[13px] leading-[0.95] text-ink">{club.name}</span>
-              <span className="mt-1 block font-mono text-[5.5px] uppercase leading-[1.35] tracking-[0.1em] text-ink-2">
-                {club.cadence}
-              </span>
-              <span className="absolute left-1/2 top-0 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#b98a3f] shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* --------------------------------------------------------------- component */
 
 export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const cameraRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const lastFocus = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState<number | null>(null);
+  const [view, setView] = useState<"pending" | "corridor" | "still">("pending");
 
   const current = open === null ? null : clubs[open];
 
-  /* ---- the walk: one passive scroll listener, one transform write a frame ---- */
+  /* The corridor is desktop-only. Below 768 the module is never imported, so the
+     3D chunk is not fetched at all — no scene, no scroll track, no weight. */
   useEffect(() => {
-    const track = trackRef.current;
-    const stage = stageRef.current;
-    const camera = cameraRef.current;
-    if (!track || !stage || !camera) return;
-
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let frame = 0;
-
-    const paint = () => {
-      frame = 0;
-      const span = track.offsetHeight - stage.offsetHeight;
-      const p = span <= 0 ? 1 : clamp(-track.getBoundingClientRect().top / span);
-      const c = mq.matches ? cameraAt(1) : cameraAt(p);
-      camera.style.transform = `translate3d(${c.x.toFixed(2)}px, ${c.y.toFixed(2)}px, ${c.z.toFixed(2)}px) rotateY(${c.yaw.toFixed(3)}deg) rotateZ(${c.roll.toFixed(3)}deg)`;
-      stage.style.setProperty("--p", p.toFixed(4));
-    };
-    const onScroll = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(paint);
-    };
-
-    paint();
-    mq.addEventListener("change", onScroll);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      mq.removeEventListener("change", onScroll);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
+    const mq = window.matchMedia("(min-width: 768px)");
+    const sync = () => setView(mq.matches ? "corridor" : "still");
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
   }, []);
 
   const openFlyer = useCallback((index: number) => {
@@ -388,211 +408,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
 
   return (
     <>
-      {/* ------------------------------------------------ the corridor */}
-      <div
-        ref={trackRef}
-        id="hallway-track"
-        className="relative h-[calc(190dvh_-_4rem)] motion-reduce:hidden"
-        style={{ "--p": 0 } as CSSProperties}
-      >
-        <div
-          ref={stageRef}
-          id="hallway-stage"
-          className="sticky top-16 h-[calc(100dvh-4rem)] overflow-hidden bg-[#e6dbc9]"
-          style={{ "--p": 0 } as CSSProperties}
-        >
-          <p className="sr-only">
-            A first-person walk down the Pier 2 hallway to the club pinboard. Scroll to walk, or use
-            “Skip to the board” to jump straight to the four flyers.
-          </p>
-
-          {/* the 3D stage: perspective parent → camera → world */}
-          <div className="absolute inset-0" style={{ perspective: "900px", perspectiveOrigin: "50% 50%" }}>
-            <div
-              ref={cameraRef}
-              className="absolute inset-0"
-              style={{
-                transformStyle: "preserve-3d",
-                willChange: "transform",
-                transform: "translate3d(0px, 0px, 0px)",
-              }}
-            >
-              {/* floor */}
-              <Plane w={2800} h={HALL_LEN} y={FLOOR_Y} z={-HALL_LEN / 2 + 700} rx={90} style={{ overflow: "hidden" }}>
-                <span
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: "#ddccae",
-                    backgroundImage:
-                      "repeating-linear-gradient(to right, rgba(64,46,30,0.20) 0 2px, transparent 2px 190px), repeating-linear-gradient(to bottom, rgba(64,46,30,0.16) 0 2px, transparent 2px 190px), linear-gradient(#e8dcc6, #cfbc9c)",
-                  }}
-                />
-                <Grain src="/collage/paper-kraft.webp" size={460} opacity={0.34} />
-              </Plane>
-
-              {/* ceiling */}
-              <Plane w={2800} h={HALL_LEN} y={CEIL_Y} z={-HALL_LEN / 2 + 700} rx={-90} style={{ overflow: "hidden" }}>
-                <span
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: "#f0e7d8",
-                    backgroundImage:
-                      "repeating-linear-gradient(to right, rgba(72,52,33,0.14) 0 2px, transparent 2px 260px), repeating-linear-gradient(to bottom, rgba(72,52,33,0.10) 0 2px, transparent 2px 260px), linear-gradient(#f4edde, #e2d6c0)",
-                  }}
-                />
-              </Plane>
-
-              {/* left wall: windows + a doorway */}
-              <Plane
-                w={HALL_LEN}
-                h={FLOOR_Y - CEIL_Y}
-                x={-HALL_HALF}
-                y={(FLOOR_Y + CEIL_Y) / 2}
-                z={-HALL_LEN / 2 + 200}
-                ry={90}
-                style={{ overflow: "hidden" }}
-              >
-                <span
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: "#d8c6a9",
-                    backgroundImage:
-                      "linear-gradient(to top, #b39a78 0 14%, #cbb69a 14% 30%, #dccbae 30% 100%)",
-                  }}
-                />
-                {/* the window run: warm light every few metres */}
-                <span
-                  className="absolute inset-x-0"
-                  style={{
-                    top: "18%",
-                    height: "46%",
-                    backgroundImage:
-                      "repeating-linear-gradient(to right, rgba(255,252,240,0.95) 0 190px, rgba(255,252,240,0.95) 190px, transparent 190px 250px), repeating-linear-gradient(to right, transparent 0 190px, rgba(72,52,33,0.45) 190px 196px, transparent 196px 250px)",
-                    boxShadow: "0 0 60px 12px rgba(255,246,214,0.45)",
-                  }}
-                />
-                <Grain src="/collage/paper-newsprint.webp" size={380} opacity={0.22} />
-              </Plane>
-
-              {/* left wall doors */}
-              {[-520, -1420, -2320, -3220, -4120].map((z) => (
-                <Plane key={z} w={260} h={470} x={-HALL_HALF + 6} y={FLOOR_Y - 235} z={z} ry={90}>
-                  <span className="absolute inset-0 bg-[linear-gradient(to_bottom,#7e6146,#96765a)] shadow-[inset_0_0_0_6px_rgba(58,42,28,0.35)]" />
-                  <span className="absolute right-[12%] top-1/2 h-2 w-2 rounded-full bg-[#c9a87c]" />
-                  <span className="absolute inset-x-[18%] top-[8%] h-[26%] bg-[rgba(255,248,230,0.18)]" />
-                </Plane>
-              ))}
-
-              {/* right wall: lockers, then the pinboard */}
-              <Plane
-                w={HALL_LEN}
-                h={FLOOR_Y - CEIL_Y}
-                x={HALL_HALF}
-                y={(FLOOR_Y + CEIL_Y) / 2}
-                z={-HALL_LEN / 2 + 200}
-                ry={-90}
-                style={{ overflow: "hidden" }}
-              >
-                <span
-                  className="absolute inset-0"
-                  style={{
-                    backgroundColor: "#d9c8ac",
-                    backgroundImage: "linear-gradient(to top, #b39a78 0 14%, #d3c0a3 14% 30%, #ddceb2 30% 100%)",
-                  }}
-                />
-                {/* locker bank */}
-                <span
-                  className="absolute inset-x-0"
-                  style={{
-                    top: "24%",
-                    height: "52%",
-                    backgroundColor: "rgba(112,132,120,0.32)",
-                    backgroundImage:
-                      "repeating-linear-gradient(to right, rgba(255,250,236,0.55) 0 1px, rgba(52,58,52,0.30) 1px 3px, transparent 3px 118px), repeating-linear-gradient(to bottom, transparent 0 190px, rgba(52,58,52,0.22) 190px 192px, transparent 192px 400px)",
-                  }}
-                />
-                <Grain src="/collage/paper-kraft.webp" size={420} opacity={0.28} />
-              </Plane>
-
-              {/* ceiling lights */}
-              {[-380, -1180, -1980, -2780, -3580, -4380].map((z) => (
-                <Plane key={z} w={210} h={44} y={CEIL_Y + 6} z={z} rx={90}>
-                  <span className="absolute inset-0 bg-[#fffdf4] shadow-[0_0_70px_26px_rgba(255,246,214,0.75)]" />
-                </Plane>
-              ))}
-
-              {/* the end of the hall: a fire door, so it is a corridor and not a void */}
-              <Plane w={2400} h={FLOOR_Y - CEIL_Y} y={(FLOOR_Y + CEIL_Y) / 2} z={-HALL_LEN + 300}>
-                <span className="absolute inset-0 bg-[linear-gradient(#cdbb9f,#b9a586)]" />
-                <span className="absolute left-1/2 top-[34%] h-[52%] w-[22%] -translate-x-1/2 bg-[linear-gradient(#7a5c40,#63482f)] shadow-[inset_0_0_0_5px_rgba(48,34,22,0.4)]" />
-                <span className="absolute left-1/2 top-[20%] h-6 w-24 -translate-x-1/2 bg-[#1f6b4a] text-center font-mono text-[11px] leading-6 tracking-[0.2em] text-[#eaf5ee]">
-                  EXIT
-                </span>
-              </Plane>
-
-              {/* ---------------- the pinboard, right hand wall ---------------- */}
-              <Plane w={980} h={600} x={BOARD_X} y={10} z={BOARD_Z}>
-                <div className="h-full w-full shadow-[0_40px_80px_-30px_rgba(36,26,21,0.8)]">
-                  <CorridorBoard clubs={clubs} />
-                </div>
-              </Plane>
-            </div>
-          </div>
-
-          {/* light and haze, so depth reads: warmer near the windows, softer far off */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(85% 70% at 16% 42%, rgba(255,248,228,0.55), transparent 62%), radial-gradient(120% 100% at 50% 55%, transparent 38%, rgba(36,26,21,0.32) 100%)",
-            }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              opacity: "max(0, min(1, calc((0.9 - var(--p, 0)) * 1.6)))",
-              background: "linear-gradient(to bottom, rgba(36,26,21,0.16), transparent 26%, transparent 74%, rgba(36,26,21,0.2))",
-            }}
-          />
-
-          {/* stage furniture: skip control is first in the tab order here */}
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 px-4 pt-4 sm:px-7 sm:pt-5">
-            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">second floor · hallway east</p>
-            <a
-              href="#board"
-              className="pill-btn-secondary pointer-events-auto inline-flex min-h-[40px] shrink-0 items-center px-4 text-[11px]"
-            >
-              Skip to the board ↓
-            </a>
-          </div>
-
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, calc((0.45 - var(--p, 0)) * 6)))" }}
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">keep scrolling — walk up to the board</p>
-          </div>
-
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, min(calc((var(--p, 0) - 0.68) * 6), calc((0.83 - var(--p, 0)) * 7))))" }}
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">wait — back up a step</p>
-          </div>
-
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, calc((var(--p, 0) - 0.83) * 6)))" }}
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink">the board · unpin a flyer below ↓</p>
-          </div>
-        </div>
-      </div>
+      {view === "corridor" ? <Corridor clubs={clubs} /> : view === "still" ? <HallwayStill clubs={clubs} /> : <StageShell />}
 
       {/* ------------------------------------------------ the board (server-rendered) */}
       <section id="board" className="scroll-mt-20 bg-paper px-4 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-14">

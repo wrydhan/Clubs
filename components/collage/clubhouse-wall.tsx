@@ -536,6 +536,9 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                   <Link href="/clubs/roster" className="pill-btn">
                     The four clubs →
                   </Link>
+                  <Link href="/clubs" className="pill-btn-secondary">
+                    Walk the hallway →
+                  </Link>
                   {nextEvent ? (
                     <a
                       href={nextEvent.rsvpUrl}
