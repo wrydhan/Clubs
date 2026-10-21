@@ -141,7 +141,7 @@ export function cameraAt(p: number): Camera {
       x: LEAN_IN_X * turn,
       y: 0,
       z: OVERSHOOT_Z + (SETTLE_Z - OVERSHOOT_Z) * turn,
-      yaw: 90 * turn + over,
+      yaw: -(90 * turn + over),
       roll: -1.6 * Math.sin(Math.PI * k),
     };
   }
@@ -152,7 +152,7 @@ export function cameraAt(p: number): Camera {
     x: LEAN_IN_X,
     y: 0,
     z: SETTLE_Z,
-    yaw: 90 + Math.exp(-s * 4.2) * 2.4 * Math.sin(s * 13),
+    yaw: -(90 + Math.exp(-s * 4.2) * 2.4 * Math.sin(s * 13)),
     roll: Math.exp(-s * 4.2) * 0.5 * Math.sin(s * 13),
   };
 }
@@ -567,7 +567,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, calc(1 - var(--p, 0) * 3)))" }}
+            style={{ opacity: "max(0, min(1, calc((0.3 - var(--p, 0)) * 6)))" }}
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">keep scrolling — walk up to the board</p>
           </div>
@@ -575,7 +575,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, calc((var(--p, 0) - 0.66) * 5)))" }}
+            style={{ opacity: "max(0, min(1, min(calc((var(--p, 0) - 0.68) * 6), calc((0.84 - var(--p, 0)) * 7))))" }}
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">wait — back up a step</p>
           </div>
