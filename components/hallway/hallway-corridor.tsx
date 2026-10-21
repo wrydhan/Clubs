@@ -28,6 +28,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import Link from "next/link";
 import { Pin } from "@/components/collage/paper";
 import type { HallwayClub } from "./types";
 
@@ -596,9 +597,12 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
   const cameraRef = useRef<HTMLDivElement | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
 
-  const [armed, setArmed] = useState(false);
-  const [locked, setLocked] = useState(false);
-  const [reduced, setReduced] = useState(false);
+  // Seeded from the media query at mount (this module is client-only, see
+  // hallway.tsx) so a reduced-motion visitor starts already settled instead of
+  // being settled from inside the effect, which React's compiler rules forbid.
+  const prefersReduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [armed, setArmed] = useState(prefersReduced);
+  const [locked, setLocked] = useState(prefersReduced);
 
   const paint = useCallback((p: number, head: { x: number; y: number; yaw: number; pitch: number }) => {
     const stage = stageRef.current;
@@ -633,11 +637,6 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
     const headTarget = { x: 0, y: 0, yaw: 0, pitch: 0 };
 
     paint(current, head);
-    if (isLocked) {
-      setLocked(true);
-      setArmed(true);
-      setReduced(true);
-    }
 
     const wake = () => {
       if (raf) return;
@@ -762,7 +761,6 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
         isArmed = true;
         setArmed(true);
         setLocked(true);
-        setReduced(true);
         paint(current, head);
       }
     };
@@ -902,9 +900,9 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
           <a href="#board" className="pill-btn inline-flex min-h-[40px] items-center px-5 text-[12px]">
             Continue below ↓
           </a>
-          <a href="/clubs/overview" className="pill-btn-secondary inline-flex min-h-[40px] items-center px-5 text-[12px]">
+          <Link href="/clubs/overview" className="pill-btn-secondary inline-flex min-h-[40px] items-center px-5 text-[12px]">
             See everything at a glance →
-          </a>
+          </Link>
         </div>
       </div>
     </div>
