@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   description:
     "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Flagship Car Club track days at Sonoma Raceway, Hardware Workshop, Basketball, and Paintball.",
   alternates: { canonical: "/clubs/wall" },
+  openGraph: {
+    title: "The wall — Founders, Inc. Clubs",
+    description:
+      "Every club as a sticker on one board: Car Club, Hardware Workshop, Basketball, Paintball. Drag a scrap off the wall to open it.",
+    url: "/clubs/wall",
+  },
 };
 
 /** The landing page is the wall and nothing else: the board fills the first

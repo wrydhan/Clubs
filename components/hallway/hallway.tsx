@@ -45,11 +45,12 @@ const HALL_HALF = 520; // walls at x = ±520
 const FLOOR_Y = 330; // floor 330 below the eye
 const CEIL_Y = -300;
 const HALL_LEN = 7600;
-const BOARD_Z = -2500; // the pinboard's centre, on the right wall
-const WALK_END_Z = -2350; // where the walk stops, board just ahead on the right
-const OVERSHOOT_Z = -2720; // the step past it
-const SETTLE_Z = -2500; // camera comes back level with the board
-const LEAN_IN_X = 96; // the lean toward the board at the end
+const BOARD_Z = -2400; // the pinboard on the end wall, offset right of centre
+const BOARD_X = 150;
+const WALK_END_Z = -2280; // walking pace stops just short of it
+const OVERSHOOT_Z = -2380; // two steps further, drifting off its centre line
+const SETTLE_Z = -1960; // then back off so the board fills the frame
+const SETTLE_X = 90;
 
 type PlaneProps = {
   w: number;
@@ -103,9 +104,12 @@ const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
-const WALK_END = 0.56;
+/* WP2 pins the mapping: walk 0 → 0.60, overshoot + turn-back 0.60 → 0.85,
+   settle 0.85 → 1.0. The overshoot sits inside beat 2 (0.60 → 0.68) so the
+   double take survives without moving the pinned beat boundaries. */
+const WALK_END = 0.60;
 const TURN_START = 0.68;
-const TURN_END = 0.86;
+const TURN_END = 0.85;
 
 type Camera = { x: number; y: number; z: number; yaw: number; roll: number };
 const ORIGIN: Camera = { x: 0, y: 0, z: 0, yaw: 0, roll: 0 };
@@ -129,31 +133,31 @@ export function cameraAt(p: number): Camera {
   if (t <= TURN_START) {
     // Overshoot: two more steps past the board, head still forward.
     const k = (t - WALK_END) / (TURN_START - WALK_END);
-    return { x: 0, y: 0, z: WALK_END_Z + (OVERSHOOT_Z - WALK_END_Z) * k, yaw: 0, roll: 0 };
+    return { x: -260 * k, y: 0, z: WALK_END_Z + (OVERSHOOT_Z - WALK_END_Z) * k, yaw: 3.2 * k, roll: -0.4 * k };
   }
 
   if (t <= TURN_END) {
     // The double take: turn back onto the board, a beat past square, then settle.
     const k = (t - TURN_START) / (TURN_END - TURN_START);
     const turn = easeOut(k);
-    const over = Math.sin(Math.PI * k) * 6 * (1 - k);
+    const over = Math.sin(Math.PI * k) * 2.4 * (1 - k);
     return {
-      x: LEAN_IN_X * turn,
+      x: -260 + (SETTLE_X + 260) * turn,
       y: 0,
       z: OVERSHOOT_Z + (SETTLE_Z - OVERSHOOT_Z) * turn,
-      yaw: -(90 * turn + over),
-      roll: -1.6 * Math.sin(Math.PI * k),
+      yaw: 3.2 * (1 - turn) + over,
+      roll: -0.5 * Math.sin(Math.PI * k),
     };
   }
 
   // Settled on the board, with the last of the sway dying out.
   const s = (t - TURN_END) / (1 - TURN_END);
   return {
-    x: LEAN_IN_X,
+    x: SETTLE_X,
     y: 0,
-    z: SETTLE_Z,
-    yaw: -(90 + Math.exp(-s * 4.2) * 2.4 * Math.sin(s * 13)),
-    roll: Math.exp(-s * 4.2) * 0.5 * Math.sin(s * 13),
+    z: SETTLE_Z - 40 * s,
+    yaw: Math.exp(-s * 4.2) * 1.6 * Math.sin(s * 13),
+    roll: Math.exp(-s * 4.2) * 0.35 * Math.sin(s * 13),
   };
 }
 
@@ -388,7 +392,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
       <div
         ref={trackRef}
         id="hallway-track"
-        className="relative h-[300dvh] motion-reduce:hidden md:h-[360dvh]"
+        className="relative h-[calc(190dvh-4rem)] motion-reduce:hidden"
         style={{ "--p": 0 } as CSSProperties}
       >
         <div
@@ -414,7 +418,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
               }}
             >
               {/* floor */}
-              <Plane w={1400} h={HALL_LEN} y={FLOOR_Y} z={-HALL_LEN / 2 + 200} rx={90} style={{ overflow: "hidden" }}>
+              <Plane w={2800} h={HALL_LEN} y={FLOOR_Y} z={-HALL_LEN / 2 + 700} rx={90} style={{ overflow: "hidden" }}>
                 <span
                   className="absolute inset-0"
                   style={{
@@ -427,7 +431,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
               </Plane>
 
               {/* ceiling */}
-              <Plane w={1400} h={HALL_LEN} y={CEIL_Y} z={-HALL_LEN / 2 + 200} rx={-90} style={{ overflow: "hidden" }}>
+              <Plane w={2800} h={HALL_LEN} y={CEIL_Y} z={-HALL_LEN / 2 + 700} rx={-90} style={{ overflow: "hidden" }}>
                 <span
                   className="absolute inset-0"
                   style={{
@@ -518,7 +522,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
               ))}
 
               {/* the end of the hall: a fire door, so it is a corridor and not a void */}
-              <Plane w={1400} h={FLOOR_Y - CEIL_Y} y={(FLOOR_Y + CEIL_Y) / 2} z={-HALL_LEN + 140}>
+              <Plane w={2400} h={FLOOR_Y - CEIL_Y} y={(FLOOR_Y + CEIL_Y) / 2} z={-HALL_LEN + 300}>
                 <span className="absolute inset-0 bg-[linear-gradient(#cdbb9f,#b9a586)]" />
                 <span className="absolute left-1/2 top-[34%] h-[52%] w-[22%] -translate-x-1/2 bg-[linear-gradient(#7a5c40,#63482f)] shadow-[inset_0_0_0_5px_rgba(48,34,22,0.4)]" />
                 <span className="absolute left-1/2 top-[20%] h-6 w-24 -translate-x-1/2 bg-[#1f6b4a] text-center font-mono text-[11px] leading-6 tracking-[0.2em] text-[#eaf5ee]">
@@ -527,7 +531,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
               </Plane>
 
               {/* ---------------- the pinboard, right hand wall ---------------- */}
-              <Plane w={900} h={540} x={HALL_HALF - 10} y={20} z={BOARD_Z} ry={-90}>
+              <Plane w={980} h={600} x={BOARD_X} y={10} z={BOARD_Z}>
                 <div className="h-full w-full shadow-[0_40px_80px_-30px_rgba(36,26,21,0.8)]">
                   <CorridorBoard clubs={clubs} />
                 </div>
@@ -567,7 +571,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, calc((0.3 - var(--p, 0)) * 6)))" }}
+            style={{ opacity: "max(0, min(1, calc((0.45 - var(--p, 0)) * 6)))" }}
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">keep scrolling — walk up to the board</p>
           </div>
@@ -575,7 +579,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, min(calc((var(--p, 0) - 0.68) * 6), calc((0.84 - var(--p, 0)) * 7))))" }}
+            style={{ opacity: "max(0, min(1, min(calc((var(--p, 0) - 0.68) * 6), calc((0.83 - var(--p, 0)) * 7))))" }}
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft">wait — back up a step</p>
           </div>
@@ -583,7 +587,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
           <div
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 px-5 pb-6 text-center"
-            style={{ opacity: "max(0, min(1, calc((var(--p, 0) - 0.84) * 6)))" }}
+            style={{ opacity: "max(0, min(1, calc((var(--p, 0) - 0.83) * 6)))" }}
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink">the board · unpin a flyer below ↓</p>
           </div>
