@@ -1,22 +1,50 @@
 import type { Metadata } from "next";
-import { ClubhouseWall } from "@/components/collage/clubhouse-wall";
-import { getEvents } from "@/lib/clubs";
+import { Hallway, type HallwayClub } from "@/components/hallway/hallway";
+import { getClubs, getNextEvent } from "@/lib/clubs";
+import { formatMonthDay, formatTime, formatWeekday } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Founders, Inc. — Clubs | A wall to poke around in",
+  title: "The hallway — Founders, Inc. Clubs",
   description:
-    "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Flagship Car Club track days at Sonoma Raceway, Hardware Workshop, Basketball, and Paintball.",
+    "Walk the Pier 2 hallway to the club pinboard. Four flyers, one per club — unpin one, read it up close, then go through to the club page.",
   alternates: { canonical: "/clubs" },
+  openGraph: {
+    title: "The hallway — Founders, Inc. Clubs",
+    description:
+      "A first-person walk down the Pier 2 hallway to the club pinboard. One flyer per club, pinned at a slight angle.",
+    url: "/clubs",
+  },
 };
 
-/** The landing page is the wall and nothing else: the board fills the first
-    screen under the 64px sticky header, every club is a sticker on it. */
+/** The Clubs entrance: the scroll is the walk down the hallway, the pinboard is
+    where it lands, and the same four flyers are the interactive board after it. */
 export default function ClubsPage() {
-  const nextEvent = getEvents(new Date())[0];
+  const now = new Date();
+  const clubs: HallwayClub[] = getClubs().map((club) => {
+    const next = getNextEvent(club.slug, now);
+    return {
+      slug: club.slug,
+      name: club.name,
+      tagline: club.tagline,
+      description: club.description,
+      cadence: club.cadence,
+      location: club.location,
+      tag: club.theme?.tag ?? "Campus club",
+      status: club.status,
+      lead: club.lead ? { name: club.lead.name, role: club.lead.role } : undefined,
+      nextEvent: next
+        ? {
+            title: next.title,
+            when: `${formatWeekday(next.datetime)} ${formatMonthDay(next.datetime)} · ${formatTime(next.datetime)}`,
+            href: next.rsvpUrl,
+          }
+        : undefined,
+    };
+  });
 
   return (
-    <main className="flex min-h-[calc(100dvh-4rem)] flex-col">
-      <ClubhouseWall nextEvent={nextEvent} />
+    <main>
+      <Hallway clubs={clubs} />
     </main>
   );
 }
