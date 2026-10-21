@@ -35,8 +35,14 @@ export function Header() {
             The four clubs
           </Link>
           <Link
-            href="/clubs/calendar"
+            href="/clubs/overview"
             className="inline-flex min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink"
+          >
+            At a glance
+          </Link>
+          <Link
+            href="/clubs/calendar"
+            className="hidden min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink md:inline-flex"
           >
             Calendar
           </Link>
