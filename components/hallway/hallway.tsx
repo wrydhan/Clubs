@@ -392,7 +392,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
       <div
         ref={trackRef}
         id="hallway-track"
-        className="relative h-[calc(190dvh-4rem)] motion-reduce:hidden"
+        className="relative h-[calc(190dvh_-_4rem)] motion-reduce:hidden"
         style={{ "--p": 0 } as CSSProperties}
       >
         <div
