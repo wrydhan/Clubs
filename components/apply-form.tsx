@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import s from "@/components/desk/desk.module.css";
 
 type FieldName = "name" | "email" | "clubName" | "what" | "cadence" | "who" | "people" | "needs" | "budget";
@@ -85,26 +85,25 @@ export function ApplyForm({
   }));
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [sent, setSent] = useState(false);
-  const touched = useRef<Partial<Record<FieldName, boolean>>>({});
-
   // Keep the plate and the proposal in step while the applicant is still typing
-  // the sticker name — until they edit the club name field themselves.
-  useEffect(() => {
-    const next = stickerName?.trim() ?? "";
-    if (!next || touched.current.clubName) return;
-    setValues((current) => (current.clubName === next ? current : { ...current, clubName: next }));
-  }, [stickerName]);
+  // the sticker name — until they edit the club name field themselves. Derived
+  // during render rather than synced from an effect, and the "edited" flag lives
+  // in state, so nothing here reads a ref during render.
+  const [clubNameEdited, setClubNameEdited] = useState(false);
+  const sticker = stickerName?.trim() ?? "";
+  const clubName = clubNameEdited || !sticker ? values.clubName : sticker;
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextErrors = validate(values);
+    const submission: FormState = { ...values, clubName };
+    const nextErrors = validate(submission);
     setErrors(nextErrors);
     const first = fields.find((field) => nextErrors[field.name]);
     if (first) {
       document.getElementById(first.name)?.focus();
       return;
     }
-    console.log("club application submitted", values);
+    console.log("club application submitted", submission);
     setSent(true);
   }
 
@@ -166,14 +165,14 @@ export function ApplyForm({
           const shared = {
             id: field.name,
             name: field.name,
-            value: values[field.name],
+            value: field.name === "clubName" ? clubName : values[field.name],
             placeholder: field.placeholder,
             autoComplete: field.autoComplete,
             "aria-invalid": Boolean(error) || undefined,
             "aria-describedby": error ? `${field.name}-error` : undefined,
             onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
               const value = event.target.value;
-              touched.current[field.name] = true;
+              if (field.name === "clubName") setClubNameEdited(true);
               setValues((current) => ({ ...current, [field.name]: value }));
             },
             className:

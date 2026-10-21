@@ -17,7 +17,7 @@
  * passive scroll listener.
  */
 
-import { useCallback, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import type { HallwayClub } from "./types";
 
 /* ------------------------------------------------------------------ geometry */
