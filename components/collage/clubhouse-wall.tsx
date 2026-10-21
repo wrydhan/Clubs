@@ -55,8 +55,8 @@ function clampRest(value: number): number {
 }
 
 /** The roster, pinned along the bottom of the board — one sticker per club,
-    each carried off the wall to its own page. This rail is the only place the
-    landing page names all four clubs, so it is also the `#roster` target. */
+    each carried off the wall to its own page. The full four-club index now
+    lives on its own page (`/clubs/roster`); this rail stays as a shortcut. */
 const clubBadges: {
   id: ScrapId;
   name: string;
@@ -533,9 +533,9 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                   Pier 2 campus. Nothing on this board is a networking event.
                 </p>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <a href="#roster" className="pill-btn">
-                    The four clubs ↓
-                  </a>
+                  <Link href="/clubs/roster" className="pill-btn">
+                    The four clubs →
+                  </Link>
                   {nextEvent ? (
                     <a
                       href={nextEvent.rsvpUrl}

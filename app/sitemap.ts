@@ -6,6 +6,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   return [
     { url: `${siteUrl}/clubs`, lastModified, changeFrequency: "daily", priority: 1 },
+    { url: `${siteUrl}/clubs/wall`, lastModified, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/clubs/roster`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/clubs/calendar`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${siteUrl}/clubs/apply`, lastModified, changeFrequency: "monthly", priority: 0.6 },
     ...getClubs().map((club) => ({
