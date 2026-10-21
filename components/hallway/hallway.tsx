@@ -88,7 +88,7 @@ function HallwayStill({ clubs }: { clubs: HallwayClub[] }) {
           <svg
             viewBox={`0 0 ${W} ${H}`}
             role="img"
-            aria-label="The Pier 2 hallway, seen at walking eye level: a window run on the left, lockers on the right, and the club pinboard at the far end."
+            aria-label="The Pier 2 hallway, seen at walking eye level: a window run on the left, lockers on the right, the club pinboard on the right-hand wall past the lockers, and the corridor running on to a stairwell."
             className="block h-auto w-full"
           >
             <defs>
@@ -181,7 +181,7 @@ function HallwayStill({ clubs }: { clubs: HallwayClub[] }) {
               fill="#708478"
               opacity="0.32"
             />
-            {[0.12, 0.26, 0.4, 0.54, 0.68, 0.82].map((t) => (
+            {[0.1, 0.22, 0.34].map((t) => (
               <line
                 key={`locker-${t}`}
                 x1={rightX(t)}
@@ -193,7 +193,48 @@ function HallwayStill({ clubs }: { clubs: HallwayClub[] }) {
               />
             ))}
 
-            {/* end wall: fire door + the pinboard */}
+            {/* the pinboard, on the right-hand wall past the lockers */}
+            {(() => {
+              const t0 = 0.52;
+              const t1 = 0.74;
+              const v0 = 126;
+              const v1 = 268;
+              const at = (u: number, v: number): [number, number] => {
+                const t = t0 + (t1 - t0) * u;
+                return [rightX(t), wallY(v0 + (v1 - v0) * v, t)];
+              };
+              return (
+                <g>
+                  <polygon points={quad([at(0, 0), at(1, 0), at(1, 1), at(0, 1)])} fill="#6b4b2e" />
+                  <polygon points={quad([at(0.05, 0.06), at(0.95, 0.06), at(0.95, 0.94), at(0.05, 0.94)])} fill="#7a5836" />
+                  {[0, 1, 2, 3].map((i) => {
+                    const u = 0.11 + (i % 2) * 0.45;
+                    const v = 0.12 + Math.floor(i / 2) * 0.45;
+                    return (
+                      <polygon
+                        key={`sheet-${i}`}
+                        points={quad([at(u, v), at(u + 0.33, v), at(u + 0.33, v + 0.32), at(u, v + 0.32)])}
+                        fill="#fdfbf4"
+                      />
+                    );
+                  })}
+                </g>
+              );
+            })()}
+
+            {[0.84, 0.94].map((t) => (
+              <line
+                key={`locker-far-${t}`}
+                x1={rightX(t)}
+                y1={wallY(150, t)}
+                x2={rightX(t)}
+                y2={wallY(370, t)}
+                stroke="rgba(52,58,52,0.35)"
+                strokeWidth="2"
+              />
+            ))}
+
+            {/* end wall: the corridor runs on to the stairwell */}
             <rect
               x={FAR.x0}
               y={FAR.y0}
@@ -201,20 +242,18 @@ function HallwayStill({ clubs }: { clubs: HallwayClub[] }) {
               height={FAR.y1 - FAR.y0}
               fill="#cdbb9f"
             />
-            <rect x={VP.x - 22} y={FAR.y0 + 22} width={44} height={FAR.y1 - FAR.y0 - 22} fill="#7a5c40" />
-            <rect x={VP.x - 22} y={FAR.y1 - 52} width={44} height={12} fill="#1f6b4a" />
-            {/* the board, on the end wall, four sheets pinned */}
-            <rect x={FAR.x0 + 6} y={FAR.y0 + 8} width={72} height={46} fill="#6b4b2e" />
-            <rect x={FAR.x0 + 9} y={FAR.y0 + 11} width={66} height={40} fill="#7a5836" />
+            <rect x={VP.x - 24} y={FAR.y0 + 20} width={48} height={FAR.y1 - FAR.y0 - 20} fill="#5c4a36" />
+            <rect x={VP.x - 24} y={FAR.y0 + 20} width={48} height={6} fill="#1f6b4a" />
+            {/* the flight, dropping away behind the opening */}
             {[0, 1, 2, 3].map((i) => (
               <rect
-                key={`sheet-${i}`}
-                x={FAR.x0 + 13 + (i % 2) * 33}
-                y={FAR.y0 + 15 + Math.floor(i / 2) * 18}
-                width={28}
-                height={15}
-                fill="#fdfbf4"
-                transform={`rotate(${i % 2 ? 1.6 : -2} ${FAR.x0 + 27 + (i % 2) * 33} ${FAR.y0 + 22 + Math.floor(i / 2) * 18})`}
+                key={`stair-${i}`}
+                x={VP.x - 20}
+                y={FAR.y0 + 34 + i * 9}
+                width={40}
+                height={4}
+                fill="#c9b189"
+                opacity={0.85 - i * 0.17}
               />
             ))}
 
@@ -224,7 +263,7 @@ function HallwayStill({ clubs }: { clubs: HallwayClub[] }) {
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-3">
             <span className="bg-paper/92 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft shadow-[var(--shadow-scrap)]">
-              the board is at the end of the hall · {clubs.length} sheets
+              the board is on the right-hand wall, past the lockers · {clubs.length} sheets
             </span>
           </div>
         </div>

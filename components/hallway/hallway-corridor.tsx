@@ -24,16 +24,26 @@
  * walk is described in plain world coordinates (eye z, eye x, degrees of head
  * turn) instead of in CSS translation arithmetic.
  *
- * The board hangs on the RIGHT wall, in the clear run between the two locker
- * banks: you walk down the hall past it, the head starts to turn over the last
- * fifth of the walk, and the settle squares the eye up on it 620 units out — so
- * the whole board, frame and all, sits inside the frame at any viewport width
- * (see `fitScale`).
+ * The board hangs on the RIGHT wall, in the clear run between two locker banks:
+ * you walk down the hall toward it, the head starts to turn over the last fifth
+ * of the walk, and the settle squares the eye up on it 360 units out. The board
+ * is sized like a real pinboard against the 500-unit door (420 × 300), and the
+ * close settle is what keeps it ≥1000 px wide on a 1440 frame, so the flyers stay
+ * legible without the board being giant (see `fitScale`).
+ *
+ * The corridor does NOT stop at the board: it carries on past it with more locker
+ * banks and classroom doors and finishes at a stair door in the end wall, with a
+ * landing and a descending flight behind it — depth you never reach.
+ *
+ * The lockers are boxes, not pictures of lockers: a front face standing 72 units
+ * off the wall, a top, a side return and a cast shadow, and they run full height
+ * (420) against the 500 door, above the eye line, so the walker no longer feels
+ * like a giant.
  *
  * Only `transform` and `opacity` are written, once per animation frame.
  */
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { Pin } from "@/components/collage/paper";
 import type { HallwayClub } from "./types";
@@ -41,26 +51,35 @@ import type { HallwayClub } from "./types";
 /* ------------------------------------------------------------------ geometry */
 
 const HALL_HALF = 520; // walls at x = ±520
-const FLOOR_Y = 330; // floor 330 below the eye
-const CEIL_Y = -300; // ceiling 300 above it
+const FLOOR_Y = 372; // floor 372 below the eye — 1.56 m, a real standing height
+const CEIL_Y = -280; // ceiling 280 above it — 2.74 m of room
 const HALL_W = HALL_HALF * 2;
 const HALL_H = FLOOR_Y - CEIL_Y;
 
 const NEAR_Z = 150; // wall a little behind the eye — far enough to close the hall,
                     // near enough that no plane crosses the camera plane
-const FAR_Z = -2400; // the end wall
+const FAR_Z = -3400; // the end wall — nine metres past the board, so the hall reads deep
 const HALL_LEN = NEAR_Z - FAR_Z;
 const MID_Z = (NEAR_Z + FAR_Z) / 2;
 
-/* The pinboard, on the right-hand wall beside the lockers. Sized in world units
-   so that the settle (620 units out, see `EYE_TURN_X`) lands it at roughly
-   1130 × 725 px on a 1440 × 900 frame — the whole board in shot, nothing cropped,
-   and each flyer tall enough for its full footer. */
-const BOARD_W = 780;
-const BOARD_H = 500;
+/* The pinboard, on the right-hand wall beside the lockers, at realistic scale:
+   420 × 300 world units against a 500-unit door (a pinboard is a little over a
+   door-width wide and about shoulder-to-head tall), hanging from 0.78 m to 2.04 m
+   above the floor. The close settle (360 units out, see `EYE_TURN_X`) then lands
+   it at 1050 × 750 px on a 1440 × 900 frame — ≥1000 px wide, so the flyers stay
+   legible, with nothing cropped. */
+const BOARD_W = 420;
+const BOARD_H = 300;
 const BOARD_X = HALL_HALF - 3; // a hair inside the wall, so it never z-fights
 const BOARD_Z = -1000; // where along the wall it hangs
-const BOARD_Y = -6;
+const BOARD_Y = 12; // centre 1.50 m up: the board hangs 0.88 → 2.14 m
+
+/* The flyers are laid out at this size and scaled down to `BOARD_W`, so the
+   typography on a realistically sized board stays proportional instead of
+   spilling out of it. */
+const BOARD_ART_W = 840;
+const BOARD_ART_H = 600;
+const BOARD_SCALE = BOARD_W / BOARD_ART_W;
 
 /* Camera. CSS perspective puts the eye 900 px in front of the projection plane, so
    a surface D away renders at scale 900/D. The eye walks the centre line from
@@ -69,8 +88,8 @@ const BOARD_Y = -6;
 const PERSPECTIVE = 900;
 const EYE_START_Z = 900;
 const EYE_APPROACH_Z = -760; // the walk stops 240 short of the board…
-const EYE_TURN_X = HALL_HALF - 620; // …then the eye backs off to −100 and looks right
-const EYE_DIST = HALL_HALF - EYE_TURN_X; // 620 units from eye to board at rest
+const EYE_TURN_X = HALL_HALF - 360; // …then steps to 160 and turns to face it
+const EYE_DIST = HALL_HALF - EYE_TURN_X; // 360 units from eye to board at rest
 const YAW_NOTICE = 7; // degrees of head-turn picked up at the end of the walk
 const EYE_TURN_YAW = 90; // square on to the right-hand wall
 const WALK_END = 0.64;
@@ -286,7 +305,7 @@ function Ceiling() {
 function CeilingLights() {
   return (
     <>
-      {run(60, -2300, 340).map((z) => (
+      {run(60, -3300, 340).map((z) => (
         <div key={z}>
           <Plane w={300} h={110} y={CEIL_Y + 2} z={z} rx={90}>
             <span
@@ -401,37 +420,97 @@ function Door({ z }: { z: number }) {
   );
 }
 
-/** One locker unit. A bank is just a run of these. */
+/* A locker is a box, not a picture of a locker: 110 wide along the wall, 420
+   tall (against a 500 door, so its top sits above the 372 eye line) and 72 deep,
+   stood off the wall so its top, its side return and the shadow it drops read as
+   three dimensions. */
+const LOCKER_W = 110;
+const LOCKER_H = 420;
+const LOCKER_D = 72;
+
 function Locker({ z }: { z: number }) {
+  const frontX = HALL_HALF - LOCKER_D;
+  const yc = FLOOR_Y - LOCKER_H / 2;
+  const midX = frontX + LOCKER_D / 2;
   return (
-    <Plane w={110} h={300} x={HALL_HALF - 2} y={FLOOR_Y - 150} z={z} ry={-90} className="hallway-locker">
-      <span
-        className="absolute inset-0"
-        style={{
-          backgroundImage: "linear-gradient(to right, #6d8377, #82978b 40%, #687d71)",
-          boxShadow: "inset 0 0 0 2px rgba(40,48,42,0.45), 0 10px 18px -10px rgba(30,24,16,0.55)",
-        }}
-      >
-        {/* vents */}
+    <Fragment>
+      {/* the shadow the box throws back onto the wall */}
+      <Plane w={LOCKER_W + 10} h={LOCKER_H + 8} x={HALL_HALF - 1} y={yc + 8} z={z} ry={-90}>
         <span
-          className="absolute inset-x-[18%] top-[7%] h-[9%]"
-          style={{ backgroundImage: "repeating-linear-gradient(to bottom, rgba(28,38,32,0.6) 0 2px, transparent 2px 6px)" }}
+          className="absolute inset-0"
+          style={{ background: "radial-gradient(75% 62% at 50% 42%, rgba(28,22,14,0.5), rgba(28,22,14,0) 74%)" }}
         />
-        {/* handle */}
+      </Plane>
+
+      {/* the top: you look down onto it as you pass */}
+      <Plane w={LOCKER_D} h={LOCKER_W} x={midX} y={FLOOR_Y - LOCKER_H} z={z} rx={90}>
         <span
-          className="absolute left-1/2 top-[45%] h-[13px] w-[15px] -translate-x-1/2 rounded-[2px]"
-          style={{ background: "#c9b489", boxShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(to right, #9aada0, #7d9286 62%, #667b6f)",
+            boxShadow: "inset 0 -2px 0 rgba(255,255,255,0.22), inset 0 2px 4px rgba(30,38,32,0.4)",
+          }}
         />
-        {/* plinth */}
-        <span className="absolute inset-x-0 bottom-0 h-[6%]" style={{ background: "rgba(22,18,12,0.35)" }} />
-      </span>
-    </Plane>
+      </Plane>
+
+      {/* the side return facing up the hall */}
+      <Plane w={LOCKER_D} h={LOCKER_H} x={midX} y={yc} z={z + LOCKER_W / 2}>
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(to right, #566a60, #42544b)",
+            boxShadow: "inset 0 0 0 1px rgba(24,32,28,0.5)",
+          }}
+        />
+      </Plane>
+
+      {/* the door face: a recessed panel inside the carcass */}
+      <Plane w={LOCKER_W} h={LOCKER_H} x={frontX} y={yc} z={z} ry={-90} className="hallway-locker">
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(to right, #5d7267, #748a7e 40%, #5f7469)",
+            boxShadow: "inset 0 0 0 2px rgba(36,44,38,0.55)",
+          }}
+        >
+          <span
+            className="absolute inset-[6%]"
+            style={{
+              backgroundImage: "linear-gradient(to right, #6f8578, #879d90 52%, #6d8276)",
+              boxShadow:
+                "inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -3px 8px rgba(20,28,24,0.5), 0 0 0 1px rgba(30,40,34,0.35)",
+            }}
+          >
+            {/* vents */}
+            <span
+              className="absolute inset-x-[20%] top-[6%] h-[9%]"
+              style={{ backgroundImage: "repeating-linear-gradient(to bottom, rgba(24,34,28,0.6) 0 2px, transparent 2px 6px)" }}
+            />
+            {/* number plate */}
+            <span
+              className="absolute left-1/2 top-[24%] h-[7%] w-[38%] -translate-x-1/2 rounded-[1px]"
+              style={{ background: "linear-gradient(#d9cdb2, #c2b394)", boxShadow: "inset 0 0 0 1px rgba(40,34,24,0.35)" }}
+            />
+            {/* handle and hasp */}
+            <span
+              className="absolute left-1/2 top-[44%] h-[14px] w-[16px] -translate-x-1/2 rounded-[2px]"
+              style={{ background: "#c9b489", boxShadow: "0 1px 2px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.35)" }}
+            />
+          </span>
+          {/* plinth: the box stands on a dark kick, so it meets the floor */}
+          <span className="absolute inset-x-0 bottom-0 h-[4.5%]" style={{ background: "rgba(20,16,11,0.4)" }} />
+        </span>
+      </Plane>
+    </Fragment>
   );
 }
 
 /**
- * The right wall: a locker bank by the near end, the clear run the pinboard hangs
- * in (see `BOARD_Z`), then a classroom door and a second bank further down.
+ * The right wall, nose to tail: a locker bank by the near end, the clear run the
+ * pinboard hangs in (see `BOARD_Z`), then sound-barrier doors and more locker
+ * banks all the way down to the stairwell door at the far end. None of it past the
+ * board is reachable — it is there so the corridor reads as a building rather than
+ * a backdrop.
  */
 function LockerWall() {
   return (
@@ -459,37 +538,219 @@ function LockerWall() {
       {run(60, -560, 118).map((z) => (
         <Locker key={`a${z}`} z={z} />
       ))}
-      {[-1560].map((z) => (
+
+      {[-1420].map((z) => (
         <Door key={z} z={z} />
       ))}
-      {run(-1800, -2230, 118).map((z) => (
+      {run(-1660, -1900, 118).map((z) => (
         <Locker key={`b${z}`} z={z} />
+      ))}
+
+      {[-2170].map((z) => (
+        <Door key={z} z={z} />
+      ))}
+      {run(-2360, -2620, 118).map((z) => (
+        <Locker key={`c${z}`} z={z} />
+      ))}
+
+      {[-2910].map((z) => (
+        <Door key={z} z={z} />
+      ))}
+      {run(-3080, -3220, 118).map((z) => (
+        <Locker key={`d${z}`} z={z} />
       ))}
     </>
   );
 }
 
-/** The end wall the board hangs on. */
-function EndWall() {
+/* ------------------------------------------------------------- the stairwell */
+
+const STAIR_OPEN_W = 560; // the opening in the end wall
+const STAIR_OPEN_H = 520; // floor to head, so a person clears it
+const STAIR_SHAFT = 900; // how far the stair volume runs back
+const STAIR_BACK_Z = FAR_Z - STAIR_SHAFT;
+const STAIR_LANDING = 120;
+const STAIR_STEPS = 9;
+const STAIR_TREAD = 68;
+const STAIR_RISE = 30;
+
+/** The corridor's far end: a wide opening in the end wall onto a landing, and a
+    flight going down into the dark. You can never walk to it — it exists so the
+    hall has somewhere to go. */
+function Stairwell() {
+  const half = STAIR_OPEN_W / 2;
+  const sideW = HALL_HALF - half;
+  const sideX = half + sideW / 2;
+  const yc = (FLOOR_Y + CEIL_Y) / 2;
+  const headY = FLOOR_Y - STAIR_OPEN_H;
+  const headH = headY - CEIL_Y;
+  const flightStart = FAR_Z - STAIR_LANDING;
+  const bottomY = FLOOR_Y + STAIR_RISE * STAIR_STEPS;
+  const bottomZ = flightStart - STAIR_TREAD * STAIR_STEPS;
+
   return (
-    <Plane w={HALL_W} h={HALL_H} y={(FLOOR_Y + CEIL_Y) / 2} z={FAR_Z} style={{ overflow: "hidden" }}>
-      <span
-        className="absolute inset-0"
-        style={{
-          backgroundColor: "#cfbd9f",
-          backgroundImage: "linear-gradient(#d8c7aa, #bfa987 72%, #b09774)",
-        }}
-      />
-      <span
-        className="absolute inset-x-0 bottom-0"
-        style={{ height: "7%", background: "linear-gradient(#9c815f, #7d6344)" }}
-      />
-      <span
-        className="absolute inset-0"
-        style={{ background: "radial-gradient(60% 50% at 50% 42%, rgba(255,248,224,0.35), transparent 70%)" }}
-      />
-      <Grain src="/collage/paper-newsprint.webp" size={400} opacity={0.22} />
-    </Plane>
+    <>
+      {/* the end wall, built around the opening */}
+      {[-sideX, sideX].map((x) => (
+        <Plane key={x} w={sideW} h={HALL_H} x={x} y={yc} z={FAR_Z} style={{ overflow: "hidden" }}>
+          <span
+            className="absolute inset-0"
+            style={{ backgroundColor: "#cfbd9f", backgroundImage: "linear-gradient(#d8c7aa, #bfa987 72%, #b09774)" }}
+          />
+          <span
+            className="absolute inset-x-0 bottom-0"
+            style={{ height: "7%", background: "linear-gradient(#9c815f, #7d6344)" }}
+          />
+          <Grain src="/collage/paper-newsprint.webp" size={400} opacity={0.22} />
+        </Plane>
+      ))}
+      {/* header over the opening, with the stair sign */}
+      <Plane w={STAIR_OPEN_W} h={headH} y={CEIL_Y + headH / 2} z={FAR_Z} style={{ overflow: "hidden" }}>
+        <span
+          className="absolute inset-0"
+          style={{ backgroundColor: "#cfbd9f", backgroundImage: "linear-gradient(#d8c7aa, #bfa987)" }}
+        />
+        <span
+          className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 px-3 py-[3px] font-mono text-[10px] uppercase tracking-[0.22em]"
+          style={{ background: "#1f6b4a", color: "#f4efdf", boxShadow: "0 2px 6px rgba(20,26,20,0.5)" }}
+        >
+          stairs ↓
+        </span>
+        <Grain src="/collage/paper-newsprint.webp" size={400} opacity={0.2} />
+      </Plane>
+      {/* sight lines past the opening's plant-on jamb */}
+      {[-1, 1].map((s) => (
+        <Plane
+          key={s}
+          w={26}
+          h={STAIR_OPEN_H}
+          x={s * (half + 13)}
+          y={FLOOR_Y - STAIR_OPEN_H / 2}
+          z={FAR_Z - 6}
+          style={{ overflow: "hidden" }}
+        >
+          <span
+            className="absolute inset-0"
+            style={{ backgroundImage: "linear-gradient(to right, #8a6d4d, #6d5338)", boxShadow: "inset 0 0 0 1px rgba(30,22,14,0.5)" }}
+          />
+        </Plane>
+      ))}
+
+      {/* the shaft: landing, side walls, ceiling, back wall */}
+      <Plane w={STAIR_OPEN_W} h={STAIR_LANDING} y={FLOOR_Y} z={FAR_Z - STAIR_LANDING / 2} rx={90} style={{ overflow: "hidden" }}>
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundColor: "#b9a888",
+            backgroundImage: [
+              "repeating-linear-gradient(to bottom, rgba(52,40,26,0.3) 0 2px, transparent 2px 64px)",
+              "linear-gradient(#c9b899, #a8967a)",
+            ].join(","),
+          }}
+        />
+      </Plane>
+      {[-1, 1].map((s) => (
+        <Plane
+          key={`shaft${s}`}
+          w={STAIR_SHAFT}
+          h={1200}
+          x={s * half}
+          y={yc + 260}
+          z={FAR_Z - STAIR_SHAFT / 2}
+          ry={s * 90}
+          style={{ overflow: "hidden" }}
+        >
+          <span
+            className="absolute inset-0"
+            style={{ backgroundImage: "linear-gradient(#b3a181, #7d6c53 60%, #4a4033)" }}
+          />
+        </Plane>
+      ))}
+      <Plane w={STAIR_OPEN_W} h={STAIR_SHAFT} y={CEIL_Y} z={FAR_Z - STAIR_SHAFT / 2} rx={-90} style={{ overflow: "hidden" }}>
+        <span className="absolute inset-0" style={{ background: "linear-gradient(#e6dccb, #c9bda7)" }} />
+      </Plane>
+      <Plane w={STAIR_OPEN_W} h={1200} y={yc + 260} z={STAIR_BACK_Z} style={{ overflow: "hidden" }}>
+        <span
+          className="absolute inset-0"
+          style={{ backgroundImage: "linear-gradient(#a4937a, #7b6a52 58%, #3b332a)" }}
+        />
+        <span
+          className="absolute inset-x-0 top-[12%] h-[7%]"
+          style={{ background: "linear-gradient(#fffbe8, #f3e6c4)", boxShadow: "0 0 70px 26px rgba(255,244,210,0.55)" }}
+        />
+        {/* the flight read off the far wall: a stepped band dropping to the left,
+            so the stairwell is legible even from the top of the hall */}
+        <span
+          className="absolute"
+          style={{
+            left: "4%",
+            right: "4%",
+            top: "26%",
+            bottom: "6%",
+            backgroundImage:
+              "repeating-linear-gradient(to bottom, rgba(246,238,216,0.5) 0 7px, rgba(46,40,32,0.55) 7px 15px)",
+            clipPath: "polygon(100% 0, 100% 18%, 62% 62%, 62% 100%, 0 100%, 0 78%, 38% 38%, 38% 0)",
+            opacity: 0.85,
+          }}
+        />
+        <span
+          className="absolute left-[6%] top-[68%] px-2 py-[2px] font-mono text-[8px] uppercase tracking-[0.18em]"
+          style={{ background: "#1f6b4a", color: "#f4efdf" }}
+        >
+          stairs ↓
+        </span>
+      </Plane>
+
+      {/* the flight: treads and risers stepping down away from the landing */}
+      {Array.from({ length: STAIR_STEPS }, (_, i) => {
+        const topY = FLOOR_Y + STAIR_RISE * (i + 1);
+        const zNear = flightStart - STAIR_TREAD * i;
+        return (
+          <Fragment key={`step${i}`}>
+            <Plane w={STAIR_OPEN_W} h={STAIR_TREAD} y={topY} z={zNear - STAIR_TREAD / 2} rx={90}>
+              <span
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: "linear-gradient(to bottom, #e4d8bd, #bdae8f)",
+                  boxShadow: "inset 0 3px 0 rgba(255,255,255,0.4), inset 0 -6px 10px rgba(40,32,22,0.55)",
+                }}
+              />
+            </Plane>
+            <Plane w={STAIR_OPEN_W} h={STAIR_RISE} y={topY - STAIR_RISE / 2} z={zNear}>
+              <span
+                className="absolute inset-0"
+                style={{ backgroundImage: "linear-gradient(#4d4335, #2f2921)", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.08)" }}
+              />
+            </Plane>
+          </Fragment>
+        );
+      })}
+      {/* handrails: a bar following the flight down, one each side */}
+      {Array.from({ length: STAIR_STEPS }, (_, i) => {
+        const y = FLOOR_Y + STAIR_RISE * (i + 1) - 96;
+        const zNear = flightStart - STAIR_TREAD * i;
+        return [-1, 1].map((s) => (
+          <Plane
+            key={`rail${s}-${i}`}
+            w={8}
+            h={STAIR_TREAD}
+            x={s * (half - 20)}
+            y={y}
+            z={zNear - STAIR_TREAD / 2}
+            rx={90}
+          >
+            <span className="absolute inset-0" style={{ background: "#3f4a42", boxShadow: "0 2px 3px rgba(20,20,16,0.5)" }} />
+          </Plane>
+        ));
+      })}
+      {/* the bottom landing it reaches */}
+      <Plane w={STAIR_OPEN_W} h={STAIR_SHAFT - STAIR_LANDING - STAIR_TREAD * STAIR_STEPS} y={bottomY} z={(bottomZ + STAIR_BACK_Z) / 2} rx={90}>
+        <span
+          className="absolute inset-0"
+          style={{ backgroundImage: "linear-gradient(#c2b699, #a3947a)", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.2)" }}
+        />
+      </Plane>
+    </>
   );
 }
 
@@ -892,7 +1153,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
             <CeilingLights />
             <WindowWall />
             <LockerWall />
-            <EndWall />
+            <Stairwell />
 
             {/* --------- the pinboard, on the right-hand wall --------- */}
             <Plane
@@ -904,8 +1165,20 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
               ry={-90}
               className="hallway-board"
             >
-              <div className="h-full w-full shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
-                <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
+              <div className="relative h-full w-full overflow-hidden shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
+                {/* the flyers are laid out on a 840 × 600 canvas and scaled into
+                    the real board, so a 420-wide pinboard still carries the same
+                    poster composition as before */}
+                <div
+                  style={{
+                    width: BOARD_ART_W,
+                    height: BOARD_ART_H,
+                    transform: `scale(${BOARD_SCALE})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
+                </div>
               </div>
             </Plane>
           </div>
