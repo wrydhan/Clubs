@@ -773,7 +773,7 @@ function BoardFlyer({
           style={{ pointerEvents: interactive ? "auto" : "none" }}
         >
           <span className="pointer-events-none absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-[58%]">
-            <Pin size={+(12 * ART).toFixed(2)} />
+            <Pin size={+(12 * BOARD_RASTER).toFixed(2)} />
           </span>
           <span
             className={`torn-soft flex h-full w-full flex-col justify-between bg-paper px-[7%] py-[6%] shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
@@ -896,7 +896,7 @@ function CorridorBoard({
           // the cork grain is a bitmap tile: its size follows the raster canvas,
           // or the grain would read 2.5x finer than the board around it
           backgroundSize: `${+(720 * BOARD_RASTER).toFixed(0)}px auto`,
-          boxShadow: `inset 0 ${u(2)} ${u(26)} rgba(52,34,18,0.5), inset 0 0 0 ${u(2)} rgba(40,28,18,0.35)`,
+          boxShadow: "inset 0 2px 26px rgba(52,34,18,0.5), inset 0 0 0 2px rgba(40,28,18,0.35)",
         }}
       >
         <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.24),transparent_62%)]" />
