@@ -423,8 +423,9 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
               </h1>
             </div>
             <p className="max-w-[40ch] text-[14.5px] leading-relaxed text-ink-2">
-              Pinned at the end of the hallway. Pull one off to read it close up — cadence, where it
-              meets, the next date, who runs it — then go through to the club page.
+              Pinned to the right-hand wall, past the lockers. Pull one off to read it close up —
+              cadence, where it meets, the next date, who runs it — then go through to the club
+              page.
             </p>
           </div>
 

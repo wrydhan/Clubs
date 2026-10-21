@@ -19,10 +19,16 @@
  *    feels steppy. At the board the walk locks for good: it cannot be rewound, and
  *    the page scrolls on to the board section below.
  *
- * Geometry convention: the camera is a `preserve-3d` parent of every plane, and the
- * eye travels toward the board on **positive** z. The board sits at z = −2392, so
- * the settle puts the eye at +2242 — 150 units of depth — with a small plane zoom
- * landing it at ~1190 px wide on a 1440 frame.
+ * Geometry convention: the camera is a `preserve-3d` parent of every plane and
+ * `pose()` turns an eye position plus a yaw into that parent's transform, so the
+ * walk is described in plain world coordinates (eye z, eye x, degrees of head
+ * turn) instead of in CSS translation arithmetic.
+ *
+ * The board hangs on the RIGHT wall, in the clear run between the two locker
+ * banks: you walk down the hall past it, the head starts to turn over the last
+ * fifth of the walk, and the settle squares the eye up on it 620 units out — so
+ * the whole board, frame and all, sits inside the frame at any viewport width
+ * (see `fitScale`).
  *
  * Only `transform` and `opacity` are written, once per animation frame.
  */
@@ -46,18 +52,28 @@ const FAR_Z = -2400; // the end wall
 const HALL_LEN = NEAR_Z - FAR_Z;
 const MID_Z = (NEAR_Z + FAR_Z) / 2;
 
-const BOARD_W = 980;
-const BOARD_H = 600;
-const BOARD_Z = FAR_Z + 8; // a hair in front of the end wall, no z-fighting
-const BOARD_Y = -14;
+/* The pinboard, on the right-hand wall beside the lockers. Sized in world units
+   so that the settle (620 units out, see `EYE_TURN_X`) lands it at roughly
+   1130 × 725 px on a 1440 × 900 frame — the whole board in shot, nothing cropped,
+   and each flyer tall enough for its full footer. */
+const BOARD_W = 780;
+const BOARD_H = 500;
+const BOARD_X = HALL_HALF - 3; // a hair inside the wall, so it never z-fights
+const BOARD_Z = -1000; // where along the wall it hangs
+const BOARD_Y = -6;
 
-/* Camera: the walk runs p 0 → 0.62 (z 0 → 1900, straight down the centre line),
-   then 0.62 → 1 pushes the last 342 units into the board and zooms it to fill the
-   frame. x stays 0 the whole way: no drift, and the settle is dead square-on. */
-const WALK_END = 0.62;
-const WALK_END_Z = 1900;
-const SETTLE_Z = 2242;
-const SETTLE_ZOOM = 1.36; // 980 × 900/150 × 1.42 ≈ 1190 px wide on 1440
+/* Camera. CSS perspective puts the eye 900 px in front of the projection plane, so
+   a surface D away renders at scale 900/D. The eye walks the centre line from
+   `EYE_START_Z` to `EYE_APPROACH_Z`, then turns right and steps in to
+   `EYE_TURN_X`, ending square-on to the board and abreast of it. */
+const PERSPECTIVE = 900;
+const EYE_START_Z = 900;
+const EYE_APPROACH_Z = -760; // the walk stops 240 short of the board…
+const EYE_TURN_X = HALL_HALF - 620; // …then the eye backs off to −100 and looks right
+const EYE_DIST = HALL_HALF - EYE_TURN_X; // 620 units from eye to board at rest
+const YAW_NOTICE = 7; // degrees of head-turn picked up at the end of the walk
+const EYE_TURN_YAW = 90; // square on to the right-hand wall
+const WALK_END = 0.64;
 
 /* One wheel notch = one eighth of the walk. `WHEEL_UNIT` is the deltaY a mouse
    wheel reports for a single notch on the platforms that use 100; trackpads report
@@ -67,38 +83,75 @@ const WHEEL_UNIT = 100;
 const GAIN = STEP / WHEEL_UNIT;
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+/** Smoothstep: eases in AND out, which is what a head turn should do. */
+const smooth = (t: number) => {
+  const k = clamp(t);
+  return k * k * (3 - 2 * k);
+};
 
-type Camera = { x: number; y: number; z: number; yaw: number; pitch: number; roll: number; zoom: number };
+type Camera = { x: number; y: number; z: number; yaw: number; pitch: number; roll: number };
+type Eye = { x: number; y: number; z: number };
 
-/** Progress → eye position, head angle and board zoom. Pure, so it is testable. */
+/**
+ * Eye position + head yaw → the camera element's transform.
+ *
+ * The camera is the 3D parent of the world, so it has to be placed by the inverse
+ * of its own rotation: to stand at `eye` and look `yaw` degrees to the right, the
+ * transform is `translate3d(-R·eye) rotateY(yaw)` about the projection point.
+ * With a zero yaw this is the plain `translate3d(-x, -y, 900 - z)` a walk down the
+ * hall needs; a ninety-degree yaw swaps the two axes, which is what the double
+ * take at the end of the walk is built on.
+ */
+function pose(eye: Eye, yawDeg: number, pitch = 0, roll = 0): Camera {
+  const r = (yawDeg * Math.PI) / 180;
+  const cos = Math.cos(r);
+  const sin = Math.sin(r);
+  return {
+    x: -(eye.x * cos + eye.z * sin),
+    y: -eye.y,
+    z: PERSPECTIVE + eye.x * sin - eye.z * cos,
+    yaw: yawDeg,
+    pitch,
+    roll,
+  };
+}
+
+/** Progress → eye position, head angle and roll. Pure, so it is testable. */
 export function cameraAt(p: number): Camera {
   const t = clamp(p);
 
   if (t <= WALK_END) {
     const k = t / WALK_END;
-    // A walking bob and a faint sway, both dying out as the board approaches.
-    return {
-      x: 0,
-      y: Math.sin(k * Math.PI * 8) * 6 * (1 - k * 0.55),
-      z: WALK_END_Z * k,
-      yaw: Math.sin(k * Math.PI * 4) * 0.9 * (1 - k * 0.4),
-      pitch: 0,
-      roll: Math.sin(k * Math.PI * 2) * 0.35,
-      zoom: 1,
-    };
+    // A walking bob and a faint sway, both dying out as the walk ends, and the
+    // first few degrees of the head turn over the last fifth — the double take.
+    return pose(
+      {
+        x: 0,
+        y: Math.sin(k * Math.PI * 8) * 6 * (1 - k * 0.55),
+        z: EYE_START_Z + (EYE_APPROACH_Z - EYE_START_Z) * k,
+      },
+      Math.sin(k * Math.PI * 4) * 0.9 * (1 - k * 0.4) + smooth((k - 0.8) / 0.2) * YAW_NOTICE,
+      0,
+      Math.sin(k * Math.PI * 2) * 0.35,
+    );
   }
 
-  const s = easeOutCubic((t - WALK_END) / (1 - WALK_END));
-  return {
-    x: 0,
-    y: 0,
-    z: WALK_END_Z + (SETTLE_Z - WALK_END_Z) * s,
-    yaw: 0,
-    pitch: 0,
-    roll: 0,
-    zoom: 1 + (SETTLE_ZOOM - 1) * s,
-  };
+  const s = smooth((t - WALK_END) / (1 - WALK_END));
+  return pose(
+    {
+      x: EYE_TURN_X * s,
+      y: 0,
+      z: EYE_APPROACH_Z + (BOARD_Z - EYE_APPROACH_Z) * s,
+    },
+    YAW_NOTICE + (EYE_TURN_YAW - YAW_NOTICE) * s,
+  );
+}
+
+/** How much the whole projection has to shrink for the settled board to fit. */
+function fitScale(width: number, height: number) {
+  const px = (BOARD_W * PERSPECTIVE) / EYE_DIST;
+  const py = (BOARD_H * PERSPECTIVE) / EYE_DIST;
+  return Math.min(1, (width - 56) / px, (height - 56) / py);
 }
 
 /* ------------------------------------------------------------------ primitives */
@@ -376,7 +429,10 @@ function Locker({ z }: { z: number }) {
   );
 }
 
-/** The right wall: lockers in two banks with a run of classroom doors between them. */
+/**
+ * The right wall: a locker bank by the near end, the clear run the pinboard hangs
+ * in (see `BOARD_Z`), then a classroom door and a second bank further down.
+ */
 function LockerWall() {
   return (
     <>
@@ -400,14 +456,14 @@ function LockerWall() {
         />
       </Plane>
 
-      {run(60, -520, 118).map((z) => (
+      {run(60, -560, 118).map((z) => (
         <Locker key={`a${z}`} z={z} />
       ))}
-      {run(-1560, -2180, 118).map((z) => (
-        <Locker key={`b${z}`} z={z} />
-      ))}
-      {[-620, -980, -1340].map((z) => (
+      {[-1560].map((z) => (
         <Door key={z} z={z} />
+      ))}
+      {run(-1800, -2230, 118).map((z) => (
+        <Locker key={`b${z}`} z={z} />
       ))}
     </>
   );
@@ -595,7 +651,6 @@ const IDLE_CSS = `
 export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[]; onOpen: (index: number) => void }) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const cameraRef = useRef<HTMLDivElement | null>(null);
-  const boardRef = useRef<HTMLDivElement | null>(null);
 
   // Seeded from the media query at mount (this module is client-only, see
   // hallway.tsx) so a reduced-motion visitor starts already settled instead of
@@ -611,10 +666,10 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
     const c = cameraAt(p);
     camera.style.transform = `translate3d(${(c.x + head.x).toFixed(2)}px, ${(c.y + head.y).toFixed(2)}px, ${c.z.toFixed(2)}px) rotateY(${(c.yaw + head.yaw).toFixed(3)}deg) rotateX(${(c.pitch + head.pitch).toFixed(3)}deg) rotateZ(${c.roll.toFixed(3)}deg)`;
     stage.style.setProperty("--p", p.toFixed(4));
-    const board = boardRef.current;
-    if (board) {
-      board.style.transform = `translate(-50%, -50%) translate3d(0px, ${BOARD_Y}px, ${BOARD_Z}px) scale3d(${c.zoom.toFixed(4)}, ${c.zoom.toFixed(4)}, 1)`;
-    }
+    // The board is a fixed piece of the wall now, so the only per-viewport
+    // correction is a single 2D scale on the projection: narrow screens shrink the
+    // settled view instead of cropping the flyers off the edge of the board.
+    stage.style.setProperty("--fit", fitScale(stage.clientWidth, stage.clientHeight).toFixed(4));
   }, []);
 
   useEffect(() => {
@@ -815,7 +870,14 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
         </p>
 
         {/* the 3D stage: perspective parent → camera → world */}
-        <div className="absolute inset-0" style={{ perspective: "900px", perspectiveOrigin: "50% 50%" }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            perspective: `${PERSPECTIVE}px`,
+            perspectiveOrigin: "50% 50%",
+            transform: "scale(var(--fit, 1))",
+          }}
+        >
           <div
             ref={cameraRef}
             className="absolute inset-0"
@@ -832,18 +894,17 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
             <LockerWall />
             <EndWall />
 
-            {/* ---------------- the pinboard, on the end wall ---------------- */}
+            {/* --------- the pinboard, on the right-hand wall --------- */}
             <Plane
-              innerRef={boardRef}
               w={BOARD_W}
               h={BOARD_H}
-              x={0}
+              x={BOARD_X}
               y={BOARD_Y}
               z={BOARD_Z}
+              ry={-90}
               className="hallway-board"
-              style={{ transformOrigin: "50% 50%", willChange: "transform" }}
             >
-              <div className="h-full w-full shadow-[0_50px_90px_-30px_rgba(36,26,21,0.85)]">
+              <div className="h-full w-full shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
                 <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
               </div>
             </Plane>
