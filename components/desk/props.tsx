@@ -6,52 +6,59 @@ import s from "./desk.module.css";
  * before the charter itself.
  */
 
-/** Coffee mug, three-quarter view, steam going up behind the paper. */
+/** Coffee mug, seen from a chair: rim ellipse, thick wall, cast shadow. */
 export function Mug() {
   return (
-    <svg viewBox="0 0 160 150" className="h-auto w-full" aria-hidden>
+    <svg viewBox="0 0 200 170" className="h-auto w-full" aria-hidden>
       <defs>
         <linearGradient id="mugBody" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#f2e9d8" />
-          <stop offset="46%" stopColor="#d9c9b0" />
-          <stop offset="100%" stopColor="#b8a48a" />
+          <stop offset="0%" stopColor="#fbf4e6" />
+          <stop offset="38%" stopColor="#eee1cb" />
+          <stop offset="100%" stopColor="#b9a488" />
         </linearGradient>
-        <linearGradient id="mugCoffee" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3a2417" />
-          <stop offset="100%" stopColor="#1c1109" />
+        <linearGradient id="mugInner" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e7dac2" />
+          <stop offset="100%" stopColor="#c9b696" />
         </linearGradient>
+        <radialGradient id="mugCoffee" cx="42%" cy="34%" r="70%">
+          <stop offset="0%" stopColor="#4a2f1c" />
+          <stop offset="100%" stopColor="#180e07" />
+        </radialGradient>
         <radialGradient id="mugShadow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="rgba(0,0,0,0.55)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+          <stop offset="0%" stopColor="rgba(20,12,7,0.6)" />
+          <stop offset="70%" stopColor="rgba(20,12,7,0.22)" />
+          <stop offset="100%" stopColor="rgba(20,12,7,0)" />
         </radialGradient>
       </defs>
 
-      {/* steam: two wisps, CSS-animated, gone under reduced motion */}
-      <g fill="none" stroke="#f6e7cd" strokeWidth="3" strokeLinecap="round" opacity="0.5">
-        <path className={s.steam} d="M58 52c-6-9 6-14 0-23" />
-        <path className={`${s.steam} ${s.steam2}`} d="M82 54c-6-9 6-15 0-25" />
+      {/* steam, drifting up out of frame */}
+      <g fill="none" stroke="#f8ecd6" strokeWidth="3.4" strokeLinecap="round" opacity="0.42">
+        <path className={s.steam} d="M72 60c-7-11 7-17 0-28" />
+        <path className={`${s.steam} ${s.steam2}`} d="M98 62c-7-11 7-18 0-30" />
       </g>
 
-      {/* contact shadow */}
-      <ellipse cx="80" cy="136" rx="58" ry="11" fill="url(#mugShadow)" />
+      {/* shadow on the desk, offset away from the lamp */}
+      <ellipse cx="104" cy="148" rx="74" ry="15" fill="url(#mugShadow)" />
 
       {/* handle */}
-      <path
-        d="M112 62c18-2 26 8 26 18s-9 20-26 19"
-        fill="none"
-        stroke="#cbb99f"
-        strokeWidth="11"
-        strokeLinecap="round"
-      />
+      <path d="M139 78c22-3 32 9 32 22s-11 24-32 22" fill="none" stroke="#d9c9ae" strokeWidth="13" strokeLinecap="round" />
+      <path d="M139 78c22-3 32 9 32 22s-11 24-32 22" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="4" strokeLinecap="round" />
 
       {/* body */}
-      <path d="M32 52h74l-6 74a10 10 0 0 1-10 9H48a10 10 0 0 1-10-9z" fill="url(#mugBody)" />
-      {/* rim */}
-      <ellipse cx="69" cy="52" rx="37" ry="11" fill="#efe5d3" />
-      <ellipse cx="69" cy="53" rx="31" ry="8.5" fill="url(#mugCoffee)" />
-      <ellipse cx="60" cy="51" rx="12" ry="3.4" fill="rgba(255,240,214,0.16)" />
-      {/* ring stripe */}
-      <path d="M35 96h69" stroke="#b1412c" strokeWidth="5" opacity="0.55" />
+      <path d="M44 62h84l-7 74a12 12 0 0 1-12 11H63a12 12 0 0 1-12-11z" fill="url(#mugBody)" />
+      {/* shaded right wall of the cylinder */}
+      <path d="M112 62h16l-7 74a12 12 0 0 1-12 11h-9z" fill="rgba(90,66,42,0.14)" />
+
+      {/* rim: wall thickness, then the coffee */}
+      <ellipse cx="86" cy="62" rx="42" ry="14" fill="url(#mugInner)" />
+      <ellipse cx="86" cy="63" rx="36" ry="10.5" fill="url(#mugCoffee)" />
+      <ellipse cx="74" cy="60" rx="13" ry="3.4" fill="rgba(255,242,216,0.14)" />
+
+      {/* the club's own sticker, half-peeled on the side */}
+      <g transform="rotate(-6 88 112)">
+        <rect x="66" y="100" width="34" height="24" rx="2" fill="#f4ede1" stroke="rgba(36,26,21,0.25)" strokeWidth="1" />
+        <text x="83" y="116" textAnchor="middle" fontFamily="ui-monospace, monospace" fontSize="8" fill="#b1412c" letterSpacing="1">F.INC</text>
+      </g>
     </svg>
   );
 }
@@ -84,24 +91,43 @@ export function Pen() {
   );
 }
 
-/** Roll of masking tape, seen from above at a tilt, with a loose end. */
+/** Roll of masking tape on its side, layers showing, tape tail running off. */
 export function TapeRoll() {
   return (
-    <svg viewBox="0 0 140 128" className="h-auto w-full" aria-hidden>
+    <svg viewBox="0 0 170 120" className="h-auto w-full" aria-hidden>
       <defs>
-        <radialGradient id="tapeRim" cx="45%" cy="35%" r="70%">
-          <stop offset="0%" stopColor="#f6eddc" />
-          <stop offset="70%" stopColor="#e2d3b8" />
-          <stop offset="100%" stopColor="#bda98b" />
-        </radialGradient>
+        <linearGradient id="tapeWall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f2e6cf" />
+          <stop offset="55%" stopColor="#e0d0b2" />
+          <stop offset="100%" stopColor="#b9a482" />
+        </linearGradient>
+        <linearGradient id="tapeCore" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#a8855a" />
+          <stop offset="100%" stopColor="#6f5333" />
+        </linearGradient>
       </defs>
-      <ellipse cx="70" cy="112" rx="52" ry="10" fill="rgba(0,0,0,0.4)" />
-      <ellipse cx="70" cy="64" rx="54" ry="50" fill="url(#tapeRim)" />
-      <ellipse cx="70" cy="64" rx="54" ry="50" fill="none" stroke="rgba(120,96,62,0.35)" strokeWidth="1" />
-      <ellipse cx="70" cy="64" rx="27" ry="25" fill="#5b3f26" />
-      <ellipse cx="70" cy="64" rx="27" ry="25" fill="none" stroke="rgba(0,0,0,0.45)" strokeWidth="3" />
-      <ellipse cx="70" cy="66" rx="24" ry="22" fill="rgba(0,0,0,0.35)" />
-      <path d="M124 70c10 4 14 12 10 20-4 8-14 8-22 2" fill="none" stroke="#ece0c8" strokeWidth="9" strokeLinecap="round" opacity="0.9" />
+
+      <ellipse cx="66" cy="106" rx="56" ry="9" fill="rgba(20,12,7,0.42)" />
+
+      {/* the tape tail, peeling off toward the paper */}
+      <path d="M116 52c22 6 34 16 44 24-9 6-20 8-31 5-9-2-16-8-19-15z" fill="#efe4cd" opacity="0.95" />
+      <path d="M116 52c22 6 34 16 44 24" fill="none" stroke="rgba(120,96,62,0.35)" strokeWidth="1" />
+
+      {/* the roll, on its side: two rings and a hole */}
+      <path d="M16 62a50 40 0 1 0 100 0a50 40 0 1 0-100 0z" fill="url(#tapeWall)" />
+      <ellipse cx="16" cy="62" rx="18" ry="15" fill="#d4c1a0" />
+      <ellipse cx="16" cy="62" rx="11" ry="9" fill="url(#tapeCore)" />
+      <ellipse cx="16" cy="62" rx="11" ry="9" fill="none" stroke="rgba(60,42,26,0.5)" strokeWidth="1.5" />
+
+      {/* wound layers along the side wall */}
+      <g stroke="rgba(120,96,62,0.28)" strokeWidth="1.2" fill="none">
+        <path d="M30 26c6 22 6 50 0 72" />
+        <path d="M46 20c7 24 7 60 0 84" />
+        <path d="M62 17c7 26 7 64 0 90" />
+        <path d="M78 17c7 26 7 64 0 90" />
+        <path d="M94 20c7 24 7 60 0 84" />
+      </g>
+      <path d="M16 62a50 40 0 0 0 100 0" fill="none" stroke="rgba(36,26,21,0.22)" strokeWidth="1.4" />
     </svg>
   );
 }

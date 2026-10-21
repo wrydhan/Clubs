@@ -226,7 +226,7 @@
 .mugProp {
   left: 3%;
   top: 20%;
-  width: clamp(70px, 6vw, 94px);
+  width: clamp(84px, 7.2vw, 116px);
 }
 .penProp {
   left: 1%;
@@ -237,7 +237,7 @@
 .tapeProp {
   right: 3%;
   top: 17%;
-  width: clamp(64px, 5.6vw, 88px);
+  width: clamp(88px, 7.6vw, 126px);
 }
 .clipProp {
   right: 4.5%;
