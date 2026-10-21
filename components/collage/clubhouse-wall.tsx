@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Tape } from "@/components/collage/paper";
+import { dragZones, scrapHrefs, scrapLabels, type DragZone, type ScrapId } from "@/lib/collage";
 import type { ClubEvent } from "@/lib/clubs";
 import { formatMonthDay } from "@/lib/format";
-
-type ScrapId = "wordmark" | "note" | "helmet" | "sneaker" | "badge-cars" | "badge-hoops";
 
 const START: Record<ScrapId, { x: number; y: number }> = {
   wordmark: { x: 0, y: 0 },
@@ -16,26 +16,114 @@ const START: Record<ScrapId, { x: number; y: number }> = {
   sneaker: { x: 0, y: 0 },
   "badge-cars": { x: 0, y: 0 },
   "badge-hoops": { x: 0, y: 0 },
+  "badge-hardware": { x: 0, y: 0 },
+  "badge-paintball": { x: 0, y: 0 },
+  charter: { x: 0, y: 0 },
 };
 
-const LABELS: Record<ScrapId, string> = {
-  wordmark: "Founders, Inc. Clubs wordmark",
-  note: "Handwritten track day note",
-  helmet: "Racing helmet magazine cut-out",
-  sneaker: "Running shoe magazine cut-out",
-  "badge-cars": "Car Club sticker",
-  "badge-hoops": "Basketball Club sticker",
+/** Resting clamp only. A scrap being carried is never clamped — it has to be
+    able to leave the paper for the drag-off gesture to mean anything. */
+const REST_LIMIT = 90;
+/** How far the pointer must travel before a press becomes a drag, so that the
+    links and buttons printed on a scrap still count as clicks. */
+const DRAG_THRESHOLD = 4;
+/** How far a scrap must actually travel before a taped drop-zone may claim it.
+    A short nudge that starts on top of a zone must move the scrap, not open a
+    page — zones are deliberate targets, not things you brush past. */
+const ZONE_TRAVEL = 32;
+
+type DragState = {
+  id: ScrapId;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  ox: number;
+  oy: number;
+  /** true once the press has travelled past DRAG_THRESHOLD */
+  live: boolean;
+  /** a press that never travelled is a click, not a drag */
+  moved: boolean;
+  captured: boolean;
+  /** where the pressed scrap sat when the press began */
+  homeRect: DOMRect | null;
+  overZone: DragZone | null;
+  beyondEdge: boolean;
 };
 
-const LIMIT = 90;
+function clampRest(value: number): number {
+  return Math.max(-REST_LIMIT, Math.min(REST_LIMIT, value));
+}
+
+/** The roster, pinned along the bottom of the board — one sticker per club,
+    each carried off the wall to its own page. The full four-club index now
+    lives on its own page (`/clubs/roster`); this rail stays as a shortcut. */
+const clubBadges: {
+  id: ScrapId;
+  name: string;
+  src: string;
+  rotate: number;
+  depth: number;
+  tape: number;
+}[] = [
+  { id: "badge-cars", name: "Car Club", src: "/collage/sticker-cars.webp", rotate: -3.5, depth: 1.2, tape: -4 },
+  { id: "badge-hoops", name: "Basketball", src: "/collage/sticker-hoops.webp", rotate: 2.8, depth: 0.6, tape: 9 },
+  { id: "badge-hardware", name: "Hardware", src: "/collage/sticker-hardware.webp", rotate: -2.2, depth: 0.9, tape: -9 },
+  { id: "badge-paintball", name: "Paintball", src: "/collage/sticker-paintball.webp", rotate: 3.2, depth: 0.7, tape: 7 },
+];
+
+const prefersFullUrl = (href: string) => /^(https?:)?\/\//.test(href);
 
 export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
+  const router = useRouter();
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const zoneRefs = useRef<Partial<Record<DragZone["id"], HTMLElement | null>>>({});
   const [offsets, setOffsets] = useState<Record<ScrapId, { x: number; y: number }>>(START);
-  const [dragging, setDragging] = useState<ScrapId | null>(null);
+  const [active, setActive] = useState<ScrapId | null>(null);
+  const [hoverZone, setHoverZone] = useState<DragZone["id"] | null>(null);
+  const [beyond, setBeyond] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [announce, setAnnounce] = useState("");
-  const dragOrigin = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const drag = useRef<DragState | null>(null);
+
+  // The note promises the next session, so it carries you to that RSVP.
+  const destinations = useMemo<Record<ScrapId, string>>(
+    () => ({
+      ...scrapHrefs,
+      note: nextEvent?.rsvpUrl ?? scrapHrefs.note,
+    }),
+    [nextEvent],
+  );
+
+  /** The zone a scrap is hovering, or `null`. Read from live rects, no state. */
+  const zoneAt = useCallback((x: number, y: number): DragZone | null => {
+    for (const zone of dragZones) {
+      const el = zoneRefs.current[zone.id];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return zone;
+    }
+    return null;
+  }, []);
+
+  const outsideBoard = useCallback((x: number, y: number): boolean => {
+    const board = boardRef.current;
+    if (!board) return false;
+    const rect = board.getBoundingClientRect();
+    const margin = 16;
+    // On a phone the board is full-bleed, so its own left and right edges sit
+    // outside the viewport and "carry it off the wall" could never fire. There
+    // the screen edge is the wall edge: a scrap taken to the side of the screen
+    // is off the paper.
+    const fullBleed = rect.left <= margin && rect.right >= window.innerWidth - margin;
+    const atScreenEdge = fullBleed && (x <= 2 || x >= window.innerWidth - 2);
+    return (
+      atScreenEdge ||
+      x < rect.left - margin ||
+      x > rect.right + margin ||
+      y < rect.top - margin ||
+      y > rect.bottom + margin
+    );
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -45,7 +133,8 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // pointer parallax driven through CSS vars so it never re-renders React
+  // pointer parallax driven through CSS vars so it never re-renders React,
+  // and suspended entirely while a scrap is in hand.
   useEffect(() => {
     const board = boardRef.current;
     if (!board || reduced) return;
@@ -59,6 +148,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
       board.style.setProperty("--py", ty.toFixed(4));
     };
     const onMove = (event: PointerEvent) => {
+      if (drag.current) return;
       const rect = board.getBoundingClientRect();
       tx = (event.clientX - rect.left) / rect.width - 0.5;
       ty = (event.clientY - rect.top) / rect.height - 0.5;
@@ -79,48 +169,196 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
     };
   }, [reduced]);
 
-  const move = useCallback((id: ScrapId, dx: number, dy: number) => {
-    setOffsets((current) => {
-      const next = {
-        x: Math.max(-LIMIT, Math.min(LIMIT, current[id].x + dx)),
-        y: Math.max(-LIMIT, Math.min(LIMIT, current[id].y + dy)),
-      };
-      return { ...current, [id]: next };
-    });
+  // Esc always puts the scrap back, whichever input got it there.
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const current = drag.current;
+      drag.current = null;
+      setActive(null);
+      setHoverZone(null);
+      setBeyond(false);
+      if (current) {
+        setOffsets((prev) => ({ ...prev, [current.id]: { x: 0, y: 0 } }));
+        setAnnounce(`${scrapLabels[current.id]} put back on the wall.`);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active]);
+
+  const go = useCallback(
+    (href: string) => {
+      if (prefersFullUrl(href)) {
+        window.location.assign(href);
+        return;
+      }
+      router.push(href);
+    },
+    [router],
+  );
+
+  const resetOne = useCallback((id: ScrapId) => {
+    setOffsets((current) => ({ ...current, [id]: { x: 0, y: 0 } }));
   }, []);
+
+  const move = useCallback((id: ScrapId, dx: number, dy: number) => {
+    setOffsets((current) => ({
+      ...current,
+      [id]: {
+        x: clampRest(current[id].x + dx),
+        y: clampRest(current[id].y + dy),
+      },
+    }));
+  }, []);
+
+  /** A press that lands on a link, button or field belongs to that control. */
+  function isInteractive(target: EventTarget | null): boolean {
+    const el = target as HTMLElement | null;
+    if (!el || typeof el.closest !== "function") return false;
+    return Boolean(el.closest("a, button, input, textarea, select, label, [role='button']"));
+  }
 
   function onPointerDown(id: ScrapId) {
     return (event: React.PointerEvent<HTMLElement>) => {
       if (event.button !== 0) return;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      dragOrigin.current = { x: event.clientX, y: event.clientY, ox: offsets[id].x, oy: offsets[id].y };
-      setDragging(id);
+      if (isInteractive(event.target)) return;
+      const el = event.currentTarget;
+      drag.current = {
+        id,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        ox: offsets[id].x,
+        oy: offsets[id].y,
+        live: false,
+        moved: false,
+        captured: false,
+        homeRect: el.getBoundingClientRect(),
+        overZone: null,
+        beyondEdge: false,
+      };
+      // Touch has no hover, so the capture happens on press; the scrap only
+      // counts as picked up once the finger has actually travelled.
+      if (event.pointerType !== "mouse") {
+        try {
+          el.setPointerCapture(event.pointerId);
+          drag.current.captured = true;
+        } catch {
+          /* capture is a nicety; the element still receives the moves */
+        }
+      }
     };
   }
 
   function onPointerMove(id: ScrapId) {
     return (event: React.PointerEvent<HTMLElement>) => {
-      const origin = dragOrigin.current;
-      if (!origin || dragging !== id) return;
-      const dx = event.clientX - origin.x;
-      const dy = event.clientY - origin.y;
+      const state = drag.current;
+      if (!state || state.id !== id || state.pointerId !== event.pointerId) return;
+      const dx = event.clientX - state.startX;
+      const dy = event.clientY - state.startY;
+      if (!state.live) {
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        state.live = true;
+        state.moved = true;
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+          state.captured = true;
+        } catch {
+          /* capture is a nicety; the element still receives the moves */
+        }
+        setActive(id);
+      }
+      // Unclamped while it is in hand: the scrap must be able to leave the wall.
       setOffsets((current) => ({
         ...current,
-        [id]: {
-          x: Math.max(-LIMIT, Math.min(LIMIT, origin.ox + dx)),
-          y: Math.max(-LIMIT, Math.min(LIMIT, origin.oy + dy)),
-        },
+        [id]: { x: state.ox + dx, y: state.oy + dy },
       }));
+      // A zone only counts once the pointer has travelled far enough to read as
+      // a carry, and has left the footprint the scrap started in. Otherwise the
+      // zone sitting under a sticker would swallow a tiny nudge.
+      const travelled = Math.hypot(dx, dy) >= ZONE_TRAVEL;
+      const home = state.homeRect;
+      const stillHome =
+        !!home &&
+        event.clientX >= home.left &&
+        event.clientX <= home.right &&
+        event.clientY >= home.top &&
+        event.clientY <= home.bottom;
+      const zone = travelled && !stillHome ? zoneAt(event.clientX, event.clientY) : null;
+      const outside = outsideBoard(event.clientX, event.clientY);
+      state.overZone = zone;
+      state.beyondEdge = outside;
+      setHoverZone(zone ? zone.id : null);
+      setBeyond(outside);
     };
   }
 
   function endDrag(id: ScrapId) {
-    return () => {
-      if (dragging === id) {
-        dragOrigin.current = null;
-        setDragging(null);
-        setAnnounce(`${LABELS[id]} moved.`);
+    return (event: React.PointerEvent<HTMLElement>) => {
+      const state = drag.current;
+      if (!state || state.id !== id) return;
+      drag.current = null;
+      if (state.captured) {
+        try {
+          event.currentTarget.releasePointerCapture(state.pointerId);
+        } catch {
+          /* already released */
+        }
       }
+      setActive(null);
+      setHoverZone(null);
+      setBeyond(false);
+
+      // Dropping on a taped zone wins; otherwise leaving the paper counts.
+      const zone = state.overZone;
+      if (zone) {
+        setAnnounce(`Opening ${zone.label}.`);
+        resetOne(id);
+        go(zone.href);
+        return;
+      }
+      if (state.beyondEdge) {
+        const href = destinations[id];
+        setAnnounce(`Carried ${scrapLabels[id]} off the wall — opening ${href.replace(/^https?:\/\//, "")}.`);
+        resetOne(id);
+        go(href);
+        return;
+      }
+      // A press that never travelled is a click: peel the sticker off, i.e. open
+      // the page it belongs to. The hero sheet is exempt — its own links and
+      // buttons do the talking, and it would only navigate to itself.
+      if (!state.live && id !== "wordmark") {
+        setAnnounce(`Opening ${scrapLabels[id]} — ${destinations[id]}.`);
+        resetOne(id);
+        go(destinations[id]);
+        return;
+      }
+      // Dropped back inside: settle home and clamp so it stays on the paper.
+      setOffsets((current) => ({
+        ...current,
+        [id]: {
+          x: clampRest(current[id].x),
+          y: clampRest(current[id].y),
+        },
+      }));
+      if (state.live) setAnnounce(`${scrapLabels[id]} moved.`);
+    };
+  }
+
+  function onLostCapture(id: ScrapId) {
+    return () => {
+      const state = drag.current;
+      if (!state || state.id !== id) return;
+      drag.current = null;
+      setActive(null);
+      setHoverZone(null);
+      setBeyond(false);
+      setOffsets((current) => ({
+        ...current,
+        [id]: { x: clampRest(current[id].x), y: clampRest(current[id].y) },
+      }));
     };
   }
 
@@ -135,39 +373,56 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
       };
       if (event.key === "r" || event.key === "R") {
         event.preventDefault();
-        setOffsets((current) => ({ ...current, [id]: { x: 0, y: 0 } }));
-        setAnnounce(`${LABELS[id]} put back.`);
+        resetOne(id);
+        setAnnounce(`${scrapLabels[id]} put back.`);
+        return;
+      }
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        setAnnounce(`Opening ${destinations[id]}.`);
+        go(destinations[id]);
         return;
       }
       const delta = map[event.key];
       if (!delta) return;
       event.preventDefault();
       move(id, delta[0], delta[1]);
-      setAnnounce(`${LABELS[id]} moved.`);
+      setAnnounce(`${scrapLabels[id]} moved.`);
     };
   }
 
-  const dragProps = (id: ScrapId) => ({
+  /** Both the wrapper and every image inside it refuse the native image drag. */
+  const noNativeDrag = {
+    onDragStart: (event: React.DragEvent<HTMLElement>) => event.preventDefault(),
+  } as const;
+
+  const dragProps = (id: ScrapId, touchAction: "none" | "pan-y" = "none") => ({
     onPointerDown: onPointerDown(id),
     onPointerMove: onPointerMove(id),
     onPointerUp: endDrag(id),
     onPointerCancel: endDrag(id),
+    onLostPointerCapture: onLostCapture(id),
     onKeyDown: onKeyDown(id),
+    onDragStart: noNativeDrag.onDragStart,
     tabIndex: 0,
     role: "group" as const,
-    "aria-label": `${LABELS[id]} — drag to move, or use arrow keys; press R to put it back`,
+    draggable: false as const,
+    "aria-label": `${scrapLabels[id]} — click or press Enter to open ${destinations[id]}, drag it to move it, arrow keys to nudge, R to put it back`,
+    "data-dragging": active === id || undefined,
+    style: { touchAction, WebkitUserSelect: "none" as const },
   });
 
-  const layer = (id: ScrapId, depth: number) => ({
-    transform: `translate3d(calc(var(--px, 0) * ${depth * 26}px), calc(var(--py, 0) * ${
+  const layer = (depth: number) =>
+    `translate3d(calc(var(--px, 0) * ${depth * 26}px), calc(var(--py, 0) * ${
       depth * 18
-    }px), 0)`,
-  });
+    }px), 0)`;
+
+  const dragging = active !== null;
 
   return (
     <section
       aria-labelledby="wall-heading"
-      className="relative w-full overflow-hidden border-b border-line/60"
+      className="relative flex w-full flex-1 flex-col overflow-hidden border-b border-line/60"
     >
       <div className="absolute inset-0 -z-10">
         <Image
@@ -177,7 +432,9 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          draggable={false}
+          onDragStart={(event) => event.preventDefault()}
+          className="pointer-events-none object-cover select-none"
         />
         <div className="absolute inset-0 bg-[#3a2a1e]/25 mix-blend-multiply" />
         <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_30%_10%,rgba(255,247,232,0.35),transparent_55%),radial-gradient(100%_80%_at_80%_90%,rgba(36,26,21,0.35),transparent_60%)]" />
@@ -185,7 +442,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
 
       <div
         ref={boardRef}
-        className="relative mx-auto max-w-[1360px] px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
+        className="relative mx-auto flex w-full max-w-[1360px] flex-1 flex-col justify-center px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
         style={{ ["--px" as string]: 0, ["--py" as string]: 0 }}
       >
         {/* the board itself: a big sheet of cream stock on the cork */}
@@ -195,16 +452,65 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
             aria-hidden
           />
 
-          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[660px] md:pt-12">
-            {/* WORDPRESS SCRAP */}
+          {/* the four taped drop-zones, revealed only while something is in hand */}
+          <div
+            aria-hidden={!dragging}
+            className={`pointer-events-none absolute inset-0 z-40 transition-opacity duration-200 ease-[var(--ease-paper)] motion-reduce:transition-none ${
+              dragging ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {dragZones.map((zone, index) => {
+              const hot = hoverZone === zone.id;
+              const parked = dragging && !hoverZone && beyond;
+              const place = [
+                "left-3 top-3",
+                "right-3 top-3",
+                "bottom-3 left-3",
+                "bottom-3 right-3",
+              ][index];
+              return (
+                <div
+                  key={zone.id}
+                  ref={(el) => {
+                    zoneRefs.current[zone.id] = el;
+                  }}
+                  className={`absolute ${place} ${drivingStyle(hot, dragging)}`}
+                >
+                  <Tape className="-top-2 left-4 z-10" rotate={index % 2 ? 8 : -12} width={58} height={18} />
+                  <div
+                    className={`flex min-w-[9.5rem] flex-col gap-0.5 px-4 py-2.5 transition-transform duration-150 ease-[var(--ease-paper)] motion-reduce:transition-none ${
+                      hot
+                        ? "-translate-y-0.5 bg-ink text-paper shadow-[var(--shadow-lift)]"
+                        : "bg-paper text-ink shadow-[var(--shadow-scrap)]"
+                    } ${parked ? "opacity-90" : ""}`}
+                  >
+                    <span className="font-mono text-[9px] uppercase tracking-[0.16em] opacity-70">
+                      drop to open
+                    </span>
+                    <span className="font-serif text-lg leading-none">{zone.label}</span>
+                    <span
+                      className={`font-mono text-[9px] uppercase tracking-[0.12em] ${
+                        hot ? "text-paper/70" : "text-ink-3"
+                      }`}
+                    >
+                      {zone.hint}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="relative mx-auto flex max-w-[1280px] flex-col gap-10 px-0 pt-0 md:min-h-[560px] md:pt-8 xl:grid xl:min-h-[560px] xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)_minmax(0,1fr)] xl:grid-rows-[auto_auto_auto] xl:gap-x-6 xl:gap-y-8 pb-24 md:pb-28 xl:pb-14">
+            {/* THE WORDPRESS SCRAP */}
             <div
-              {...dragProps("wordmark")}
-              className="relative z-20 w-full max-w-[620px] cursor-grab touch-none select-none active:cursor-grabbing md:ml-6"
+              {...dragProps("wordmark", "pan-y")}
+              className={`relative z-20 w-full max-w-[620px] cursor-grab select-none active:cursor-grabbing xl:col-start-1 xl:col-end-2 xl:row-start-1 xl:row-span-2 xl:self-start xl:justify-self-start ${
+                active === "wordmark" ? "z-40 cursor-grabbing" : ""
+              }`}
               style={{
-                ...layer("wordmark", 0.35),
-                transform: `${layer("wordmark", 0.35).transform} rotate(-1.4deg) translate(${
-                  offsets.wordmark.x
-                }px, ${offsets.wordmark.y}px)`,
+                touchAction: "pan-y",
+                transform: `${layer(0.35)} rotate(-1.4deg) translate(${offsets.wordmark.x}px, ${offsets.wordmark.y}px)`,
               }}
             >
               <Tape className="-left-6 -top-4 z-30" rotate={-24} width={136} height={38} />
@@ -220,18 +526,26 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                   Inc. Clubs
                 </h1>
                 <p className="scrawl mt-4 max-w-[34ch] text-xl sm:text-2xl">
-                  a wall to poke around in, and a table to cut your own.
+                  a wall to poke around in, and a studio to cut your own.
                 </p>
                 <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-ink-2">
                   Track days, workshop nights, pickup runs and field days, run by members of the
                   Pier 2 campus. Nothing on this board is a networking event.
                 </p>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <a href="#roster" className="pill-btn">
-                    See the wall ↓
-                  </a>
+                  <Link href="/clubs/roster" className="pill-btn">
+                    The four clubs →
+                  </Link>
+                  <Link href="/clubs" className="pill-btn-secondary">
+                    Walk the hallway →
+                  </Link>
                   {nextEvent ? (
-                    <a href={nextEvent.rsvpUrl} target="_blank" rel="noreferrer" className="pill-btn-secondary">
+                    <a
+                      href={nextEvent.rsvpUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="pill-btn-secondary"
+                    >
                       RSVP · {formatMonthDay(nextEvent.datetime)} ↗
                     </a>
                   ) : (
@@ -244,15 +558,16 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
             </div>
 
             {/* the rest of the board */}
-            <div className="relative z-10 md:absolute md:inset-0">
+            <div className="relative z-10 xl:contents">
               {/* handwritten note */}
               <div
                 {...dragProps("note")}
-                className="relative z-20 mt-8 w-[220px] cursor-grab touch-none select-none sm:w-[260px] md:absolute md:right-[3%] md:top-[6%] md:mt-0"
+                className={`relative z-20 mt-8 w-[220px] cursor-grab select-none sm:w-[260px] xl:mt-0 xl:col-start-2 xl:row-start-1 xl:justify-self-end xl:self-start ${
+                  active === "note" ? "z-40" : ""
+                }`}
                 style={{
-                  transform: `${layer("note", 0.75).transform} rotate(2.4deg) translate(${
-                    offsets.note.x
-                  }px, ${offsets.note.y}px)`,
+                  touchAction: "none",
+                  transform: `${layer(0.75)} rotate(1.6deg) translate(${offsets.note.x}px, ${offsets.note.y}px)`,
                 }}
               >
                 <Tape className="-left-8 -top-3 z-30" rotate={-8} width={104} height={30} />
@@ -263,7 +578,9 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                     width={1024}
                     height={1024}
                     sizes="260px"
-                    className="w-full"
+                    draggable={false}
+                    onDragStart={(event) => event.preventDefault()}
+                    className="pointer-events-none w-full select-none"
                   />
                 </div>
               </div>
@@ -271,11 +588,12 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
               {/* magazine cut-outs, multiply so the print sits in the paper */}
               <div
                 {...dragProps("helmet")}
-                className="relative z-10 mt-8 hidden cursor-grab touch-none select-none sm:block md:absolute md:right-[16%] md:top-[46%] md:mt-0"
+                className={`relative z-10 mt-8 hidden w-fit cursor-grab select-none sm:block xl:mt-0 xl:col-start-3 xl:row-start-1 xl:justify-self-start xl:self-center ${
+                  active === "helmet" ? "z-40" : ""
+                }`}
                 style={{
-                  transform: `${layer("helmet", 1).transform} rotate(-5deg) translate(${
-                    offsets.helmet.x
-                  }px, ${offsets.helmet.y}px)`,
+                  touchAction: "none",
+                  transform: `${layer(1)} rotate(-3deg) translate(${offsets.helmet.x}px, ${offsets.helmet.y}px)`,
                 }}
               >
                 <Image
@@ -284,17 +602,20 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                   width={1024}
                   height={1024}
                   sizes="(max-width: 768px) 40vw, 300px"
-                  className="sticker-img w-[200px] md:w-[268px]"
+                  draggable={false}
+                  onDragStart={(event) => event.preventDefault()}
+                  className="sticker-img pointer-events-none w-[200px] select-none md:w-[268px]"
                 />
               </div>
 
               <div
                 {...dragProps("sneaker")}
-                className="relative z-10 mt-8 hidden cursor-grab touch-none select-none sm:block md:absolute md:right-[2%] md:top-[68%] md:mt-0"
+                className={`relative z-10 mt-8 hidden w-fit cursor-grab select-none sm:block xl:mt-0 xl:col-start-2 xl:col-end-4 xl:row-start-2 xl:justify-self-center xl:self-center ${
+                  active === "sneaker" ? "z-40" : ""
+                }`}
                 style={{
-                  transform: `${layer("sneaker", 0.9).transform} rotate(4.5deg) translate(${
-                    offsets.sneaker.x
-                  }px, ${offsets.sneaker.y}px)`,
+                  touchAction: "none",
+                  transform: `${layer(0.9)} rotate(3deg) translate(${offsets.sneaker.x}px, ${offsets.sneaker.y}px)`,
                 }}
               >
                 <Image
@@ -303,55 +624,82 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                   width={1024}
                   height={1024}
                   sizes="(max-width: 768px) 40vw, 280px"
-                  className="sticker-img w-[180px] md:w-[240px]"
+                  draggable={false}
+                  onDragStart={(event) => event.preventDefault()}
+                  className="sticker-img pointer-events-none w-[180px] select-none md:w-[240px]"
                 />
               </div>
 
-              {/* club stickers, pinned to the board */}
+              {/* the roster rail — every club on the wall, sticker + name */}
               <div
-                {...dragProps("badge-cars")}
-                className="relative z-20 mt-8 w-[140px] cursor-grab touch-none select-none sm:w-[160px] md:absolute md:bottom-[6%] md:left-[11%] md:mt-0"
-                style={{
-                  transform: `${layer("badge-cars", 1.2).transform} rotate(-8deg) translate(${
-                    offsets["badge-cars"].x
-                  }px, ${offsets["badge-cars"].y}px)`,
-                }}
+                id="roster"
+                className="relative z-20 mt-8 flex scroll-mt-24 flex-wrap items-end justify-center gap-x-6 gap-y-5 sm:justify-start xl:col-span-3 xl:row-start-3 xl:mt-0 xl:items-end xl:justify-between xl:gap-4"
               >
-                <Tape className="-top-3 left-1/2 z-30 -translate-x-1/2" rotate={-4} width={70} height={24} />
-                <Image
-                  src="/collage/sticker-cars.webp"
-                  alt="Car Club sticker: orange racing helmet"
-                  width={1024}
-                  height={1024}
-                  sizes="160px"
-                  className="sticker-img w-full"
-                />
-              </div>
+                {clubBadges.map((badge) => {
+                  const id = badge.id;
+                  return (
+                    <div
+                      key={badge.id}
+                      {...dragProps(id)}
+                      className={`group relative w-[124px] cursor-grab select-none sm:w-[140px] xl:w-[150px] ${
+                        active === id ? "z-40" : ""
+                      }`}
+                      style={{
+                        touchAction: "none",
+                        transform: `${layer(badge.depth)} rotate(${badge.rotate}deg) translate(${offsets[id].x}px, ${offsets[id].y}px)`,
+                      }}
+                    >
+                      <Tape
+                        className="left-1/2 top-[-10px] z-30 -translate-x-1/2"
+                        rotate={badge.tape}
+                        width={66}
+                        height={22}
+                      />
+                      <Image
+                        src={badge.src}
+                        alt={`${badge.name} sticker`}
+                        width={1024}
+                        height={1024}
+                        sizes="150px"
+                        draggable={false}
+                        onDragStart={(event) => event.preventDefault()}
+                        className="sticker-img pointer-events-none w-full select-none transition-transform duration-300 ease-[var(--ease-paper)] motion-reduce:transition-none group-hover:rotate-[-1.5deg]"
+                      />
+                      <span className="mt-1.5 block text-center font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
+                        {badge.name}
+                      </span>
+                    </div>
+                  );
+                })}
 
-              <div
-                {...dragProps("badge-hoops")}
-                className="relative z-20 mt-8 ml-auto w-[132px] cursor-grab touch-none select-none sm:w-[150px] md:absolute md:bottom-[3%] md:right-[30%] md:mt-0"
-                style={{
-                  transform: `${layer("badge-hoops", 0.6).transform} rotate(7deg) translate(${
-                    offsets["badge-hoops"].x
-                  }px, ${offsets["badge-hoops"].y}px)`,
-                }}
-              >
-                <Image
-                  src="/collage/sticker-hoops.webp"
-                  alt="Basketball Club sticker: chain-link hoop"
-                  width={1024}
-                  height={1024}
-                  sizes="150px"
-                  className="sticker-img w-full"
-                />
+                {/* the index card that charters a new club */}
+                <div
+                  {...dragProps("charter")}
+                  className={`relative w-[176px] cursor-grab select-none sm:w-[186px] xl:w-[180px] ${
+                    active === "charter" ? "z-40" : ""
+                  }`}
+                  style={{
+                    touchAction: "none",
+                    transform: `${layer(0.5)} rotate(-2deg) translate(${offsets.charter.x}px, ${offsets.charter.y}px)`,
+                  }}
+                >
+                  <Tape className="-right-6 -top-3 z-30" rotate={18} width={78} height={24} />
+                  <div className="bg-paper px-4 py-3 shadow-[var(--shadow-scrap)]">
+                    <span className="label">index card · 3×5</span>
+                    <p className="scrawl mt-1 text-[1.35rem] leading-[1.02]">Start a club</p>
+                    <p className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3">
+                      cut your own sticky →
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <p className="relative z-20 mt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-          Drag a scrap, or tab to it and use the arrow keys · press R to put it back
+          Click a scrap and it peels off the wall and opens its page · or drag one across the paper,
+          drop it on a taped zone, or carry it off the edge · arrow keys nudge · R puts it back
         </p>
         <p aria-live="polite" className="sr-only">
           {announce}
@@ -359,4 +707,11 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
       </div>
     </section>
   );
+}
+
+/** Keeps the hot/parked zone classes readable inside the map above. */
+function drivingStyle(hot: boolean, dragging: boolean): string {
+  return `transition-[transform,opacity] duration-150 ease-[var(--ease-paper)] motion-reduce:transition-none ${
+    hot ? "scale-[1.04]" : dragging ? "scale-100" : "scale-95"
+  }`;
 }

@@ -23,20 +23,26 @@ export function Header() {
 
         <nav className="flex shrink-0 items-center gap-1 sm:gap-5">
           <Link
-            href="/clubs"
+            href="/clubs/wall"
             className="hidden min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink sm:inline-flex"
           >
             The wall
           </Link>
           <Link
-            href="/clubs/cars"
+            href="/clubs/roster"
             className="hidden min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink sm:inline-flex"
           >
-            Car Club
+            The four clubs
+          </Link>
+          <Link
+            href="/clubs/overview"
+            className="inline-flex min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink"
+          >
+            At a glance
           </Link>
           <Link
             href="/clubs/calendar"
-            className="inline-flex min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink"
+            className="hidden min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink md:inline-flex"
           >
             Calendar
           </Link>

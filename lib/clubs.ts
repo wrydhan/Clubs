@@ -1,4 +1,5 @@
 import { addCalendarWeeks, nextOccurrence, pacificToUtc } from "@/lib/dates";
+import { trackDayRsvpUrl } from "@/lib/site";
 
 /**
  * All club content lives here.
@@ -217,7 +218,7 @@ const eventSeeds: EventSeed[] = [
     title: "Founders Track Day at Sonoma",
     date: { year: 2026, month: 10, day: 26, hour: 7, minute: 0 },
     location: "Sonoma Raceway",
-    rsvpUrl: "https://luma.com/founderstrackday",
+    rsvpUrl: trackDayRsvpUrl,
     description:
       "Convoy departs Fort Mason Pier 2 parking at 7:00 AM sharp. Sonoma check-in opens at 8:00 AM, mandatory driver meeting at 8:30 AM, with first run group on circuit at 9:00 AM. Lunch and paddock refreshments provided. Full safety gear and Snell/DOT helmet required. Both drivers and passengers must RSVP.",
   },

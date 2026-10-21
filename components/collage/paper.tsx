@@ -58,8 +58,14 @@ export function Tape({
   );
 }
 
-export function Pin({ className = "" }: { className?: string }) {
-  return <span aria-hidden className={`pin absolute ${className}`} />;
+export function Pin({ className = "", size }: { className?: string; size?: number }) {
+  return (
+    <span
+      aria-hidden
+      className={`pin absolute ${className}`}
+      style={size ? { width: size, height: size } : undefined}
+    />
+  );
 }
 
 export function Stamp({ children, className = "" }: { children: ReactNode; className?: string }) {
