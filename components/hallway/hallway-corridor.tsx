@@ -45,7 +45,6 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
-import { Pin } from "@/components/collage/paper";
 import type { HallwayClub } from "./types";
 
 /* ------------------------------------------------------------------ geometry */
@@ -82,20 +81,44 @@ const PERSPECTIVE = 900;
 const EYE_START_Z = 900;
 const EYE_APPROACH_Z = -760; // the walk stops 240 short of the board…
 const EYE_TURN_X = HALL_HALF - 360; // …then steps to 160 and turns to face it
-const EYE_DIST = HALL_HALF - EYE_TURN_X; // 360 units from eye to board at rest
 
-/* The flyer art is laid out at the size it is DISPLAYED, then scaled back down
-   into the 420 × 300 plane. The settled camera projects the plane at
-   PERSPECTIVE / EYE_DIST = 2.5×, so authoring the art at 420 and letting the
-   projection magnify it means every glyph is rasterised at 1× layout size and
-   stretched — the 4.5 px captions and the metadata rows are the first to go soft.
-   `BOARD_RASTER` is that projection scale: the art canvas is BOARD_W ×
-   BOARD_RASTER wide and a single inverse `scale()` fits it back into the plane,
-   so the layer is rasterised once, at its displayed size. `ART` is one design
-   unit, so the composition still scales with `BOARD_W`. */
-const BOARD_RASTER = PERSPECTIVE / EYE_DIST;
-const ART = (BOARD_W * BOARD_RASTER) / 840;
-const u = (v: number) => `${+(v * ART).toFixed(2)}px`;
+/* How big the settle makes the board, and why that number decides how the board
+   is drawn.
+
+   At rest the eye stands `SETTLE_DIST` units off the wall, so the projection
+   magnifies the 420 × 300 plane by PERSPECTIVE / SETTLE_DIST = 2.521 — it lands
+   at 1058.8 × 756.3 on a 1440 frame (measured: 190.6, 135.1, 1058.8, 756.3).
+   ANY layer under that projection is rasterised at its layout size and then
+   stretched by 2.521, so nothing authored inside the plane can come back sharper
+   than the plane's own raster; nesting display-size art and an inverse `scale()`
+   inside it costs a further ~2× because the browser rasterises the outer and
+   inner layers separately.
+
+   So the art is authored in PLANE UNITS — one unit is one unit of the 420 × 300
+   board — and it is laid out at display size by being laid out in a layer that is
+   ALREADY display size: the hoisted flat layer at rest (see `flatRef`), where
+   `--bu` is SETTLE_MAG × fit px per plane unit. Inside the walk plane `--bu` is
+   just 1px. Same tree, one set of unit maths, no scale() anywhere. */
+const SETTLE_DIST = BOARD_X - EYE_TURN_X; // 357 units from the eye to the board at rest
+const SETTLE_MAG = PERSPECTIVE / SETTLE_DIST; // 2.521: what the settle magnifies by
+const SETTLE_Z = PERSPECTIVE - SETTLE_DIST; // 543: the board's depth behind the projection plane
+const FLAT_W = BOARD_W * SETTLE_MAG; // 1058.82 px — the board's width on screen at rest
+const FLAT_H = BOARD_H * SETTLE_MAG; // 756.30 px
+
+/** One DESIGN unit, in px, for the layer the art sits in — `--bu` is set by
+ *  `BoardArt`: `1px` per plane unit in the walk plane, SETTLE_MAG × fit px per
+ *  plane unit in the hoisted layer. The art is composed on an 840-unit grid that
+ *  spans the 420-unit board, so one design unit is half a plane unit — the same
+ *  840-grid the board has always used, which is why no type size moves. */
+const u = (v: number) => `calc(var(--bu) * ${+(v * (BOARD_W / 840)).toFixed(4)})`;
+/** One PLANE unit in px — for the pin and the cork tile, which are stated in plane
+ *  units so that neither layer rescales them. */
+const pu = (v: number) => `calc(var(--bu) * ${+v.toFixed(3)})`;
+
+/* The cork grain is a 1024² bitmap. Drawn at 1024 px in the settled layer it maps
+   1:1 to its own pixels; in plane units that tile is `CORK_TILE` (406.2), so the
+   grain is upscaled by nothing — not by the tile size and not by the projection. */
+const CORK_TILE = 1024 / SETTLE_MAG;
 const YAW_NOTICE = 7; // degrees of head-turn picked up at the end of the walk
 const EYE_TURN_YAW = 90; // square on to the right-hand wall
 const WALK_END = 0.64;
@@ -174,9 +197,7 @@ export function cameraAt(p: number): Camera {
 
 /** How much the whole projection has to shrink for the settled board to fit. */
 function fitScale(width: number, height: number) {
-  const px = (BOARD_W * PERSPECTIVE) / EYE_DIST;
-  const py = (BOARD_H * PERSPECTIVE) / EYE_DIST;
-  return Math.min(1, (width - 56) / px, (height - 56) / py);
+  return Math.min(1, (width - 56) / FLAT_W, (height - 56) / FLAT_H);
 }
 
 /* ------------------------------------------------------------------ primitives */
@@ -773,7 +794,8 @@ function BoardFlyer({
           style={{ pointerEvents: interactive ? "auto" : "none" }}
         >
           <span className="pointer-events-none absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-[58%]">
-            <Pin size={+(12 * BOARD_RASTER).toFixed(2)} />
+            {/* a real pushpin, 12 plane units across in both layers */}
+            <span aria-hidden className="pin absolute" style={{ width: pu(12), height: pu(12) }} />
           </span>
           <span
             className={`torn-soft flex h-full w-full flex-col justify-between bg-paper px-[7%] py-[6%] shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
@@ -828,25 +850,36 @@ function BoardFlyer({
   );
 }
 
-/** The board's art at its displayed raster size: authored at BOARD_W ×
- *  BOARD_RASTER, then fitted into the 420 × 300 plane by the inverse scale, so
- *  the glyphs are rasterised once, at display size. */
-function BoardArt({ clubs, armed, onOpen }: { clubs: HallwayClub[]; armed: boolean; onOpen: (index: number) => void }) {
+/** The board's art, laid out in PLANE units.
+ *
+ *  `unit` is one plane unit in px for the layer it is in: `1px` inside the
+ *  420 × 300 wall plane the walk projects, and `SETTLE_MAG × fit` in the hoisted
+ *  flat layer, where the same tree lays out at 1058.8 × 756.3 — display size —
+ *  with no `scale()` between the two. That is the whole point: a scale would put
+ *  a rasterisation inside another one, and the outer one is what the projection
+ *  stretches. */
+function BoardArt({
+  clubs,
+  armed,
+  onOpen,
+  unit,
+}: {
+  clubs: HallwayClub[];
+  armed: boolean;
+  onOpen: (index: number) => void;
+  unit: string;
+}) {
   return (
-    <div className="relative h-full w-full overflow-hidden shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          width: +(BOARD_W * BOARD_RASTER).toFixed(2),
-          height: +(BOARD_H * BOARD_RASTER).toFixed(2),
-          transform: `scale(${(1 / BOARD_RASTER).toFixed(5)})`,
-          transformOrigin: "0 0",
-        }}
-      >
-        <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
-      </div>
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={
+        {
+          "--bu": unit,
+          boxShadow: `${u(-14.4)} ${u(20.8)} ${u(32)} ${u(-9.6)} rgba(36,26,21,0.65), 0 ${u(40)} ${u(72)} ${u(-24)} rgba(36,26,21,0.7)`,
+        } as CSSProperties
+      }
+    >
+      <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
     </div>
   );
 }
@@ -893,10 +926,11 @@ function CorridorBoard({
       <div
         className="tex-cork relative h-full w-full overflow-hidden"
         style={{
-          // the cork grain is a bitmap tile: its size follows the raster canvas,
-          // or the grain would read 2.5x finer than the board around it
-          backgroundSize: `${+(720 * BOARD_RASTER).toFixed(0)}px auto`,
-          boxShadow: "inset 0 2px 26px rgba(52,34,18,0.5), inset 0 0 0 2px rgba(40,28,18,0.35)",
+          // the cork tile is a 1024² bitmap, so it is drawn at 1024 px in the
+          // settled layer — 1:1 with its own pixels, `CORK_TILE` plane units —
+          // instead of being upscaled 1.76x by the tile and 2.52x by the plane
+          backgroundSize: `${pu(CORK_TILE)} auto`,
+          boxShadow: `inset 0 ${u(1.6)} ${u(20.8)} rgba(52,34,18,0.5), inset 0 0 0 ${u(1.6)} rgba(40,28,18,0.35)`,
         }}
       >
         <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.24),transparent_62%)]" />
@@ -949,6 +983,10 @@ const IDLE_CSS = `
 export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[]; onOpen: (index: number) => void }) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const cameraRef = useRef<HTMLDivElement | null>(null);
+  const flatRef = useRef<HTMLDivElement | null>(null);
+  // The damped head pose, in a ref so the hoisted board can be painted from
+  // outside the walk loop as well as inside it.
+  const headRef = useRef({ x: 0, y: 0, yaw: 0, pitch: 0 });
 
   // Seeded from the media query at mount (this module is client-only, see
   // hallway.tsx) so a reduced-motion visitor starts already settled instead of
@@ -967,8 +1005,30 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
     // The board is a fixed piece of the wall now, so the only per-viewport
     // correction is a single 2D scale on the projection: narrow screens shrink the
     // settled view instead of cropping the flyers off the edge of the board.
-    stage.style.setProperty("--fit", fitScale(stage.clientWidth, stage.clientHeight).toFixed(4));
+    const fit = fitScale(stage.clientWidth, stage.clientHeight);
+    stage.style.setProperty("--fit", fit.toFixed(4));
+
+    /* The hoisted board gets the same head motion the camera gets, as a small 2D
+       translate — it is the one plane that no longer goes through the projection.
+       A camera shift of `head.x` shows up on the board as `head.x` × its
+       magnification; a head yaw of θ swings it by the projection-plane distance
+       to it (`SETTLE_Z`) × sin θ, then magnified. Whole pixels, so the type is not
+       resampled frame to frame. */
+    const flat = flatRef.current;
+    if (flat) {
+      const yaw = (head.yaw * Math.PI) / 180;
+      const pitch = (head.pitch * Math.PI) / 180;
+      const dx = Math.round((head.x + SETTLE_Z * Math.sin(yaw)) * SETTLE_MAG * fit);
+      const dy = Math.round((head.y - SETTLE_Z * Math.sin(pitch)) * SETTLE_MAG * fit);
+      flat.style.transform = `translate(${dx}px, ${dy}px)`;
+    }
   }, []);
+
+  /* The hoisted board mounts when the walk locks; paint it once from here so it
+     takes the pointer's parallax at that instant instead of snapping in centred. */
+  useEffect(() => {
+    if (locked) paint(1, headRef.current);
+  }, [locked, paint]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -986,7 +1046,11 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
     let inView = true;
     let raf = 0;
     let last = 0;
-    const head = { x: 0, y: 0, yaw: 0, pitch: 0 };
+    const head = headRef.current;
+    head.x = 0;
+    head.y = 0;
+    head.yaw = 0;
+    head.pitch = 0;
     const headTarget = { x: 0, y: 0, yaw: 0, pitch: 0 };
 
     paint(current, head);
@@ -1201,13 +1265,12 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
               z={BOARD_Z}
               ry={-90}
               className="hallway-board"
+              style={{ opacity: locked ? 0 : 1, transition: "opacity 200ms linear" }}
             >
-              {/* while walking, the board is the 3D plane; once settled it is
-                  handed to the flat layer below, which the browser rasterises at
-                  display size (a 3D-transformed layer is rasterised at its layout
-                  size and the projection stretches that texture, which is what
-                  softened the flyers) */}
-              <BoardArt clubs={clubs} armed={armed} onOpen={onOpen} />
+              {/* while walking, the board is the 3D plane, in plain plane units;
+                  once settled it is handed to the flat layer below, which is laid
+                  out at display size and so rasterised once, at display size */}
+              <BoardArt clubs={clubs} armed={armed && !locked} onOpen={onOpen} unit="1px" />
             </Plane>
           </div>
         </div>
@@ -1221,6 +1284,44 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
               "radial-gradient(78% 66% at 14% 40%, rgba(255,248,228,0.42), transparent 62%), radial-gradient(120% 100% at 50% 55%, transparent 42%, rgba(36,26,21,0.26) 100%)",
           }}
         />
+
+        {/* THE HOISTED BOARD.
+
+            At rest the pinboard leaves the perspective parent and is drawn here, 1:1,
+            at exactly the rect the camera was projecting it into — same size, same
+            place, but with no projection on top of it. This is the fix for the blur:
+            a layer inside a 3D transform is rasterised at its LAYOUT size and the
+            projection then stretches that texture (×2.521 here), and the
+            display-size-art + inverse-scale nesting the two previous commits used
+            costs another ~2× on the way. A plain layer at display size is rasterised
+            once, at display size.
+
+            Geometry is the settled rect, derived from the camera: FLAT_W × FLAT_H at
+            stage centre, pushed down by the board's own height in the world
+            (BOARD_Y × SETTLE_MAG), all of it × the fit scale the projection uses. The
+            walk still owns the board; this only takes over at rest, and the head
+            parallax comes back as a whole-pixel 2D translate from `paint()`. */}
+        {locked && (
+          <div
+            ref={flatRef}
+            style={{
+              position: "absolute",
+              left: `calc(50% - ${(FLAT_W / 2).toFixed(2)}px * var(--fit, 1))`,
+              top: `calc(50% - ${(FLAT_H / 2).toFixed(2)}px * var(--fit, 1) + ${(BOARD_Y * SETTLE_MAG).toFixed(2)}px * var(--fit, 1))`,
+              width: `calc(${FLAT_W.toFixed(2)}px * var(--fit, 1))`,
+              height: `calc(${FLAT_H.toFixed(2)}px * var(--fit, 1))`,
+              transform: "translate(0px, 0px)",
+              willChange: "transform",
+            }}
+          >
+            <BoardArt
+              clubs={clubs}
+              armed
+              onOpen={onOpen}
+              unit={`calc(${SETTLE_MAG.toFixed(4)}px * var(--fit, 1))`}
+            />
+          </div>
+        )}
 
         {/* stage furniture: skip control is first in the tab order here */}
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 px-4 pt-4 sm:px-7 sm:pt-5">
