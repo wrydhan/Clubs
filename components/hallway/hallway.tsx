@@ -408,7 +408,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
 
   return (
     <>
-      {view === "corridor" ? <Corridor clubs={clubs} /> : view === "still" ? <HallwayStill clubs={clubs} /> : <StageShell />}
+      {view === "corridor" ? <Corridor clubs={clubs} onOpen={openFlyer} /> : view === "still" ? <HallwayStill clubs={clubs} /> : <StageShell />}
 
       {/* ------------------------------------------------ the board (server-rendered) */}
       <section id="board" className="scroll-mt-20 bg-paper px-4 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-14">
@@ -452,6 +452,12 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
                     className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline decoration-ink/35 underline-offset-4 hover:decoration-ink"
                   >
                     All four on one page →
+                  </Link>
+                  <Link
+                    href="/clubs/overview"
+                    className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline decoration-ink/35 underline-offset-4 hover:decoration-ink"
+                  >
+                    See everything at a glance →
                   </Link>
                   <Link
                     href="/clubs/wall"
