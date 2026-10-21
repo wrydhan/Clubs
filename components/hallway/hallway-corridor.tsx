@@ -74,16 +74,6 @@ const BOARD_X = HALL_HALF - 3; // a hair inside the wall, so it never z-fights
 const BOARD_Z = -1000; // where along the wall it hangs
 const BOARD_Y = 12; // centre 1.50 m up: the board hangs 0.88 → 2.14 m
 
-/* The flyer art is laid out at the plane's own size in the plane's own pixels —
-   there is no inner scale. The settled camera magnifies the plane about 2.5x on a
-   1440 frame, and one magnification of DOM type rasterises crisply; the old
-   840-wide canvas shrunk by 0.5 inside the 420-wide plane made the browser
-   rasterise the glyphs small and then stretch that bitmap, which is what softened
-   the flyers. `ART` is one design unit, so the composition still scales with
-   `BOARD_W`. */
-const ART = BOARD_W / 840;
-const u = (v: number) => `${+(v * ART).toFixed(2)}px`;
-
 /* Camera. CSS perspective puts the eye 900 px in front of the projection plane, so
    a surface D away renders at scale 900/D. The eye walks the centre line from
    `EYE_START_Z` to `EYE_APPROACH_Z`, then turns right and steps in to
@@ -93,6 +83,19 @@ const EYE_START_Z = 900;
 const EYE_APPROACH_Z = -760; // the walk stops 240 short of the board…
 const EYE_TURN_X = HALL_HALF - 360; // …then steps to 160 and turns to face it
 const EYE_DIST = HALL_HALF - EYE_TURN_X; // 360 units from eye to board at rest
+
+/* The flyer art is laid out at the size it is DISPLAYED, then scaled back down
+   into the 420 × 300 plane. The settled camera projects the plane at
+   PERSPECTIVE / EYE_DIST = 2.5×, so authoring the art at 420 and letting the
+   projection magnify it means every glyph is rasterised at 1× layout size and
+   stretched — the 4.5 px captions and the metadata rows are the first to go soft.
+   `BOARD_RASTER` is that projection scale: the art canvas is BOARD_W ×
+   BOARD_RASTER wide and a single inverse `scale()` fits it back into the plane,
+   so the layer is rasterised once, at its displayed size. `ART` is one design
+   unit, so the composition still scales with `BOARD_W`. */
+const BOARD_RASTER = PERSPECTIVE / EYE_DIST;
+const ART = (BOARD_W * BOARD_RASTER) / 840;
+const u = (v: number) => `${+(v * ART).toFixed(2)}px`;
 const YAW_NOTICE = 7; // degrees of head-turn picked up at the end of the walk
 const EYE_TURN_YAW = 90; // square on to the right-hand wall
 const WALK_END = 0.64;
@@ -770,7 +773,7 @@ function BoardFlyer({
           style={{ pointerEvents: interactive ? "auto" : "none" }}
         >
           <span className="pointer-events-none absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-[58%]">
-            <Pin />
+            <Pin size={+(12 * ART).toFixed(2)} />
           </span>
           <span
             className={`torn-soft flex h-full w-full flex-col justify-between bg-paper px-[7%] py-[6%] shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
@@ -825,6 +828,29 @@ function BoardFlyer({
   );
 }
 
+/** The board's art at its displayed raster size: authored at BOARD_W ×
+ *  BOARD_RASTER, then fitted into the 420 × 300 plane by the inverse scale, so
+ *  the glyphs are rasterised once, at display size. */
+function BoardArt({ clubs, armed, onOpen }: { clubs: HallwayClub[]; armed: boolean; onOpen: (index: number) => void }) {
+  return (
+    <div className="relative h-full w-full overflow-hidden shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: +(BOARD_W * BOARD_RASTER).toFixed(2),
+          height: +(BOARD_H * BOARD_RASTER).toFixed(2),
+          transform: `scale(${(1 / BOARD_RASTER).toFixed(5)})`,
+          transformOrigin: "0 0",
+        }}
+      >
+        <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
+      </div>
+    </div>
+  );
+}
+
 function CorridorBoard({
   clubs,
   armed,
@@ -859,11 +885,19 @@ function CorridorBoard({
   return (
     <div
       className="h-full w-full"
-      style={{ padding: u(26), backgroundImage: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)" }}
+      style={{
+        padding: u(26),
+        backgroundImage: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)",
+      }}
     >
       <div
         className="tex-cork relative h-full w-full overflow-hidden"
-        style={{ boxShadow: "inset 0 2px 26px rgba(52,34,18,0.5), inset 0 0 0 2px rgba(40,28,18,0.35)" }}
+        style={{
+          // the cork grain is a bitmap tile: its size follows the raster canvas,
+          // or the grain would read 2.5x finer than the board around it
+          backgroundSize: `${+(720 * BOARD_RASTER).toFixed(0)}px auto`,
+          boxShadow: `inset 0 ${u(2)} ${u(26)} rgba(52,34,18,0.5), inset 0 0 0 ${u(2)} rgba(40,28,18,0.35)`,
+        }}
       >
         <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.24),transparent_62%)]" />
 
@@ -1168,12 +1202,12 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
               ry={-90}
               className="hallway-board"
             >
-              <div className="relative h-full w-full overflow-hidden shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
-                {/* the flyers are laid out at the board's own size — no inner
-                    scale — so the type is rasterised once, at the size the
-                    camera settles on */}
-                <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
-              </div>
+              {/* while walking, the board is the 3D plane; once settled it is
+                  handed to the flat layer below, which the browser rasterises at
+                  display size (a 3D-transformed layer is rasterised at its layout
+                  size and the projection stretches that texture, which is what
+                  softened the flyers) */}
+              <BoardArt clubs={clubs} armed={armed} onOpen={onOpen} />
             </Plane>
           </div>
         </div>
