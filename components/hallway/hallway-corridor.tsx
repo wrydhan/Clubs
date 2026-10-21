@@ -74,12 +74,15 @@ const BOARD_X = HALL_HALF - 3; // a hair inside the wall, so it never z-fights
 const BOARD_Z = -1000; // where along the wall it hangs
 const BOARD_Y = 12; // centre 1.50 m up: the board hangs 0.88 → 2.14 m
 
-/* The flyers are laid out at this size and scaled down to `BOARD_W`, so the
-   typography on a realistically sized board stays proportional instead of
-   spilling out of it. */
-const BOARD_ART_W = 840;
-const BOARD_ART_H = 600;
-const BOARD_SCALE = BOARD_W / BOARD_ART_W;
+/* The flyer art is laid out at the plane's own size in the plane's own pixels —
+   there is no inner scale. The settled camera magnifies the plane about 2.5x on a
+   1440 frame, and one magnification of DOM type rasterises crisply; the old
+   840-wide canvas shrunk by 0.5 inside the 420-wide plane made the browser
+   rasterise the glyphs small and then stretch that bitmap, which is what softened
+   the flyers. `ART` is one design unit, so the composition still scales with
+   `BOARD_W`. */
+const ART = BOARD_W / 840;
+const u = (v: number) => `${+(v * ART).toFixed(2)}px`;
 
 /* Camera. CSS perspective puts the eye 900 px in front of the projection plane, so
    a surface D away renders at scale 900/D. The eye walks the centre line from
@@ -567,16 +570,49 @@ function LockerWall() {
 
 const STAIR_OPEN_W = 560; // the opening in the end wall
 const STAIR_OPEN_H = 520; // floor to head, so a person clears it
-const STAIR_SHAFT = 900; // how far the stair volume runs back
-const STAIR_BACK_Z = FAR_Z - STAIR_SHAFT;
-const STAIR_LANDING = 120;
-const STAIR_STEPS = 9;
-const STAIR_TREAD = 68;
-const STAIR_RISE = 30;
 
-/** The corridor's far end: a wide opening in the end wall onto a landing, and a
-    flight going down into the dark. You can never walk to it — it exists so the
-    hall has somewhere to go. */
+/* The view through the opening is a drawn back plate, not modelled planes. A
+   flight built out of CSS planes read as a striped ramp from the settle: full
+   width treads seen from an eye thirty-four metres back collapse into horizontal
+   bands with nothing flanking them, and the plane edges bowed. The plate is
+   drawn in the same one-point projection as the hall — a landing, the wall
+   returning to the shaft, and a six-tread flight with tread tops, riser faces,
+   nosing highlights, a balustrade post on every step and a newel on the bottom
+   landing — so the end of the hall reads as a stairwell rather than a backdrop. */
+
+const PLATE_W = 560;
+const PLATE_H = 520;
+
+/* The flight, in plate pixels: six treads dropping away to the left, each drawn as a
+   top surface plus a riser face, so both depth and tread depth read at a glance. */
+const PLATE_TREADS: [number, number][][] = [
+  [[500, 318], [444, 318], [468, 288], [524, 288]],
+  [[444, 340], [388, 340], [412, 310], [468, 310]],
+  [[388, 362], [332, 362], [356, 332], [412, 332]],
+  [[332, 384], [276, 384], [300, 354], [356, 354]],
+  [[276, 406], [220, 406], [244, 376], [300, 376]],
+  [[220, 428], [164, 428], [188, 398], [244, 398]],
+];
+const PLATE_RISERS: [number, number][][] = [
+  [[444, 318], [444, 340], [468, 310], [468, 288]],
+  [[388, 340], [388, 362], [412, 332], [412, 310]],
+  [[332, 362], [332, 384], [356, 354], [356, 332]],
+  [[276, 384], [276, 406], [300, 376], [300, 354]],
+  [[220, 406], [220, 428], [244, 398], [244, 376]],
+  [[164, 428], [164, 450], [188, 420], [188, 398]],
+];
+const PLATE_NOSINGS = [[444, 318, 468, 288], [388, 340, 412, 310], [332, 362, 356, 332], [276, 384, 300, 354], [220, 406, 244, 376], [164, 428, 188, 398]];
+const PLATE_BODY = "500,318 444,318 444,340 388,340 388,362 332,362 332,384 276,384 276,406 220,406 220,428 164,428 164,450 164,520 560,520 560,318";
+/* the same sawtooth pushed toward the vanishing point: the flight's far stringer,
+   which gives it thickness instead of reading as a flat cutout */
+const PLATE_BODY_FAR = "538,272 482,272 482,294 426,294 426,316 370,316 370,338 314,338 314,360 258,360 258,382 202,382 202,404 202,474 598,474 598,272";
+
+const PLATE_RAIL = "444,256 388,278 332,300 276,322 220,344 164,366 164,388";
+const PLATE_POSTS: [number, number][] = [[444, 318], [388, 340], [332, 362], [276, 384], [220, 406], [164, 428]];
+const PLATE_NEWEL: [number, number] = [164, 450];
+const PLATE_BOTTOM = 450;
+
+
 function Stairwell() {
   const half = STAIR_OPEN_W / 2;
   const sideW = HALL_HALF - half;
@@ -584,9 +620,6 @@ function Stairwell() {
   const yc = (FLOOR_Y + CEIL_Y) / 2;
   const headY = FLOOR_Y - STAIR_OPEN_H;
   const headH = headY - CEIL_Y;
-  const flightStart = FAR_Z - STAIR_LANDING;
-  const bottomY = FLOOR_Y + STAIR_RISE * STAIR_STEPS;
-  const bottomZ = flightStart - STAIR_TREAD * STAIR_STEPS;
 
   return (
     <>
@@ -618,137 +651,87 @@ function Stairwell() {
         </span>
         <Grain src="/collage/paper-newsprint.webp" size={400} opacity={0.2} />
       </Plane>
-      {/* sight lines past the opening's plant-on jamb */}
-      {[-1, 1].map((s) => (
-        <Plane
-          key={s}
-          w={26}
-          h={STAIR_OPEN_H}
-          x={s * (half + 13)}
-          y={FLOOR_Y - STAIR_OPEN_H / 2}
-          z={FAR_Z - 6}
-          style={{ overflow: "hidden" }}
-        >
-          <span
-            className="absolute inset-0"
-            style={{ backgroundImage: "linear-gradient(to right, #8a6d4d, #6d5338)", boxShadow: "inset 0 0 0 1px rgba(30,22,14,0.5)" }}
-          />
-        </Plane>
-      ))}
 
-      {/* the shaft: landing, side walls, ceiling, back wall */}
-      <Plane w={STAIR_OPEN_W} h={STAIR_LANDING} y={FLOOR_Y} z={FAR_Z - STAIR_LANDING / 2} rx={90} style={{ overflow: "hidden" }}>
-        <span
-          className="absolute inset-0"
-          style={{
-            backgroundColor: "#b9a888",
-            backgroundImage: [
-              "repeating-linear-gradient(to bottom, rgba(52,40,26,0.3) 0 2px, transparent 2px 64px)",
-              "linear-gradient(#c9b899, #a8967a)",
-            ].join(","),
-          }}
-        />
-      </Plane>
-      {[-1, 1].map((s) => (
-        <Plane
-          key={`shaft${s}`}
-          w={STAIR_SHAFT}
-          h={1200}
-          x={s * half}
-          y={yc + 260}
-          z={FAR_Z - STAIR_SHAFT / 2}
-          ry={s * 90}
-          style={{ overflow: "hidden" }}
+      {/* the stairwell itself: a drawn plate on the back of the opening */}
+      <Plane
+        w={STAIR_OPEN_W}
+        h={STAIR_OPEN_H}
+        y={(FLOOR_Y + headY) / 2}
+        z={FAR_Z - 4}
+        style={{ overflow: "hidden", background: "#c4b18d" }}
+      >
+        <svg
+          viewBox={`0 0 ${PLATE_W} ${PLATE_H}`}
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full"
+          aria-hidden
         >
-          <span
-            className="absolute inset-0"
-            style={{ backgroundImage: "linear-gradient(#b3a181, #7d6c53 60%, #4a4033)" }}
-          />
-        </Plane>
-      ))}
-      <Plane w={STAIR_OPEN_W} h={STAIR_SHAFT} y={CEIL_Y} z={FAR_Z - STAIR_SHAFT / 2} rx={-90} style={{ overflow: "hidden" }}>
-        <span className="absolute inset-0" style={{ background: "linear-gradient(#e6dccb, #c9bda7)" }} />
-      </Plane>
-      <Plane w={STAIR_OPEN_W} h={1200} y={yc + 260} z={STAIR_BACK_Z} style={{ overflow: "hidden" }}>
-        <span
-          className="absolute inset-0"
-          style={{ backgroundImage: "linear-gradient(#a4937a, #7b6a52 58%, #3b332a)" }}
-        />
-        <span
-          className="absolute inset-x-0 top-[12%] h-[7%]"
-          style={{ background: "linear-gradient(#fffbe8, #f3e6c4)", boxShadow: "0 0 70px 26px rgba(255,244,210,0.55)" }}
-        />
-        {/* the flight read off the far wall: a stepped band dropping to the left,
-            so the stairwell is legible even from the top of the hall */}
-        <span
-          className="absolute"
-          style={{
-            left: "4%",
-            right: "4%",
-            top: "26%",
-            bottom: "6%",
-            backgroundImage:
-              "repeating-linear-gradient(to bottom, rgba(246,238,216,0.5) 0 7px, rgba(46,40,32,0.55) 7px 15px)",
-            clipPath: "polygon(100% 0, 100% 18%, 62% 62%, 62% 100%, 0 100%, 0 78%, 38% 38%, 38% 0)",
-            opacity: 0.85,
-          }}
-        />
-        <span
-          className="absolute left-[6%] top-[68%] px-2 py-[2px] font-mono text-[8px] uppercase tracking-[0.18em]"
-          style={{ background: "#1f6b4a", color: "#f4efdf" }}
-        >
-          stairs ↓
-        </span>
-      </Plane>
+          <defs>
+            <linearGradient id="stair-wall" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#d9caac" />
+              <stop offset="0.62" stopColor="#c4b18d" />
+              <stop offset="1" stopColor="#9c8968" />
+            </linearGradient>
+            <linearGradient id="stair-soffit" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#6d5942" />
+              <stop offset="1" stopColor="#332b22" />
+            </linearGradient>
+            <linearGradient id="stair-sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#f7efd9" />
+              <stop offset="1" stopColor="#e8dbbe" />
+            </linearGradient>
+            <radialGradient id="stair-lamp" cx="0.16" cy="0.12" r="0.66">
+              <stop offset="0" stopColor="#fff7e2" stopOpacity="0.85" />
+              <stop offset="1" stopColor="#fff7e2" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="stair-haze" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#2a2118" stopOpacity="0" />
+              <stop offset="1" stopColor="#2a2118" stopOpacity="0.4" />
+            </linearGradient>
+            <linearGradient id="stair-head" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#6b5942" />
+              <stop offset="1" stopColor="#b09c79" />
+            </linearGradient>
+          </defs>
 
-      {/* the flight: treads and risers stepping down away from the landing */}
-      {Array.from({ length: STAIR_STEPS }, (_, i) => {
-        const topY = FLOOR_Y + STAIR_RISE * (i + 1);
-        const zNear = flightStart - STAIR_TREAD * i;
-        return (
-          <Fragment key={`step${i}`}>
-            <Plane w={STAIR_OPEN_W} h={STAIR_TREAD} y={topY} z={zNear - STAIR_TREAD / 2} rx={90}>
-              <span
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: "linear-gradient(to bottom, #e4d8bd, #bdae8f)",
-                  boxShadow: "inset 0 3px 0 rgba(255,255,255,0.4), inset 0 -6px 10px rgba(40,32,22,0.55)",
-                }}
-              />
-            </Plane>
-            <Plane w={STAIR_OPEN_W} h={STAIR_RISE} y={topY - STAIR_RISE / 2} z={zNear}>
-              <span
-                className="absolute inset-0"
-                style={{ backgroundImage: "linear-gradient(#4d4335, #2f2921)", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.08)" }}
-              />
-            </Plane>
-          </Fragment>
-        );
-      })}
-      {/* handrails: a bar following the flight down, one each side */}
-      {Array.from({ length: STAIR_STEPS }, (_, i) => {
-        const y = FLOOR_Y + STAIR_RISE * (i + 1) - 96;
-        const zNear = flightStart - STAIR_TREAD * i;
-        return [-1, 1].map((s) => (
-          <Plane
-            key={`rail${s}-${i}`}
-            w={8}
-            h={STAIR_TREAD}
-            x={s * (half - 20)}
-            y={y}
-            z={zNear - STAIR_TREAD / 2}
-            rx={90}
-          >
-            <span className="absolute inset-0" style={{ background: "#3f4a42", boxShadow: "0 2px 3px rgba(20,20,16,0.5)" }} />
-          </Plane>
-        ));
-      })}
-      {/* the bottom landing it reaches */}
-      <Plane w={STAIR_OPEN_W} h={STAIR_SHAFT - STAIR_LANDING - STAIR_TREAD * STAIR_STEPS} y={bottomY} z={(bottomZ + STAIR_BACK_Z) / 2} rx={90}>
-        <span
-          className="absolute inset-0"
-          style={{ backgroundImage: "linear-gradient(#c2b699, #a3947a)", boxShadow: "inset 0 2px 0 rgba(255,255,255,0.2)" }}
-        />
+          <rect width={PLATE_W} height={PLATE_H} fill="url(#stair-wall)" />
+          {/* the high window the stairwell is lit from */}
+          <rect x="96" y="86" width="150" height="104" fill="url(#stair-sky)" />
+          <rect x="96" y="86" width="150" height="104" fill="none" stroke="#8b7756" strokeWidth="5" />
+          <rect x="168" y="86" width="5" height="104" fill="#8b7756" />
+          <rect x="96" y="134" width="150" height="4" fill="#8b7756" opacity="0.8" />
+          {/* the wall returning to the shaft */}
+          <polygon points="560,0 560,520 500,470 500,60" fill="#ab9673" />
+          <polygon points="500,60 500,470 488,472 488,74" fill="#7c6a4d" opacity="0.5" />
+          {/* ceiling soffit */}
+          <rect x="0" y="0" width={PLATE_W} height="34" fill="url(#stair-head)" />
+          <rect x="0" y="34" width={PLATE_W} height="6" fill="#3d3226" opacity="0.45" />
+          {/* the bottom landing the flight arrives at */}
+          <polygon points={`0,520 0,${PLATE_BOTTOM - 6} 164,${PLATE_BOTTOM - 6} 234,520`} fill="#c6b492" />
+          <rect x="0" y={PLATE_BOTTOM - 6} width="164" height="3" fill="#8b7756" opacity="0.5" />
+          {/* the flight: soffit, riser faces, tread tops, nosing highlights */}
+          <polygon points={PLATE_BODY_FAR} fill="#8a7657" />
+          <polygon points={PLATE_BODY} fill="url(#stair-soffit)" />
+          {PLATE_RISERS.map((pts, i) => (
+            <polygon key={`riser${i}`} points={pts.map(([px, py]) => `${px},${py}`).join(" ")} fill="#4b3d2d" />
+          ))}
+          {PLATE_TREADS.map((pts, i) => (
+            <polygon key={`tread${i}`} points={pts.map(([px, py]) => `${px},${py}`).join(" ")} fill="#e4d5b6" />
+          ))}
+          {PLATE_NOSINGS.map(([ax, ay, bx, by], i) => (
+            <line key={`nose${i}`} x1={ax} y1={ay} x2={bx} y2={by} stroke="#fdf7e6" strokeWidth="2.6" opacity="0.92" />
+          ))}
+          {/* balustrade: a post on every step, a newel at the bottom */}
+          <polyline points={PLATE_RAIL} fill="none" stroke="#38453d" strokeWidth="7" strokeLinejoin="round" strokeLinecap="round" />
+          {PLATE_POSTS.map(([px, py], i) => (
+            <rect key={`post${i}`} x={px - 2.5} y={py - 62} width="5" height="62" fill="#38453d" opacity="0.92" />
+          ))}
+          <rect x={PLATE_NEWEL[0] - 3.5} y={PLATE_NEWEL[1] - 62} width="7" height="62" fill="#38453d" />
+          <rect x={PLATE_NEWEL[0] - 6} y={PLATE_NEWEL[1] - 4} width="12" height="6" fill="#2f3a33" />
+          {/* light from the window, and the dark of the well below */}
+          <rect width={PLATE_W} height={PLATE_H} fill="url(#stair-lamp)" />
+          <rect y="250" width={PLATE_W} height="270" fill="url(#stair-haze)" />
+        </svg>
       </Plane>
     </>
   );
@@ -799,28 +782,39 @@ function BoardFlyer({
                 : undefined
             }
           >
-            <span className="flex items-start justify-between gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-soft">{club.tag}</span>
-              <span className="tnum font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">
+            <span className="flex items-start justify-between" style={{ gap: u(12) }}>
+              <span className="font-mono uppercase tracking-[0.16em] text-ink-soft" style={{ fontSize: u(10) }}>
+                {club.tag}
+              </span>
+              <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: u(10) }}>
                 {String(index + 1).padStart(2, "0")} / 04
               </span>
             </span>
 
-            <span className="mt-1 block font-serif text-[30px] leading-[0.9] text-ink">{club.name}</span>
-            <span className="scrawl mt-1 block text-[15px] leading-[1.1] text-ink">{club.tagline}</span>
+            <span className="block font-serif leading-[0.9] text-ink" style={{ marginTop: u(4), fontSize: u(30) }}>
+              {club.name}
+            </span>
+            <span className="scrawl block leading-[1.1] text-ink" style={{ marginTop: u(4), fontSize: u(15) }}>
+              {club.tagline}
+            </span>
 
-            <span className="mt-2 block border-t border-ink/15 pt-2">
-              <span className="block font-mono text-[9.5px] uppercase tracking-[0.1em] text-ink-2">{club.cadence}</span>
-              <span className="mt-0.5 block font-mono text-[9.5px] uppercase tracking-[0.1em] text-ink-3">
+            <span className="block border-t border-ink/15" style={{ marginTop: u(8), paddingTop: u(8) }}>
+              <span className="block font-mono uppercase tracking-[0.1em] text-ink-2" style={{ fontSize: u(9.5) }}>
+                {club.cadence}
+              </span>
+              <span className="block font-mono uppercase tracking-[0.1em] text-ink-3" style={{ marginTop: u(2), fontSize: u(9.5) }}>
                 {club.nextEvent ? `next · ${club.nextEvent.when}` : "no date pinned"}
               </span>
             </span>
 
-            <span className="mt-2 flex items-center justify-between gap-2">
-              <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft">
+            <span className="flex items-center justify-between" style={{ marginTop: u(8), gap: u(8) }}>
+              <span className="font-mono uppercase tracking-[0.14em] text-ink-soft" style={{ fontSize: u(9) }}>
                 {club.status === "active" ? "running now" : "chartering"}
               </span>
-              <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-3 underline decoration-ink/25 underline-offset-[3px]">
+              <span
+                className="font-mono uppercase tracking-[0.14em] text-ink-3 underline decoration-ink/25"
+                style={{ fontSize: u(9), textUnderlineOffset: u(3) }}
+              >
                 unpin →
               </span>
             </span>
@@ -863,7 +857,10 @@ function CorridorBoard({
   };
 
   return (
-    <div className="h-full w-full p-[13px]" style={{ backgroundImage: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)" }}>
+    <div
+      className="h-full w-full"
+      style={{ padding: u(26), backgroundImage: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)" }}
+    >
       <div
         className="tex-cork relative h-full w-full overflow-hidden"
         style={{ boxShadow: "inset 0 2px 26px rgba(52,34,18,0.5), inset 0 0 0 2px rgba(40,28,18,0.35)" }}
@@ -871,10 +868,16 @@ function CorridorBoard({
         <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.24),transparent_62%)]" />
 
         <div className="pointer-events-none absolute inset-x-0 top-[2.4%] flex items-start justify-between px-[3%]">
-          <span className="bg-paper px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-2 shadow-[var(--shadow-scrap)]">
+          <span
+            className="bg-paper font-mono uppercase tracking-[0.16em] text-ink-2 shadow-[var(--shadow-scrap)]"
+            style={{ padding: `${u(4)} ${u(12)}`, fontSize: u(10) }}
+          >
             founders, inc. · pier 2
           </span>
-          <span className="rotate-[-2deg] bg-paper/90 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]">
+          <span
+            className="rotate-[-2deg] bg-paper/90 font-mono uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]"
+            style={{ padding: `${u(4)} ${u(10)}`, fontSize: u(10) }}
+          >
             the four clubs
           </span>
         </div>
@@ -1166,19 +1169,10 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
               className="hallway-board"
             >
               <div className="relative h-full w-full overflow-hidden shadow-[-18px_26px_40px_-12px_rgba(36,26,21,0.65),0_50px_90px_-30px_rgba(36,26,21,0.7)]">
-                {/* the flyers are laid out on a 840 × 600 canvas and scaled into
-                    the real board, so a 420-wide pinboard still carries the same
-                    poster composition as before */}
-                <div
-                  style={{
-                    width: BOARD_ART_W,
-                    height: BOARD_ART_H,
-                    transform: `scale(${BOARD_SCALE})`,
-                    transformOrigin: "top left",
-                  }}
-                >
-                  <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
-                </div>
+                {/* the flyers are laid out at the board's own size — no inner
+                    scale — so the type is rasterised once, at the size the
+                    camera settles on */}
+                <CorridorBoard clubs={clubs} armed={armed} onOpen={onOpen} />
               </div>
             </Plane>
           </div>

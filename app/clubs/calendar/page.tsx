@@ -24,7 +24,7 @@ export default function CalendarPage() {
     <main className="min-h-screen">
       <section className="mx-auto max-w-[1360px] px-5 pb-10 pt-12 sm:px-8 sm:pt-16">
         <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-          <Link href="/clubs" className="inline-flex min-h-[32px] items-center hover:text-ink">
+          <Link href="/clubs/overview" className="inline-flex min-h-[32px] items-center hover:text-ink">
             Founders, Inc. Clubs
           </Link>
           <span>/</span>

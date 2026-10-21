@@ -33,7 +33,7 @@ export function ClubStudio() {
                 Cut, pin, wait about two weeks.
               </h2>
             </div>
-            <Link href="/clubs" className="pill-btn-secondary self-start px-4 py-2 text-[12px]">
+            <Link href="/clubs/overview" className="pill-btn-secondary self-start px-4 py-2 text-[12px]">
               ← Back to the wall
             </Link>
           </div>
@@ -81,7 +81,7 @@ export function ClubStudio() {
                     The calendar
                   </Link>
                   <Link
-                    href="/clubs"
+                    href="/clubs/overview"
                     className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-2 underline decoration-ink/25 underline-offset-4 hover:text-ink"
                   >
                     the wall ↗

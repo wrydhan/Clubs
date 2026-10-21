@@ -88,7 +88,7 @@ export default async function ClubPage({ params }: Props) {
       {/* breadcrumb */}
       <div className="mx-auto max-w-[1360px] px-5 pt-8 sm:px-8">
         <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
-          <Link href="/clubs" className="inline-flex min-h-[32px] items-center hover:text-ink">
+          <Link href="/clubs/overview" className="inline-flex min-h-[32px] items-center hover:text-ink">
             The wall
           </Link>
           <span>/</span>
@@ -324,7 +324,7 @@ export default async function ClubPage({ params }: Props) {
 
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-ink/15 pt-6">
               <Link
-                href="/clubs"
+                href="/clubs/overview"
                 className="inline-flex min-h-[36px] items-center font-mono text-[11px] uppercase tracking-[0.1em] text-ink-2 underline decoration-ink/30 underline-offset-4 hover:text-ink"
               >
                 ← Back to the wall
