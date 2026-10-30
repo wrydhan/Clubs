@@ -260,7 +260,9 @@ export function BoardCollage({
           ))}
         </div>
 
-        <div className="relative mt-14 flex flex-wrap items-center justify-between gap-3 lg:mt-10">
+        {/* the controls sit on their own scrap of paper, so the mono links are
+            not read off noisy cork on a phone */}
+        <div className="torn-soft relative mt-14 flex flex-wrap items-center justify-between gap-3 bg-paper px-4 py-4 shadow-[var(--shadow-scrap)] sm:px-6 lg:mt-10">
           <Link href="/clubs/apply" className="pill-btn inline-flex min-h-[40px] items-center px-5">
             Start a fifth club
           </Link>
