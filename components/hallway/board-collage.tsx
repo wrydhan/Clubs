@@ -16,6 +16,7 @@
  */
 
 import Image from "next/image";
+import { Pin } from "@/components/collage/paper";
 import Link from "next/link";
 import type { HallwayClub } from "./types";
 
@@ -36,34 +37,32 @@ type Piece = {
 };
 
 const PIECES: Piece[] = [
-  // prints
-  { src: "/collage/board/photo-track.webp", left: 21.5, top: -2.5, width: 21, rotate: -6.5, z: 4, kind: "print" },
-  { src: "/collage/board/photo-garage.webp", left: 66, top: -3.5, width: 19, rotate: 5, z: 4, kind: "print" },
-  { src: "/collage/board/photo-court.webp", left: 33, top: 40, width: 17, rotate: 4.5, z: 6, kind: "print" },
-  { src: "/collage/board/photo-woods.webp", left: 85.5, top: 34, width: 16, rotate: -7, z: 6, kind: "print" },
-  // cut-outs
-  { src: "/collage/board/cut-wheel.webp", left: 27, top: 12, width: 13, rotate: 9, z: 9, kind: "cut" },
-  { src: "/collage/board/cut-gear.webp", left: 62, top: 14, width: 11, rotate: -11, z: 9, kind: "cut" },
-  { src: "/collage/board/cut-hoops.webp", left: 3, top: 44, width: 12, rotate: -8, z: 9, kind: "cut" },
-  { src: "/collage/board/cut-mask.webp", left: 51, top: 44, width: 11, rotate: 6, z: 9, kind: "cut" },
-  { src: "/collage/board/cut-creature.webp", left: 47, top: 74, width: 8, rotate: -9, z: 9, kind: "cut" },
-  // tape, pins, notes
-  { src: "/collage/board/tape-pair.webp", left: 36.5, top: 26, width: 9, rotate: -22, z: 9, kind: "cut" },
-  { src: "/collage/board/tape-pair.webp", left: 78, top: 62, width: 8, rotate: 14, z: 9, kind: "cut" },
-  { src: "/collage/board/pins.webp", left: 55, top: 2, width: 8, rotate: 4, z: 9, kind: "cut" },
-  { src: "/collage/board/pins.webp", left: 84, top: 84, width: 7, rotate: -6, z: 9, kind: "cut" },
-  { src: "/collage/scrap-note.webp", left: 57, top: 87, width: 11, rotate: 5, z: 8, kind: "note" },
-  { src: "/collage/board/photo-court.webp", left: 84.5, top: 70, width: 14, rotate: 8, z: 6, kind: "print" },
-  { src: "/collage/board/tape-pair.webp", left: 89, top: 66, width: 7, rotate: -12, z: 9, kind: "cut" },
-  { src: "/collage/scrap-note.webp", left: 21, top: 84, width: 10, rotate: -4, z: 8, kind: "note" },
+  // prints — one file each, and none of them hidden behind a sheet: they read
+  // in the seams between the four sheets and down the right-hand edge
+  { src: "/collage/board/photo-track.webp", left: 7, top: -6, width: 24, rotate: -6.5, z: 4, kind: "print" },
+  { src: "/collage/board/photo-garage.webp", left: 74, top: -6.5, width: 25, rotate: 5, z: 4, kind: "print" },
+  { src: "/collage/board/photo-court.webp", left: 34, top: 35, width: 14, rotate: 4.5, z: 6, kind: "print" },
+  { src: "/collage/board/photo-woods.webp", left: 80, top: 22, width: 19, rotate: -7, z: 6, kind: "print" },
+  { src: "/collage/board/print-row.webp", left: 77, top: 72, width: 21, rotate: -4, z: 6, kind: "print" },
+  // cut-outs, laid along the seams so each one shows
+  { src: "/collage/board/cut-wheel.webp", left: 32.5, top: 37.5, width: 12, rotate: 9, z: 9, kind: "cut" },
+  { src: "/collage/board/cut-gear.webp", left: 3, top: 39, width: 11, rotate: -11, z: 9, kind: "cut" },
+  { src: "/collage/board/cut-hoops.webp", left: 44, top: 41.5, width: 12, rotate: -8, z: 9, kind: "cut" },
+  { src: "/collage/board/cut-mask.webp", left: 62, top: 41, width: 11, rotate: 6, z: 9, kind: "cut" },
+  { src: "/collage/board/cut-creature.webp", left: 5, top: 85, width: 8, rotate: -9, z: 9, kind: "cut" },
+  // tape, pins and the pencil note — one of each
+  { src: "/collage/board/tape-pair.webp", left: 29, top: 43.5, width: 10, rotate: -22, z: 9, kind: "cut" },
+  { src: "/collage/board/pins.webp", left: 47, top: 0.5, width: 8, rotate: 4, z: 9, kind: "cut" },
+  { src: "/collage/scrap-note.webp", left: 64, top: 86, width: 11, rotate: 5, z: 8, kind: "note" },
 ];
 
-/** the four sheets, hand-placed. widths sum with the gaps rather than tiling */
+/** the four sheets, hand-placed: four widths, four heights, four angles, and
+ *  pushed out to the board's edges so the wall is used rather than framed. */
 const SHEETS = [
-  { left: 2.5, top: 6, width: 30, tilt: -2.4, z: 20 },
-  { left: 37.5, top: 1, width: 27.5, tilt: 2.1, z: 25 },
-  { left: 6, top: 46, width: 29.5, tilt: 2.9, z: 22 },
-  { left: 54, top: 50, width: 28.5, tilt: -3.4, z: 24 },
+  { left: 1.5, top: 4, width: 35, tilt: -2.4, z: 20 },
+  { left: 38, top: 0.5, width: 34, tilt: 2.1, z: 25 },
+  { left: 3, top: 47, width: 36, tilt: 2.9, z: 22 },
+  { left: 41, top: 50, width: 34, tilt: -3.4, z: 24 },
 ];
 
 function Sheet({
@@ -209,6 +208,17 @@ export function BoardCollage({
 
         {/* ---------------------------- the board itself (lg and up) */}
         <div className="relative hidden lg:block" style={{ aspectRatio: "1360 / 980" }}>
+          {/* tape and pins come from the paper kit, not from photographs, so the
+              board gets denser without any picture appearing twice */}
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <span className="tape absolute left-[30.5%] top-[1.5%] h-[26px] w-[98px] -rotate-[24deg]" />
+            <span className="tape absolute left-[2.5%] top-[44.5%] h-[24px] w-[86px] rotate-[19deg]" />
+            <span className="tape absolute left-[79%] top-[52%] h-[26px] w-[94px] -rotate-[12deg]" />
+            <span className="tape absolute left-[45%] top-[90.5%] h-[22px] w-[80px] rotate-[7deg]" />
+            <Pin className="left-[77%] top-[42%]" />
+            <Pin className="left-[58.5%] top-[46%]" />
+            <Pin className="left-[93%] top-[9%]" />
+          </div>
           {PIECES.map((piece, i) => (
             <Piece key={`${piece.src}-${i}`} piece={piece} />
           ))}
