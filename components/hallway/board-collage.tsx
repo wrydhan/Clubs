@@ -49,9 +49,9 @@ const PIECES: Piece[] = [
   { src: "/collage/board2/print-enginebay.webp", left: -2, top: 52, width: 19, rotate: -3.5, z: 6, kind: "print", ratio: 1.5 },
   { src: "/collage/board/print-row.webp", left: 22, top: -9, width: 16, rotate: 3.5, z: 3, kind: "print", ratio: 1.5 },
   { src: "/collage/board2/print-lineup.webp", left: 70, top: -9, width: 26, rotate: 4.5, z: 4, kind: "print", ratio: 1.5 },
-  { src: "/collage/board/photo-court.webp", left: 41, top: 6, width: 14, rotate: -6.5, z: 6, kind: "print", ratio: 1.5 },
-  { src: "/collage/board2/print-shop.webp", left: 63, top: 16, width: 27, rotate: 5.5, z: 5, kind: "print", ratio: 1.5 },
-  { src: "/collage/board2/print-court2.webp", left: 42, top: 56, width: 16, rotate: 4, z: 7, kind: "print", ratio: 1.5 },
+  { src: "/collage/board/photo-court.webp", left: 36, top: 26, width: 14, rotate: -6.5, z: 6, kind: "print", ratio: 1.5 },
+  { src: "/collage/board2/print-shop.webp", left: 62, top: 13, width: 27, rotate: 5.5, z: 5, kind: "print", ratio: 1.5 },
+  { src: "/collage/board2/print-court2.webp", left: 4, top: 72, width: 17, rotate: 4, z: 7, kind: "print", ratio: 1.5 },
   { src: "/collage/board/photo-woods.webp", left: 40, top: 82, width: 18, rotate: -4.5, z: 7, kind: "print", ratio: 1.5 },
   { src: "/collage/board/photo-garage.webp", left: 80, top: 60, width: 23, rotate: -7, z: 6, kind: "print", ratio: 1.5 },
   { src: "/collage/board/photo-track.webp", left: 2, top: 88, width: 19, rotate: -3, z: 8, kind: "print", ratio: 1.5 },
@@ -87,14 +87,16 @@ const PIECES: Piece[] = [
 ];
 
 /** The four sheets. Four widths, four aspects, four tilts, four depths — so
- *  each is a different shape of paper, not four copies of one page. Types are
- *  set in `cqw` and multiplied per sheet, so a narrow sheet is a small poster
- *  with its own type size rather than a shrunken photocopy. Two run off frame. */
+ *  each is a different shape of paper, not four copies of one page. The type is
+ *  set in `cqw` and multiplied per sheet by `scale`, derived from the sheet's
+ *  aspect (a taller sheet needs bigger type to fill it), so a narrow sheet is a
+ *  small poster with its own type size rather than a shrunken photocopy. Two run
+ *  off the frame. */
 const SHEETS = [
-  { left: -3, top: 2, width: 39, ar: 1.02, scale: 1, tilt: -2.6, z: 30 },
-  { left: 37, top: -1, width: 20, ar: 0.68, scale: 1.15, tilt: 3.4, z: 26 },
-  { left: 17, top: 50, width: 21, ar: 0.7, scale: 1.1, tilt: 1.6, z: 28 },
-  { left: 57, top: 35, width: 45, ar: 1.34, scale: 0.95, tilt: -3.4, z: 24 },
+  { left: -3, top: 2, width: 36, ar: 1.55, scale: 1.19, tilt: -2.6, z: 30 },
+  { left: 34, top: 0, width: 20, ar: 1.05, scale: 1.76, tilt: 3.4, z: 26 },
+  { left: 15, top: 47, width: 22, ar: 1.25, scale: 1.48, tilt: 1.6, z: 28 },
+  { left: 52, top: 37, width: 45, ar: 2, scale: 0.93, tilt: -3.4, z: 24 },
 ];
 
 function Sheet({
@@ -282,6 +284,9 @@ export function BoardCollage({
           <span className="tape absolute left-[76%] top-[88%] h-6 w-[82px] rotate-[6deg]" />
           <span className="tape absolute left-[30%] top-[97%] h-5 w-[74px] -rotate-[8deg]" />
           <span className="stamp absolute left-[64%] top-[57%] text-[11px]">pier 2 · members only</span>
+          <span className="tex-news absolute left-[2%] top-[46%] h-[14%] w-[12%] rotate-[6deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(1% 4%, 50% 0%, 100% 3%, 98% 97%, 48% 100%, 0% 96%)" }} />
+          <span className="tex-kraft absolute left-[31%] top-[34%] h-[11%] w-[9%] -rotate-[9deg] opacity-90 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 5%, 55% 0%, 100% 4%, 97% 100%, 42% 97%, 1% 100%)" }} />
+          <span className="tape absolute left-[34%] top-[43%] h-5 w-[70px] rotate-[24deg]" />
         </div>
 
         {/* ---------------------------- the board itself (lg and up) */}
