@@ -764,15 +764,17 @@ function Stairwell() {
 
 /* ------------------------------------------------------------------- the board */
 
-/** The four sheets, hand-placed rather than laid on a grid: different widths,
- *  different heights, different tilts, and the props live in the gutters between
- *  them so nothing sits on a line of copy. Percentages of the cork, so the same
- *  numbers hold in the walk plane and in the hoisted display-size layer. */
+/** The four sheets, hand-placed rather than laid on a grid: four widths, four
+ *  heights, four tilts. The type is NOT scaled with the sheet — it is scaled by
+ *  `s`, a per-sheet multiplier, so the narrow sheets read as smaller pages with
+ *  their own type size rather than as shrunken copies of one page. Percentages of
+ *  the cork, so the same numbers hold in the walk plane and in the hoisted
+ *  display-size layer. Two of them run off the frame. */
 const SHEETS = [
-  { left: 1, top: 9, w: 43, h: 37, tilt: -2.4, z: 20 },
-  { left: 47, top: 7, w: 51, h: 38.5, tilt: 2.6, z: 25 },
-  { left: 2, top: 54, w: 41, h: 38.5, tilt: 2.2, z: 22 },
-  { left: 45, top: 51, w: 53, h: 42, tilt: -3, z: 24 },
+  { left: -2, top: 5, w: 35, h: 38, tilt: -2.6, z: 20, s: 0.92 },
+  { left: 31.5, top: -1, w: 22, h: 26.5, tilt: 3.1, z: 24, s: 0.74 },
+  { left: 19, top: 47, w: 27.5, h: 41, tilt: 1.6, z: 22, s: 0.84 },
+  { left: 52, top: 40, w: 51, h: 49, tilt: -3.2, z: 26, s: 1 },
 ];
 
 type BoardProp = {
@@ -784,25 +786,46 @@ type BoardProp = {
   ratio: number;
   rotate: number;
   z: number;
-  shadow: "print" | "cut";
+  shadow: "print" | "cut" | "eph";
 };
 
-/** Every photo, cut-out, tape and pin on this board is its own file — nothing
- *  here repeats, and none of it is shared with the flat board further down. */
+/** Every photograph, scan, cut-out and fastener on this board is its own file —
+ *  nothing repeats, and none of it is shared with the flat board further down. */
 const PROPS: BoardProp[] = [
-  // prints, tucked under the sheets and read through the gutters
-  { src: "/collage/board3d/print-pitwall.webp", left: 6, top: 36, w: 26, ratio: 1.5, rotate: -5.5, z: 3, shadow: "print" },
-  { src: "/collage/board3d/print-bench.webp", left: 66, top: 34, w: 24, ratio: 1.5, rotate: 6, z: 3, shadow: "print" },
-  { src: "/collage/board3d/print-court.webp", left: 14, top: 74, w: 24, ratio: 1.5, rotate: 4.5, z: 3, shadow: "print" },
-  { src: "/collage/board3d/print-field.webp", left: 70, top: 72, w: 25, ratio: 1.5, rotate: -5, z: 3, shadow: "print" },
-  // cut-outs, pinned under the sheets, edges showing in the seams
-  { src: "/collage/board3d/cut-helmet.webp", left: 44.5, top: 3, w: 7, ratio: 0.79, rotate: 9, z: 9, shadow: "cut" },
-  { src: "/collage/board3d/cut-calipers.webp", left: 38, top: 42, w: 15, ratio: 1.69, rotate: -7, z: 9, shadow: "cut" },
-  { src: "/collage/board3d/cut-rim.webp", left: 90, top: 44, w: 8, ratio: 0.94, rotate: -8, z: 9, shadow: "cut" },
-  { src: "/collage/board3d/cut-pods.webp", left: 3, top: 88, w: 14, ratio: 1.68, rotate: 5, z: 9, shadow: "cut" },
-  // on top of everything, in the seams
-  { src: "/collage/board3d/pins-trio.webp", left: 45, top: 0.5, w: 6, ratio: 1.51, rotate: 3, z: 40, shadow: "cut" },
-  { src: "/collage/board3d/tape-single.webp", left: 15, top: 46.5, w: 13, ratio: 2.89, rotate: -14, z: 40, shadow: "cut" },
+  // prints, tucked under the sheets and read through the seams
+  { src: "/collage/board3d/print-pitwall.webp", left: -6, top: 18, w: 22, ratio: 1.5, rotate: -5.5, z: 3, shadow: "print" },
+  { src: "/collage/board3d2/print-grid.webp", left: 50, top: -8, w: 24, ratio: 1.5, rotate: 4.5, z: 3, shadow: "print" },
+  { src: "/collage/board3d/print-bench.webp", left: 58, top: 14, w: 21, ratio: 1.5, rotate: 6, z: 4, shadow: "print" },
+  { src: "/collage/board3d2/print-woods2.webp", left: -4, top: 62, w: 19, ratio: 1.5, rotate: 5, z: 4, shadow: "print" },
+  { src: "/collage/board3d/print-court.webp", left: 12, top: 88, w: 18, ratio: 1.5, rotate: -4, z: 5, shadow: "print" },
+  { src: "/collage/board3d2/print-garage2.webp", left: 74, top: 76, w: 19, ratio: 1.5, rotate: -6, z: 5, shadow: "print" },
+  { src: "/collage/board3d/print-field.webp", left: 42, top: 86, w: 16, ratio: 1.5, rotate: 3.5, z: 6, shadow: "print" },
+  { src: "/collage/board3d2/print-solder.webp", left: 4, top: 36, w: 10, ratio: 1, rotate: -8, z: 12, shadow: "print" },
+
+  // scans: a manual page, a napkin, a sticky note
+  { src: "/collage/board3d2/eph-manual.webp", left: 27, top: 3, w: 7, ratio: 0.949, rotate: 9, z: 14, shadow: "eph" },
+  { src: "/collage/board3d2/eph-napkin.webp", left: 44, top: 34, w: 7.5, ratio: 0.972, rotate: -7, z: 15, shadow: "eph" },
+  { src: "/collage/board3d2/eph-sticky.webp", left: 88, top: 32, w: 6, ratio: 0.948, rotate: 6, z: 15, shadow: "eph" },
+
+  // cut-outs, pinned in the seams so each silhouette reads
+  { src: "/collage/board3d/cut-helmet.webp", left: 46.5, top: -2, w: 6.5, ratio: 0.788, rotate: 9, z: 9, shadow: "cut" },
+  { src: "/collage/board3d/cut-calipers.webp", left: 24, top: 32, w: 13, ratio: 1.686, rotate: -7, z: 9, shadow: "cut" },
+  { src: "/collage/board3d2/cut-calipers2.webp", left: 74, top: 44, w: 12, ratio: 1.592, rotate: 8, z: 9, shadow: "cut" },
+  { src: "/collage/board3d/cut-rim.webp", left: 92, top: 60, w: 7, ratio: 0.94, rotate: -8, z: 9, shadow: "cut" },
+  { src: "/collage/board3d2/cut-camo.webp", left: -3, top: 84, w: 9, ratio: 0.892, rotate: 5, z: 10, shadow: "cut" },
+  { src: "/collage/board3d2/cut-sockets.webp", left: 41, top: 64, w: 12, ratio: 1.374, rotate: -9, z: 10, shadow: "cut" },
+  { src: "/collage/board3d/cut-pods.webp", left: 65, top: 92, w: 11, ratio: 1.675, rotate: 6, z: 10, shadow: "cut" },
+
+  // one more print and a manual page in the last seams
+  { src: "/collage/board3d2/print-manuals.webp", left: 80, top: 4, w: 15, ratio: 1.5, rotate: -4, z: 6, shadow: "print" },
+  { src: "/collage/board3d2/eph-chalk.webp", left: 30, top: 30, w: 6.5, ratio: 1.161, rotate: 8, z: 16, shadow: "eph" },
+  { src: "/collage/board3d2/eph-polaroid.webp", left: 46, top: 60, w: 7, ratio: 0.937, rotate: -6, z: 16, shadow: "eph" },
+  { src: "/collage/board3d2/cut-pod.webp", left: 6, top: 76, w: 8, ratio: 0.692, rotate: 7, z: 11, shadow: "cut" },
+  { src: "/collage/board3d2/print-pegboard.webp", left: 61, top: 62, w: 16, ratio: 1.5, rotate: -5, z: 7, shadow: "print" },
+
+  // fasteners, on top of everything
+  { src: "/collage/board3d/pins-trio.webp", left: 33, top: 0, w: 5.5, ratio: 1.513, rotate: 3, z: 40, shadow: "cut" },
+  { src: "/collage/board3d/tape-single.webp", left: 15, top: 44, w: 12, ratio: 2.89, rotate: -14, z: 40, shadow: "cut" },
 ];
 
 /** One thing pinned to the board. Purely decorative: never interactive. */
@@ -828,7 +851,9 @@ function BoardPiece({ piece }: { piece: BoardProp }) {
         className={
           piece.shadow === "print"
             ? "object-cover shadow-[var(--shadow-scrap)]"
-            : "object-contain drop-shadow-[0_6px_8px_rgba(36,26,21,0.4)]"
+            : piece.shadow === "eph"
+              ? "object-contain drop-shadow-[0_5px_9px_rgba(36,26,21,0.45)]"
+              : "object-contain drop-shadow-[0_6px_8px_rgba(36,26,21,0.4)]"
         }
       />
     </div>
@@ -850,6 +875,9 @@ function BoardFlyer({
   unpinning: boolean;
   onOpen: () => void;
 }) {
+  // a sheet's type rides its own `s` multiplier, so a narrow sheet is a smaller
+  // page with its own type size, not a shrunk copy of the big one
+  const sc = (v: number) => u(v * place.s);
   return (
     <div
       className="absolute"
@@ -887,38 +915,38 @@ function BoardFlyer({
                 : undefined
             }
           >
-            <span className="flex items-start justify-between" style={{ gap: u(12) }}>
-              <span className="font-mono uppercase tracking-[0.16em] text-ink-soft" style={{ fontSize: u(9.5) }}>
+            <span className="flex items-start justify-between" style={{ gap: sc(12) }}>
+              <span className="font-mono uppercase tracking-[0.16em] text-ink-soft" style={{ fontSize: sc(9.5) }}>
                 {club.tag}
               </span>
-              <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: u(9.5) }}>
+              <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: sc(9.5) }}>
                 {String(index + 1).padStart(2, "0")} / 04
               </span>
             </span>
 
-            <span className="block font-serif leading-[0.9] text-ink" style={{ marginTop: u(4), fontSize: u(29) }}>
+            <span className="block font-serif leading-[0.9] text-ink" style={{ marginTop: sc(4), fontSize: sc(29) }}>
               {club.name}
             </span>
-            <span className="scrawl block leading-[1.1] text-ink" style={{ marginTop: u(3), fontSize: u(14.5) }}>
+            <span className="scrawl block leading-[1.1] text-ink" style={{ marginTop: sc(3), fontSize: sc(14.5) }}>
               {club.tagline}
             </span>
 
-            <span className="block border-t border-ink/15" style={{ marginTop: u(7), paddingTop: u(7) }}>
-              <span className="block font-mono uppercase tracking-[0.1em] text-ink-2" style={{ fontSize: u(9) }}>
+            <span className="block border-t border-ink/15" style={{ marginTop: sc(7), paddingTop: sc(7) }}>
+              <span className="block font-mono uppercase tracking-[0.1em] text-ink-2" style={{ fontSize: sc(9) }}>
                 {club.cadence}
               </span>
-              <span className="block font-mono uppercase tracking-[0.1em] text-ink-3" style={{ marginTop: u(2), fontSize: u(9) }}>
+              <span className="block font-mono uppercase tracking-[0.1em] text-ink-3" style={{ marginTop: sc(2), fontSize: sc(9) }}>
                 {club.nextEvent ? `next · ${club.nextEvent.when}` : "no date pinned"}
               </span>
             </span>
 
-            <span className="flex items-center justify-between" style={{ marginTop: u(7), gap: u(8) }}>
-              <span className="font-mono uppercase tracking-[0.14em] text-ink-soft" style={{ fontSize: u(8.5) }}>
+            <span className="flex items-center justify-between" style={{ marginTop: sc(7), gap: sc(8) }}>
+              <span className="font-mono uppercase tracking-[0.14em] text-ink-soft" style={{ fontSize: sc(8.5) }}>
                 {club.status === "active" ? "running now" : "chartering"}
               </span>
               <span
                 className="font-mono uppercase tracking-[0.14em] text-ink-3 underline decoration-ink/25"
-                style={{ fontSize: u(8.5), textUnderlineOffset: u(3) }}
+                style={{ fontSize: sc(8.5), textUnderlineOffset: sc(3) }}
               >
                 unpin →
               </span>
