@@ -3,7 +3,7 @@
 import { useState } from "react";
 import s from "@/components/desk/desk.module.css";
 
-type FieldName = "name" | "email" | "clubName" | "what" | "cadence" | "who" | "people" | "needs" | "budget";
+type FieldName = "name" | "email" | "clubName" | "what" | "cadence" | "who" | "needs" | "budget";
 
 type FormState = Record<FieldName, string>;
 
@@ -14,7 +14,6 @@ const empty: FormState = {
   what: "",
   cadence: "",
   who: "",
-  people: "",
   needs: "",
   budget: "",
 };
@@ -35,13 +34,6 @@ const fields: {
   { name: "what", label: "What happens during a session?", type: "textarea", placeholder: "Describe the session format, driver/member experience, safety requirements, and schedule.", span: "full" },
   { name: "who", label: "Who is hosting / co-hosting?", type: "text", placeholder: "Your background and any co-leads", span: "half" },
   { name: "budget", label: "Estimated Monthly Budget", type: "text", placeholder: "e.g. $1,200/session for track fees & paddock hospitality", span: "half" },
-  {
-    name: "people",
-    label: "Initial member roster (10 people ready to attend)",
-    type: "textarea",
-    placeholder: "Names and handles. The strongest charters have active founders ready from day one.",
-    span: "full",
-  },
   { name: "needs", label: "What support do you need from Founders, Inc.?", type: "textarea", placeholder: "Track rental booking, Fort Mason workshop access, safety gear subsidies, media team coverage.", span: "full" },
 ];
 
@@ -53,7 +45,6 @@ function validate(values: FormState): Partial<Record<FieldName, string>> {
   if (values.what.trim().length < 20) errors.what = "Describe what happens during a session (min 20 characters).";
   if (!values.cadence.trim()) errors.cadence = "Specify a recurring cadence.";
   if (!values.who.trim()) errors.who = "Let us know who will run it.";
-  if (values.people.trim().length < 10) errors.people = "List real members ready for the first session.";
   if (!values.needs.trim()) errors.needs = "Specify what resources you need.";
   if (!values.budget.trim()) errors.budget = "Provide a rough budget estimate.";
   return errors;
@@ -191,7 +182,7 @@ export function ApplyForm({
                 </span>
               </span>
               {field.type === "textarea" ? (
-                <textarea {...shared} rows={field.name === "people" ? 4 : 3} className={`${shared.className} resize-y`} />
+                <textarea {...shared} rows={field.name === "who" ? 4 : 3} className={`${shared.className} resize-y`} />
               ) : (
                 <input {...shared} type={field.type} />
               )}

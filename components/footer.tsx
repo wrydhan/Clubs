@@ -29,7 +29,7 @@ export function Footer() {
           </div>
 
           <div className="lg:col-span-3">
-            <h4 className="label">On the wall</h4>
+            <h4 className="label">The clubs</h4>
             <ul className="mt-4 space-y-2.5 text-sm">
               {[
                 { href: "/clubs/cars", label: "Car Club (Sonoma)" },
@@ -81,7 +81,20 @@ export function Footer() {
 
         <div className="relative mt-14 flex flex-col items-start justify-between gap-4 pt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3 sm:flex-row sm:items-center">
           <span>© {new Date().getFullYear()} Founders, Inc. All rights reserved.</span>
-          <span>Pier 2 · Fort Mason · San Francisco</span>
+          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link href="/clubs/roster" className="inline-flex min-h-[36px] items-center hover:text-ink">
+              The clubs
+            </Link>
+            <Link href="/clubs/wall" className="inline-flex min-h-[36px] items-center hover:text-ink">
+              The wall
+            </Link>
+            <Link href="/clubs/calendar" className="inline-flex min-h-[36px] items-center hover:text-ink">
+              Calendar
+            </Link>
+            <Link href="/clubs/apply" className="inline-flex min-h-[36px] items-center hover:text-ink">
+              Start a club
+            </Link>
+          </nav>
         </div>
 
         <div className="relative mt-10 hidden h-24 sm:block">
