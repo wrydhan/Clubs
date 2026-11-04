@@ -291,24 +291,6 @@ export function BoardCollage({
 
         {/* ---------------------------- the board itself (lg and up) */}
         <div className="relative hidden lg:block" style={{ aspectRatio: "1360 / 1060" }}>
-          {/* the paper bed: torn kraft, newsprint and blank stock tiled under
-              everything, so the cork never shows through in the middle */}
-            <span className="tex-kraft absolute left-[-8%] top-[-6%] h-[35%] w-[32%] rotate-[-2.4deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 3%, 24% 0%, 51% 2%, 78% 0%, 100% 3%, 99% 97%, 72% 100%, 46% 98%, 21% 100%, 1% 97%)" }} />
-            <span className="tex-news absolute left-[-5%] top-[19%] h-[37%] w-[31%] rotate-[1.8deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(1% 4%, 52% 0%, 100% 3%, 98% 96%, 49% 100%, 0% 97%)" }} />
-            <span className="bg-paper absolute left-[-10%] top-[52%] h-[33%] w-[34%] rotate-[-1.2deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 5%, 55% 0%, 100% 4%, 97% 100%, 42% 97%, 1% 100%)" }} />
-            <span className="tex-kraft absolute left-[-6%] top-[81%] h-[36%] w-[30%] rotate-[2.6deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(2% 0%, 100% 3%, 98% 100%, 0% 96%)" }} />
-            <span className="tex-news absolute left-[25%] top-[-4%] h-[33%] w-[30%] rotate-[-3.1deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 3%, 24% 0%, 51% 2%, 78% 0%, 100% 3%, 99% 97%, 72% 100%, 46% 98%, 21% 100%, 1% 97%)" }} />
-            <span className="bg-paper absolute left-[20%] top-[25%] h-[36%] w-[32%] rotate-[1.4deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(1% 4%, 52% 0%, 100% 3%, 98% 96%, 49% 100%, 0% 97%)" }} />
-            <span className="tex-kraft absolute left-[24%] top-[50%] h-[35%] w-[31%] rotate-[2.2deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 5%, 55% 0%, 100% 4%, 97% 100%, 42% 97%, 1% 100%)" }} />
-            <span className="tex-news absolute left-[22%] top-[75%] h-[37%] w-[34%] rotate-[-1.7deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(2% 0%, 100% 3%, 98% 100%, 0% 96%)" }} />
-            <span className="bg-paper absolute left-[48%] top-[-6%] h-[35%] w-[34%] rotate-[2.9deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 3%, 24% 0%, 51% 2%, 78% 0%, 100% 3%, 99% 97%, 72% 100%, 46% 98%, 21% 100%, 1% 97%)" }} />
-            <span className="tex-kraft absolute left-[52%] top-[19%] h-[37%] w-[30%] rotate-[-2.2deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(1% 4%, 52% 0%, 100% 3%, 98% 96%, 49% 100%, 0% 97%)" }} />
-            <span className="tex-news absolute left-[50%] top-[52%] h-[33%] w-[32%] rotate-[1.1deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 5%, 55% 0%, 100% 4%, 97% 100%, 42% 97%, 1% 100%)" }} />
-            <span className="bg-paper absolute left-[53%] top-[81%] h-[36%] w-[31%] rotate-[-2.8deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(2% 0%, 100% 3%, 98% 100%, 0% 96%)" }} />
-            <span className="tex-kraft absolute left-[80%] top-[-4%] h-[33%] w-[31%] rotate-[2.4deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 3%, 24% 0%, 51% 2%, 78% 0%, 100% 3%, 99% 97%, 72% 100%, 46% 98%, 21% 100%, 1% 97%)" }} />
-            <span className="tex-news absolute left-[78%] top-[25%] h-[36%] w-[34%] rotate-[-1.5deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(1% 4%, 52% 0%, 100% 3%, 98% 96%, 49% 100%, 0% 97%)" }} />
-            <span className="bg-paper absolute left-[81%] top-[50%] h-[35%] w-[30%] rotate-[3.0deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(0% 5%, 55% 0%, 100% 4%, 97% 100%, 42% 97%, 1% 100%)" }} />
-            <span className="tex-kraft absolute left-[76%] top-[75%] h-[37%] w-[32%] rotate-[-2.0deg] opacity-95 shadow-[var(--shadow-scrap)]" style={{ clipPath: "polygon(2% 0%, 100% 3%, 98% 100%, 0% 96%)" }} />
           {PIECES.map((piece, i) => (
             <Piece key={`${piece.src}-${i}`} piece={piece} />
           ))}
