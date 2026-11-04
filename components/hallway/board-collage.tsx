@@ -148,7 +148,7 @@ function Sheet({
               {club.tag}
             </span>
             <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: sc(2.1) }}>
-              {String(index + 1).padStart(2, "0")}
+              {String(index + 1).padStart(2, "0")} / 04
             </span>
           </span>
 
@@ -268,7 +268,7 @@ export function BoardCollage({
             founders, inc. · pier 2
           </span>
           <span className="rotate-[1.6deg] bg-paper/90 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]">
-            the clubs
+            the four clubs
           </span>
         </div>
 
@@ -351,17 +351,17 @@ export function BoardCollage({
             not read off noisy cork on a phone */}
         <div className="torn-soft relative mt-14 flex flex-wrap items-center justify-between gap-3 bg-paper px-4 py-4 shadow-[var(--shadow-scrap)] sm:px-6 lg:mt-8">
           <Link href="/clubs/apply" className="pill-btn inline-flex min-h-[40px] items-center px-5">
-            Start a club
+            Start a fifth club
           </Link>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <Link
               href="/clubs/roster"
               className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline decoration-ink/35 underline-offset-4 hover:decoration-ink"
             >
-              All clubs, one page →
+              All four on one page →
             </Link>
             <Link
-              href="/clubs/roster"
+              href="/clubs/overview"
               className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline decoration-ink/35 underline-offset-4 hover:decoration-ink"
             >
               See everything at a glance →

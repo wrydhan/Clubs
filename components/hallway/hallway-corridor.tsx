@@ -920,7 +920,7 @@ function BoardFlyer({
                 {club.tag}
               </span>
               <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: sc(9.5) }}>
-                {String(index + 1).padStart(2, "0")}
+                {String(index + 1).padStart(2, "0")} / 04
               </span>
             </span>
 
@@ -1069,7 +1069,7 @@ function CorridorBoard({
             className="rotate-[1.8deg] bg-paper/90 font-mono uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]"
             style={{ padding: `${u(3)} ${u(8)}`, fontSize: u(9) }}
           >
-            the clubs
+            the four clubs
           </span>
         </div>
 
@@ -1355,7 +1355,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
       >
         <p className="sr-only">
           A first-person walk down the Pier 2 hallway to the club pinboard. Scroll to walk, or use
-          “Skip to the board” to jump straight to the flyers.
+          “Skip to the board” to jump straight to the four flyers.
         </p>
 
         {/* the 3D stage: perspective parent → camera → world */}
@@ -1490,7 +1490,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
           <a href="#board" className="pill-btn inline-flex min-h-[40px] items-center px-5 text-[12px]">
             Continue below ↓
           </a>
-          <Link href="/clubs/roster" className="pill-btn-secondary inline-flex min-h-[40px] items-center px-5 text-[12px]">
+          <Link href="/clubs/overview" className="pill-btn-secondary inline-flex min-h-[40px] items-center px-5 text-[12px]">
             See everything at a glance →
           </Link>
         </div>
