@@ -92,7 +92,7 @@ export const faqs = [
   },
   {
     q: "Can I run a club that has nothing to do with startups?",
-    a: "Yes. That's the point. The people in the room are founders and operators. The activity doesn't have to be a company. Cars, basketball, paintball, fabrication — whatever you can get a room of people to actually do.",
+    a: "Yes. That's the point. The people in the room are founders and operators. The activity doesn't have to be a company. Cars, basketball, paintball, fabrication — whatever you can get ten people to actually do.",
   },
   {
     q: "What happens if I stop?",

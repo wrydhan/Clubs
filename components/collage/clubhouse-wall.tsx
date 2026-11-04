@@ -534,7 +534,7 @@ export function ClubhouseWall({ nextEvent }: { nextEvent?: ClubEvent }) {
                 </p>
                 <div className="mt-7 flex flex-wrap items-center gap-3">
                   <Link href="/clubs/roster" className="pill-btn">
-                    The four clubs →
+                    All clubs →
                   </Link>
                   <Link href="/clubs" className="pill-btn-secondary">
                     Walk the hallway →

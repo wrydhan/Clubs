@@ -324,7 +324,7 @@ function Flyer({
         <span className="flex items-start justify-between gap-3">
           <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft">{club.tag}</span>
           <span className="tnum font-mono text-[9px] uppercase tracking-[0.16em] text-ink-3">
-            {String(index + 1).padStart(2, "0")} / 04
+            {String(index + 1).padStart(2, "0")}
           </span>
         </span>
 
@@ -457,9 +457,9 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
             <div>
               <p className="label">The board · Pier 2, Fort Mason</p>
               <h1 className="mt-3 font-serif text-[2.9rem] leading-[0.86] sm:text-[4.2rem]">
-                Four clubs,
+                Every club,
                 <br />
-                four sheets of paper.
+                its own sheet of paper.
               </h1>
             </div>
             <p className="max-w-[40ch] text-[14.5px] leading-relaxed text-ink-2">

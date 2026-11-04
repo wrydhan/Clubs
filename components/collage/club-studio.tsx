@@ -33,7 +33,7 @@ export function ClubStudio() {
                 Cut, pin, wait about two weeks.
               </h2>
             </div>
-            <Link href="/clubs/overview" className="pill-btn-secondary self-start px-4 py-2 text-[12px]">
+            <Link href="/clubs/roster" className="pill-btn-secondary self-start px-4 py-2 text-[12px]">
               ← Back to the wall
             </Link>
           </div>
@@ -73,7 +73,7 @@ export function ClubStudio() {
                 <Tape className="-right-4 -top-3" rotate={26} width={84} height={24} />
                 <p className="label">Still deciding?</p>
                 <p className="mt-2 text-[13px] leading-snug text-ink">
-                  Read the four clubs already on the calendar, or come to a session before you
+                  Read the clubs already on the calendar, or come to a session before you
                   write a charter.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -81,7 +81,7 @@ export function ClubStudio() {
                     The calendar
                   </Link>
                   <Link
-                    href="/clubs/overview"
+                    href="/clubs/roster"
                     className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-2 underline decoration-ink/25 underline-offset-4 hover:text-ink"
                   >
                     the wall ↗

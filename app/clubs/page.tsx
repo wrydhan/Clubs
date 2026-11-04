@@ -6,7 +6,7 @@ import { formatMonthDay, formatTime, formatWeekday } from "@/lib/format";
 export const metadata: Metadata = {
   title: "The hallway — Founders, Inc. Clubs",
   description:
-    "Walk the Pier 2 hallway to the club pinboard. One flyer per club — unpin one, read it up close, then go through to the club page.",
+    "Walk the Pier 2 hallway to the club pinboard. A flyer per club — unpin one, read it up close, then go through to the club page.",
   alternates: { canonical: "/clubs" },
   openGraph: {
     title: "The hallway — Founders, Inc. Clubs",

@@ -101,5 +101,5 @@ export const dragZones: DragZone[] = [
   { id: "charter", label: "Start a club", hint: "the studio", href: "/clubs/apply" },
   { id: "calendar", label: "Calendar", hint: "every date", href: "/clubs/calendar" },
   { id: "club", label: "Club page", hint: "Car Club", href: "/clubs/cars" },
-  { id: "roster", label: "The clubs", hint: "the whole board", href: "/clubs/roster" },
+  { id: "roster", label: "All clubs", hint: "the whole board", href: "/clubs/roster" },
 ];

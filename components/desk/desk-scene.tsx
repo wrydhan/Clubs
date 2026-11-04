@@ -76,7 +76,7 @@ function facing(spin: number, index: number): number {
 const wallNotes = [
   { n: "01", title: "A specific cadence", body: "“Thursdays at 7” beats “whenever people are free.”" },
   { n: "02", title: "A real first date", body: "A date, a place, and what happens when people arrive." },
-  { n: "03", title: "Ten names", body: "People you can already say will come to the first one." },
+  { n: "03", title: "Your people", body: "A few you can already say will come to the first one." },
 ];
 
 export function DeskScene() {
@@ -244,7 +244,7 @@ export function DeskScene() {
               </h1>
             </div>
             <p className="max-w-[44ch] text-[13.5px] leading-relaxed text-paper/80">
-              A club is a real charter: a cadence, a first date, ten names who will show. Write it
+              A club is a real charter: a cadence and a first date. Write it
               on the sheet below and we book the venue, the track time, the court, the machines.
               You run the sessions.
             </p>
@@ -261,7 +261,7 @@ export function DeskScene() {
                   id="orbit-heading"
                   className="mt-2 font-serif text-[1.9rem] leading-[0.92] text-paper sm:text-[2.5rem]"
                 >
-                  Four clubs spinning on the wall.
+                  The clubs spinning on the wall.
                 </h2>
               </div>
               <div className="flex items-center gap-2">
