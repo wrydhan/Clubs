@@ -1,32 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&display=swap');
 @import "tailwindcss";
 
-/* Founders, Inc. Clubs — Clubhouse Wall
-   Editorial f.inc skeleton (Instrument Serif / Instrument Sans / Fragment Mono,
-   ink on paper, pills for actions) dressed as a physical clubhouse pinboard:
-   kraft, newsprint, cork, torn scraps, tape, stamps.
+/* Founders, Inc. Clubs — brand tokens (workstream A)
+   Mirrors https://f.inc: Instrument Serif for display, Instrument Sans for UI,
+   Fragment Mono for tabular/mono. Near-monochrome ink on printer paper:
+   #000 on #FFF, secondary text at 40% black, separation from the #F1F1F1
+   surface fill and whitespace rather than borders. Category hues survive only
+   as 10% tints behind black text.
 
-   Palette: paper #F4EDE1 · paper-deep #EADFCC · kraft #C9A87C · ink #241A15
-   Accents appear only as 10% tints behind ink at display sizes, or as the
-   club's own sticker (which is printed, not UI colour). */
+   No aged stock: everything that used to be kraft, newsprint or cork is now
+   plain printer paper (white sheet, light #F1F1F1 board). The old sepia ramp is
+   kept as token NAMES so untouched components still resolve, but every value is
+   neutral ink/paper. */
 
 @theme {
-  --color-ink: #241A15;
-  --color-ink-soft: #453629; /* 9.96 paper · 8.79 deep · 4.87 kraft median · 4.72 darkest kraft patch — the .label token */
-  /* Text tones for the clubhouse wall. Solid colours, not ink/@opacity, so the
-     ratio is the same on paper, paperdeep, printed textures and kraft stock.
-     The binding background is the *rendered* kraft texture, not the flat #c9a87c:
-     the webp medians around L≈0.39 and its darker patches sit near L≈0.378, so
-     both tones are set against that worst patch to clear 4.5:1 for 10–11px text.
-     Ladder stays monotone: ink #241A15 → ink-2 → ink-3 → ink-soft. */
-  --color-ink-2: #362920; /* 12.07 paper · 10.65 deep · 5.91 kraft median · 5.72 darkest kraft patch */
-  --color-ink-3: #3F3128; /* 10.73 paper · 9.47 deep · 5.25 kraft median · 5.09 darkest kraft patch · 7.49 newsprint */
-  --color-paper: #F4EDE1;
-  --color-paperdeep: #EADFCC;
-  --color-kraft: #C9A87C;
-  --color-line: rgba(36, 26, 21, 0.14);
+  /* ink ramp — neutral, monotone */
+  --color-ink: #000000;
+  --color-ink-2: #1A1A1A;
+  --color-ink-3: #333333;
+  --color-ink-soft: rgba(0, 0, 0, 0.55);
 
-  /* legacy aliases kept so untouched components still resolve */
+  /* paper = printer paper; paperdeep/kraft = f.inc surface fill */
+  --color-paper: #FFFFFF;
+  --color-paperdeep: #F1F1F1;
+  --color-kraft: #F1F1F1;
+  --color-line: rgba(0, 0, 0, 0.10);
+
   --color-surface: #F1F1F1;
   --color-surface-hover: #E7E7E7;
   --color-surface-card: #F7F7F7;
@@ -40,12 +39,12 @@
 }
 
 :root {
-  --ink: #241a15;
-  --ink-soft: #453629;
-  --paper: #f4ede1;
-  --paper-deep: #eadfcc;
-  --kraft: #c9a87c;
-  --rule: rgba(36, 26, 21, 0.14);
+  --ink: #000000;
+  --ink-soft: rgba(0, 0, 0, 0.55);
+  --paper: #ffffff;
+  --paper-deep: #f1f1f1;
+  --kraft: #f1f1f1;
+  --rule: rgba(0, 0, 0, 0.10);
 
   --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-ui: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -55,11 +54,18 @@
   --track-tight: -0.04em;
   --serif-stroke: 0.05em;
 
-  /* paper shadows: short and soft — paper is thin */
-  --shadow-scrap: 0 1px 1px rgba(36, 26, 21, 0.16), 0 3px 5px -2px rgba(36, 26, 21, 0.22),
-    0 12px 22px -18px rgba(36, 26, 21, 0.65);
-  --shadow-lift: 0 2px 2px rgba(36, 26, 21, 0.16), 0 8px 12px -6px rgba(36, 26, 21, 0.26),
-    0 22px 34px -24px rgba(36, 26, 21, 0.6);
+  /* radii: pills for actions, 15px surfaces, 8px controls, 2px sheet stock */
+  --radius-pill: 100px;
+  --radius-card: 15px;
+  --radius-control: 8px;
+  --radius-sheet: 2px;
+
+  /* one elevation only — a light drop under a sheet, plus the 1px white top
+     ring used on dark surfaces. No generic blur shadows. */
+  --shadow-sheet: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-scrap: var(--shadow-sheet);
+  --shadow-lift: 0 1px 2px rgba(0, 0, 0, 0.06), 0 14px 28px -20px rgba(0, 0, 0, 0.20);
+  --ring-dark: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --ease-paper: cubic-bezier(0.2, 0.7, 0.25, 1);
 }
 
@@ -67,11 +73,6 @@
   box-sizing: border-box;
 }
 
-/* Tape, pins and rotated scraps are deliberately allowed to overhang their
-   paper, which pushed the document past the viewport width on phones. `clip`
-   keeps the overhang visible inside the page while removing the horizontal
-   scrollbar, and (unlike `hidden`) does not turn the root into a scroll
-   container, so the sticky header keeps working. */
 html {
   overflow-x: clip;
 }
@@ -101,7 +102,8 @@ body {
   outline-offset: 3px;
 }
 
-/* Typography */
+/* ---------- typography ---------- */
+
 .font-serif {
   font-family: var(--font-display);
   letter-spacing: 0;
@@ -120,6 +122,18 @@ body {
   letter-spacing: 0;
 }
 
+/* sans UI text is always tracked in */
+button,
+[role="button"],
+.btn,
+.tag,
+.badge,
+input,
+select,
+textarea {
+  letter-spacing: var(--track-tight);
+}
+
 .tnum {
   font-variant-numeric: tabular-nums;
 }
@@ -127,12 +141,12 @@ body {
 .label {
   font-family: var(--font-code);
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
-/* Hand-written accent, in the f.inc serif italic — no third typeface */
+/* accent line, in the f.inc serif italic — no third typeface */
 .scrawl {
   font-family: var(--font-display);
   font-style: italic;
@@ -141,115 +155,68 @@ body {
   color: var(--ink);
 }
 
-/* ---------- paper surfaces ---------- */
+/* ---------- paper surfaces: printer paper ---------- */
 
-.tex-kraft {
-  background-image: url("/collage/paper-kraft.webp");
-  background-size: cover;
-  background-position: center;
-}
+/* legacy stock classes now resolve to plain printer paper / f.inc surface */
+.tex-kraft,
 .tex-news {
-  background-image: url("/collage/paper-newsprint.webp");
-  background-size: cover;
-  background-position: center;
+  background-color: var(--paper);
+  background-image: none;
 }
+
 .tex-cork {
-  background-image: url("/collage/paper-cork.webp");
-  background-size: 720px auto;
-  background-repeat: repeat;
+  background-color: var(--kraft);
+  background-image: none;
 }
 
 .paper-card {
   position: relative;
   isolation: isolate;
   background-color: var(--paper);
-  border-radius: 2px;
+  border-radius: var(--radius-sheet);
   box-shadow: var(--shadow-scrap);
 }
-.paper-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background-image: url("/collage/paper-kraft.webp");
-  background-size: 560px auto;
-  opacity: 0.16;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-}
 
-/* the old f.inc card, re-cut as a sheet of paper */
+/* the f.inc card, cut as a sheet of printer paper */
 .finc-card {
   position: relative;
   isolation: isolate;
   background-color: var(--paper);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-scrap);
   border: none;
-  border-radius: 2px;
-}
-.finc-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background-image: url("/collage/paper-kraft.webp");
-  background-size: 560px auto;
-  opacity: 0.14;
-  mix-blend-mode: multiply;
-  pointer-events: none;
 }
 
-/* torn deckle edges */
+/* a printed sheet has a straight cut. Only the shallow irregular trim of a
+   guillotine stays, so the hand-placed collage keeps its silhouette without
+   reading as torn, burnt stock. */
 .torn {
   -webkit-clip-path: polygon(
-    0% 2%, 3% 0.8%, 7% 1.8%, 11% 0.4%, 16% 1.4%, 21% 0.3%, 27% 1.6%, 33% 0.5%, 39% 1.5%,
-    45% 0.2%, 52% 1.4%, 58% 0.6%, 64% 1.7%, 70% 0.3%, 77% 1.5%, 84% 0.4%, 90% 1.6%, 96% 0.5%,
-    100% 1.8%, 98.6% 6%, 100% 11%, 98.4% 17%, 99.6% 23%, 98.2% 30%, 100% 37%, 98.5% 44%,
-    99.7% 52%, 98.3% 60%, 100% 68%, 98.4% 76%, 99.6% 84%, 98.2% 91%, 99.4% 97%, 100% 100%,
-    95% 98.6%, 89% 99.7%, 83% 98.4%, 77% 99.6%, 70% 98.2%, 63% 99.5%, 56% 98.3%, 49% 99.7%,
-    42% 98.4%, 35% 99.6%, 28% 98.2%, 21% 99.5%, 14% 98.4%, 8% 99.6%, 3% 98.5%, 0% 100%,
-    1.4% 94%, 0% 87%, 1.6% 80%, 0.3% 72%, 1.5% 64%, 0.2% 56%, 1.7% 48%, 0.4% 40%, 1.6% 32%,
-    0.3% 24%, 1.5% 16%, 0.2% 8%
+    0% 0.4%, 12% 0.2%, 26% 0.6%, 41% 0.1%, 57% 0.5%, 72% 0.2%, 88% 0.6%, 100% 0.3%,
+    99.7% 12%, 100% 27%, 99.6% 43%, 100% 58%, 99.7% 74%, 100% 88%, 99.6% 99.7%,
+    86% 99.5%, 70% 99.9%, 54% 99.4%, 38% 99.8%, 22% 99.4%, 8% 99.9%, 0% 99.5%,
+    0.4% 84%, 0% 67%, 0.5% 51%, 0.1% 35%, 0.4% 18%
   );
   clip-path: polygon(
-    0% 2%, 3% 0.8%, 7% 1.8%, 11% 0.4%, 16% 1.4%, 21% 0.3%, 27% 1.6%, 33% 0.5%, 39% 1.5%,
-    45% 0.2%, 52% 1.4%, 58% 0.6%, 64% 1.7%, 70% 0.3%, 77% 1.5%, 84% 0.4%, 90% 1.6%, 96% 0.5%,
-    100% 1.8%, 98.6% 6%, 100% 11%, 98.4% 17%, 99.6% 23%, 98.2% 30%, 100% 37%, 98.5% 44%,
-    99.7% 52%, 98.3% 60%, 100% 68%, 98.4% 76%, 99.6% 84%, 98.2% 91%, 99.4% 97%, 100% 100%,
-    95% 98.6%, 89% 99.7%, 83% 98.4%, 77% 99.6%, 70% 98.2%, 63% 99.5%, 56% 98.3%, 49% 99.7%,
-    42% 98.4%, 35% 99.6%, 28% 98.2%, 21% 99.5%, 14% 98.4%, 8% 99.6%, 3% 98.5%, 0% 100%,
-    1.4% 94%, 0% 87%, 1.6% 80%, 0.3% 72%, 1.5% 64%, 0.2% 56%, 1.7% 48%, 0.4% 40%, 1.6% 32%,
-    0.3% 24%, 1.5% 16%, 0.2% 8%
+    0% 0.4%, 12% 0.2%, 26% 0.6%, 41% 0.1%, 57% 0.5%, 72% 0.2%, 88% 0.6%, 100% 0.3%,
+    99.7% 12%, 100% 27%, 99.6% 43%, 100% 58%, 99.7% 74%, 100% 88%, 99.6% 99.7%,
+    86% 99.5%, 70% 99.9%, 54% 99.4%, 38% 99.8%, 22% 99.4%, 8% 99.9%, 0% 99.5%,
+    0.4% 84%, 0% 67%, 0.5% 51%, 0.1% 35%, 0.4% 18%
   );
 }
 
 .torn-soft {
-  -webkit-clip-path: polygon(
-    0% 1%, 6% 0.2%, 13% 1.1%, 20% 0%, 28% 1%, 36% 0.1%, 44% 1.2%, 52% 0%, 60% 1%, 68% 0.2%,
-    76% 1.1%, 84% 0%, 92% 1%, 100% 0.3%, 99.2% 8%, 100% 17%, 99% 26%, 100% 35%, 99.2% 45%,
-    100% 55%, 99% 65%, 100% 75%, 99.2% 85%, 100% 94%, 99.3% 100%, 92% 99%, 84% 100%, 76% 98.9%,
-    68% 100%, 60% 99%, 52% 100%, 44% 98.9%, 36% 100%, 28% 99%, 20% 100%, 13% 98.9%, 6% 100%,
-    0% 99.2%, 1% 90%, 0% 80%, 1.1% 70%, 0% 60%, 1% 50%, 0.2% 40%, 1.1% 30%, 0% 20%, 0.9% 10%
-  );
-  clip-path: polygon(
-    0% 1%, 6% 0.2%, 13% 1.1%, 20% 0%, 28% 1%, 36% 0.1%, 44% 1.2%, 52% 0%, 60% 1%, 68% 0.2%,
-    76% 1.1%, 84% 0%, 92% 1%, 100% 0.3%, 99.2% 8%, 100% 17%, 99% 26%, 100% 35%, 99.2% 45%,
-    100% 55%, 99% 65%, 100% 75%, 99.2% 85%, 100% 94%, 99.3% 100%, 92% 99%, 84% 100%, 76% 98.9%,
-    68% 100%, 60% 99%, 52% 100%, 44% 98.9%, 36% 100%, 28% 99%, 20% 100%, 13% 98.9%, 6% 100%,
-    0% 99.2%, 1% 90%, 0% 80%, 1.1% 70%, 0% 60%, 1% 50%, 0.2% 40%, 1.1% 30%, 0% 20%, 0.9% 10%
-  );
+  -webkit-clip-path: none;
+  clip-path: none;
 }
 
-/* masking tape: the scan is on white, multiply drops the ground */
+/* tape: no scanned fibre, just a neutral translucent strip */
 .tape {
-  background-image: url("/collage/tape-strip.webp");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  mix-blend-mode: multiply;
-  opacity: 0.95;
+  background: rgba(0, 0, 0, 0.06);
+  background-image: none;
+  mix-blend-mode: normal;
+  opacity: 1;
+  border-radius: 1px;
   pointer-events: none;
 }
 
@@ -257,30 +224,30 @@ body {
   width: 12px;
   height: 12px;
   border-radius: 9999px;
-  background: radial-gradient(circle at 35% 30%, #8d7b6d 0%, #4a3a30 55%, #241a15 100%);
-  box-shadow: 0 2px 2px rgba(36, 26, 21, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  background: radial-gradient(circle at 35% 30%, #5a5a5a 0%, #1c1c1c 60%, #000000 100%);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
+/* stamp: a mono pill, not a rubber impression */
 .stamp {
   font-family: var(--font-code);
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: #3b2c24; /* 11.48 on paper · 5.97 on bare kraft */
-  border: 1.5px solid rgba(36, 26, 21, 0.5);
-  border-radius: 3px;
-  padding: 0.35em 0.6em;
+  letter-spacing: var(--track-tight);
+  color: var(--ink);
+  background: var(--kraft);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.4em 0.75em;
   transform: rotate(-6deg);
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
 
-/* sticker: the asset already carries its own paper scrap; multiply lets the
-   paper fibre show through instead of sitting on a flat rectangle */
 .sticker-img {
   mix-blend-mode: multiply;
-  filter: saturate(0.96) contrast(1.02);
+  filter: saturate(1) contrast(1);
 }
 
-/* ---------- actions: ink pills, still f.inc ---------- */
+/* ---------- actions: ink pills ---------- */
 
 .pill-btn {
   display: inline-flex;
@@ -293,19 +260,21 @@ body {
   font-weight: 500;
   letter-spacing: var(--track-tight);
   padding: 11px 22px;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--paper);
   text-decoration: none;
   cursor: pointer;
   transition: transform 160ms var(--ease-paper), background-color 160ms var(--ease-paper);
   border: none;
+  box-shadow: var(--ring-dark);
 }
 .pill-btn:hover {
-  background: #3b2c24;
+  background: #1a1a1a;
   transform: translateY(-1px);
 }
 
+/* secondary action is a fill, not an outline — borderless */
 .pill-btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -316,17 +285,17 @@ body {
   line-height: 1.2;
   font-weight: 500;
   letter-spacing: var(--track-tight);
-  padding: 10px 20px;
-  border-radius: 9999px;
-  background: transparent;
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--kraft);
   color: var(--ink);
   text-decoration: none;
   cursor: pointer;
   transition: background-color 160ms var(--ease-paper), transform 160ms var(--ease-paper);
-  border: 1px solid rgba(36, 26, 21, 0.35);
+  border: none;
 }
 .pill-btn-secondary:hover {
-  background: rgba(36, 26, 21, 0.07);
+  background: #e7e7e7;
   transform: translateY(-1px);
 }
 
@@ -336,31 +305,31 @@ body {
   justify-content: center;
   font-family: var(--font-code);
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-tight);
   text-transform: uppercase;
   padding: 8px 14px;
-  border-radius: 9999px;
-  background: rgba(36, 26, 21, 0.08);
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--ink);
   text-decoration: none;
   border: none;
 }
 .pill-btn-ghost:hover {
-  background: rgba(36, 26, 21, 0.14);
+  background: rgba(0, 0, 0, 0.09);
 }
 
-/* legacy category tints (kept; no new UI relies on colour for hierarchy) */
-.badge-car { background: rgba(232, 69, 43, 0.1); color: #241a15; }
-.badge-hardware { background: rgba(234, 88, 12, 0.1); color: #241a15; }
-.badge-basketball { background: rgba(22, 163, 74, 0.1); color: #241a15; }
-.badge-paintball { background: rgba(220, 38, 38, 0.1); color: #241a15; }
+/* category hues at 10% tint only, behind black text */
+.badge-car { background: rgba(232, 69, 43, 0.1); color: #000000; }
+.badge-hardware { background: rgba(234, 88, 12, 0.1); color: #000000; }
+.badge-basketball { background: rgba(22, 163, 74, 0.1); color: #000000; }
+.badge-paintball { background: rgba(220, 38, 38, 0.1); color: #000000; }
 
-/* form fields sit on the paper, not on white */
+/* form fields: surface fill, 8px controls, no border */
 .paper-field {
   width: 100%;
-  border-radius: 2px;
-  background: rgba(255, 252, 246, 0.72);
-  border: 1px solid rgba(36, 26, 21, 0.16);
+  border-radius: var(--radius-control);
+  background: var(--kraft);
+  border: none;
   padding: 12px 14px;
   font-family: var(--font-ui);
   font-size: 14px;
@@ -368,12 +337,11 @@ body {
   letter-spacing: var(--track-default);
 }
 .paper-field::placeholder {
-  color: rgba(36, 26, 21, 0.35);
+  color: rgba(0, 0, 0, 0.4);
 }
 .paper-field:focus {
   outline: none;
-  border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(36, 26, 21, 0.12);
+  box-shadow: 0 0 0 2px var(--ink);
 }
 
 /* -------------------- motion -------------------- */
@@ -403,7 +371,6 @@ body {
 
 /* -------------------- the club studio (start a club) -------------------- */
 
-/* a scrap settling onto the table: it pops, overshoots a hair, then sits */
 @keyframes studio-pop {
   0% {
     transform: translateY(14px) scale(0.94) rotate(var(--tilt, -2deg));
@@ -422,7 +389,6 @@ body {
   animation: studio-pop 420ms var(--ease-paper) both;
 }
 
-/* a stamp coming down on the sheet */
 @keyframes studio-thump {
   0% { transform: translateY(-8px) scale(1.12) rotate(var(--tilt, -6deg)); opacity: 0; }
   60% { transform: translateY(0) scale(0.97) rotate(var(--tilt, -6deg)); opacity: 1; }
@@ -439,16 +405,16 @@ body {
 }
 .starfield {
   background-image:
-    radial-gradient(1.5px 1.5px at 18% 22%, rgba(244, 237, 225, 0.85), transparent 100%),
-    radial-gradient(1px 1px at 42% 68%, rgba(244, 237, 225, 0.6), transparent 100%),
-    radial-gradient(1.6px 1.6px at 67% 34%, rgba(244, 237, 225, 0.8), transparent 100%),
-    radial-gradient(1px 1px at 82% 76%, rgba(244, 237, 225, 0.55), transparent 100%),
-    radial-gradient(1.2px 1.2px at 91% 14%, rgba(244, 237, 225, 0.7), transparent 100%),
-    radial-gradient(1px 1px at 8% 84%, rgba(244, 237, 225, 0.5), transparent 100%),
-    radial-gradient(1.4px 1.4px at 55% 8%, rgba(244, 237, 225, 0.7), transparent 100%),
-    radial-gradient(1px 1px at 30% 46%, rgba(244, 237, 225, 0.45), transparent 100%),
-    radial-gradient(120% 90% at 70% 10%, rgba(244, 237, 225, 0.07), transparent 60%),
-    radial-gradient(90% 70% at 20% 80%, rgba(244, 237, 225, 0.05), transparent 65%);
+    radial-gradient(1.5px 1.5px at 18% 22%, rgba(255, 255, 255, 0.85), transparent 100%),
+    radial-gradient(1px 1px at 42% 68%, rgba(255, 255, 255, 0.6), transparent 100%),
+    radial-gradient(1.6px 1.6px at 67% 34%, rgba(255, 255, 255, 0.8), transparent 100%),
+    radial-gradient(1px 1px at 82% 76%, rgba(255, 255, 255, 0.55), transparent 100%),
+    radial-gradient(1.2px 1.2px at 91% 14%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1px 1px at 8% 84%, rgba(255, 255, 255, 0.5), transparent 100%),
+    radial-gradient(1.4px 1.4px at 55% 8%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1px 1px at 30% 46%, rgba(255, 255, 255, 0.45), transparent 100%),
+    radial-gradient(120% 90% at 70% 10%, rgba(255, 255, 255, 0.07), transparent 60%),
+    radial-gradient(90% 70% at 20% 80%, rgba(255, 255, 255, 0.05), transparent 65%);
   background-size: 100% 240px, 100% 240px, 100% 240px, 100% 240px, 100% 240px, 100% 240px,
     100% 240px, 100% 240px, 100% 100%, 100% 100%;
   background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, no-repeat,
@@ -468,6 +434,6 @@ body {
 
 /* stitching across a paper edge */
 .stitched {
-  outline: 1px dashed rgba(36, 26, 21, 0.35);
+  outline: 1px dashed rgba(0, 0, 0, 0.2);
   outline-offset: -7px;
 }

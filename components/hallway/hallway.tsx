@@ -21,6 +21,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pin } from "@/components/collage/paper";
+import { BoardCollage } from "./board-collage";
 import type { HallwayClub } from "./types";
 
 export type { HallwayClub };
@@ -468,47 +469,7 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
             </p>
           </div>
 
-          <div
-            className="relative mt-8 p-3 shadow-[0_50px_90px_-50px_rgba(36,26,21,0.75)] sm:p-4"
-            style={{ background: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)" }}
-          >
-            <div className="tex-cork relative overflow-hidden px-4 py-10 shadow-[inset_0_2px_30px_rgba(52,34,18,0.45)] sm:px-8 sm:py-14">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.22),transparent_60%)]" />
-              <div className="relative grid gap-x-8 gap-y-12 sm:grid-cols-2 xl:gap-x-14">
-                {clubs.map((club, index) => (
-                  <div key={club.slug} className={`relative ${index % 2 ? "sm:translate-y-6" : ""}`}>
-                    <Flyer club={club} index={index} variant="board" onOpen={() => openFlyer(index)} />
-                  </div>
-                ))}
-              </div>
-
-              <div className="relative mt-12 flex flex-wrap items-center justify-between gap-3">
-                <Link href="/clubs/apply" className="pill-btn inline-flex min-h-[40px] items-center px-5">
-                  Start a fifth club
-                </Link>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                  <Link
-                    href="/clubs/roster"
-                    className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline decoration-ink/35 underline-offset-4 hover:decoration-ink"
-                  >
-                    All four on one page →
-                  </Link>
-                  <Link
-                    href="/clubs/overview"
-                    className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline decoration-ink/35 underline-offset-4 hover:decoration-ink"
-                  >
-                    See everything at a glance →
-                  </Link>
-                  <Link
-                    href="/clubs/wall"
-                    className="inline-flex min-h-[40px] items-center font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2 underline decoration-ink/25 underline-offset-4 hover:text-ink"
-                  >
-                    The wall →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+          <BoardCollage clubs={clubs} onOpen={openFlyer} />
         </div>
       </section>
 
