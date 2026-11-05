@@ -6,7 +6,7 @@ import { getClubs, getNextEvent } from "@/lib/clubs";
 import { formatMonthDay, formatTime, formatWeekday } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "The four clubs — Founders, Inc. Clubs",
+  title: "All clubs — Founders, Inc. Clubs",
   description:
     "Car Club, Hardware Club, Basketball Club and Paintball Club at Founders, Inc. Fort Mason Pier 2. Cadence, where each one meets, the next date pinned and who runs it.",
   alternates: { canonical: "/clubs/roster" },
@@ -41,16 +41,16 @@ export default function RosterPage() {
             The wall
           </Link>
           <span>/</span>
-          <span className="text-ink">The four clubs</span>
+          <span className="text-ink">All clubs</span>
         </div>
 
         <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
-            <Kicker>Four clubs · Fort Mason Pier 2</Kicker>
+            <Kicker>Member-run · Fort Mason Pier 2</Kicker>
             <h1 className="mt-4 font-serif text-[3.2rem] leading-[0.84] sm:text-[4.8rem]">
-              The four clubs,
+              Every club,
               <br />
-              top to bottom.
+              on one board.
             </h1>
             <p className="scrawl mt-5 max-w-[34ch] text-[1.45rem] leading-tight sm:text-[1.7rem]">
               every one of them run by a member, not a marketing team.
@@ -68,7 +68,7 @@ export default function RosterPage() {
                 Walk the hallway →
               </Link>
               <Link href="/clubs/apply" className="pill-btn-secondary">
-                Start a fifth
+                Start a club
               </Link>
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function RosterPage() {
               the notice board
             </span>
             <span className="bg-paper/92 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2 shadow-[var(--shadow-scrap)]">
-              four flyers · four clubs
+              every flyer · every club
             </span>
           </div>
 
@@ -113,7 +113,7 @@ export default function RosterPage() {
                     <div className="flex items-start justify-between gap-4">
                       <span className="label">{club.theme?.tag ?? "Campus club"}</span>
                       <span className="label tnum text-ink-3">
-                        {String(index + 1).padStart(2, "0")} / 04
+                        {String(index + 1).padStart(2, "0")}
                       </span>
                     </div>
 
@@ -208,10 +208,10 @@ export default function RosterPage() {
           <div className="lg:col-span-8">
             <Kicker>Not on this board</Kicker>
             <h2 className="mt-3 font-serif text-[2.6rem] leading-[0.9] sm:text-[3.4rem]">
-              Bring ten names and the fifth club goes up.
+              There is room for another one.
             </h2>
             <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-ink-2">
-              Charters need a cadence, a first date and ten people who will actually show. Everything
+              A charter needs a cadence and a first date. Everything
               else — the room, the budget, the sticker art — is ours to sort out.
             </p>
           </div>

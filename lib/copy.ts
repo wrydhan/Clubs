@@ -61,10 +61,6 @@ export const goodApplication = [
     body: "A date, a place, and what actually happens when people arrive.",
   },
   {
-    title: "Ten names",
-    body: "People you can already say will come to that first one.",
-  },
-  {
     title: "Proof you've hosted something",
     body: "Even if it was small, unofficial, and held together in a group chat.",
   },

@@ -37,9 +37,9 @@ const fields: {
   { name: "budget", label: "Estimated Monthly Budget", type: "text", placeholder: "e.g. $1,200/session for track fees & paddock hospitality", span: "half" },
   {
     name: "people",
-    label: "Initial member roster (10 people ready to attend)",
+    label: "Who is already in?",
     type: "textarea",
-    placeholder: "Names and handles. The strongest charters have active founders ready from day one.",
+    placeholder: "A few names or handles — anyone you know will show up.",
     span: "full",
   },
   { name: "needs", label: "What support do you need from Founders, Inc.?", type: "textarea", placeholder: "Track rental booking, Fort Mason workshop access, safety gear subsidies, media team coverage.", span: "full" },
@@ -53,7 +53,7 @@ function validate(values: FormState): Partial<Record<FieldName, string>> {
   if (values.what.trim().length < 20) errors.what = "Describe what happens during a session (min 20 characters).";
   if (!values.cadence.trim()) errors.cadence = "Specify a recurring cadence.";
   if (!values.who.trim()) errors.who = "Let us know who will run it.";
-  if (values.people.trim().length < 10) errors.people = "List real members ready for the first session.";
+  if (!values.people.trim()) errors.people = "Tell us who you expect to come.";
   if (!values.needs.trim()) errors.needs = "Specify what resources you need.";
   if (!values.budget.trim()) errors.budget = "Provide a rough budget estimate.";
   return errors;
