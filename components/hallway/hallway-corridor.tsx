@@ -45,6 +45,8 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { ClubPoster } from "@/components/collage/club-poster";
 import type { HallwayClub } from "./types";
 
 /* ------------------------------------------------------------------ geometry */
@@ -763,25 +765,132 @@ function Stairwell() {
 
 /* ------------------------------------------------------------------- the board */
 
-const TILT = [-2.4, 2.8, 1.7, -3.1];
+/** The four sheets, hand-placed rather than laid on a grid: four widths, four
+ *  heights, four tilts. The type is NOT scaled with the sheet — it is scaled by
+ *  `s`, a per-sheet multiplier, so the narrow sheets read as smaller pages with
+ *  their own type size rather than as shrunken copies of one page. Percentages of
+ *  the cork, so the same numbers hold in the walk plane and in the hoisted
+ *  display-size layer. Two of them run off the frame. */
+const SHEETS = [
+  { left: -2, top: 5, w: 35, h: 38, tilt: -2.6, z: 20, s: 0.92 },
+  { left: 31.5, top: -1, w: 22, h: 26.5, tilt: 3.1, z: 24, s: 0.74 },
+  { left: 19, top: 47, w: 27.5, h: 41, tilt: 1.6, z: 22, s: 0.84 },
+  { left: 52, top: 40, w: 51, h: 49, tilt: -3.2, z: 26, s: 1 },
+];
+
+type BoardProp = {
+  src: string;
+  left: number;
+  top: number;
+  w: number;
+  /** width / height of the file, so the box is the picture's box */
+  ratio: number;
+  rotate: number;
+  z: number;
+  shadow: "print" | "cut" | "eph";
+};
+
+/** Every photograph, scan, cut-out and fastener on this board is its own file —
+ *  nothing repeats, and none of it is shared with the flat board further down. */
+const PROPS: BoardProp[] = [
+  // prints, tucked under the sheets and read through the seams
+  { src: "/collage/board3d/print-pitwall.webp", left: -6, top: 18, w: 22, ratio: 1.5, rotate: -5.5, z: 3, shadow: "print" },
+  { src: "/collage/board3d2/print-grid.webp", left: 50, top: -8, w: 24, ratio: 1.5, rotate: 4.5, z: 3, shadow: "print" },
+  { src: "/collage/board3d/print-bench.webp", left: 58, top: 14, w: 21, ratio: 1.5, rotate: 6, z: 4, shadow: "print" },
+  { src: "/collage/board3d2/print-woods2.webp", left: -4, top: 62, w: 19, ratio: 1.5, rotate: 5, z: 4, shadow: "print" },
+  { src: "/collage/board3d/print-court.webp", left: 12, top: 88, w: 18, ratio: 1.5, rotate: -4, z: 5, shadow: "print" },
+  { src: "/collage/board3d2/print-garage2.webp", left: 74, top: 76, w: 19, ratio: 1.5, rotate: -6, z: 5, shadow: "print" },
+  { src: "/collage/board3d/print-field.webp", left: 42, top: 86, w: 16, ratio: 1.5, rotate: 3.5, z: 6, shadow: "print" },
+  { src: "/collage/board3d2/print-solder.webp", left: 4, top: 36, w: 10, ratio: 1, rotate: -8, z: 12, shadow: "print" },
+
+  // scans: a manual page, a napkin, a sticky note
+  { src: "/collage/board3d2/eph-manual.webp", left: 27, top: 3, w: 7, ratio: 0.949, rotate: 9, z: 14, shadow: "eph" },
+  { src: "/collage/board3d2/eph-napkin.webp", left: 44, top: 34, w: 7.5, ratio: 0.972, rotate: -7, z: 15, shadow: "eph" },
+  { src: "/collage/board3d2/eph-sticky.webp", left: 88, top: 32, w: 6, ratio: 0.948, rotate: 6, z: 15, shadow: "eph" },
+
+  // cut-outs, pinned in the seams so each silhouette reads
+  { src: "/collage/board3d/cut-helmet.webp", left: 46.5, top: -2, w: 6.5, ratio: 0.788, rotate: 9, z: 9, shadow: "cut" },
+  { src: "/collage/board3d/cut-calipers.webp", left: 24, top: 32, w: 13, ratio: 1.686, rotate: -7, z: 9, shadow: "cut" },
+  { src: "/collage/board3d2/cut-calipers2.webp", left: 74, top: 44, w: 12, ratio: 1.592, rotate: 8, z: 9, shadow: "cut" },
+  { src: "/collage/board3d/cut-rim.webp", left: 92, top: 60, w: 7, ratio: 0.94, rotate: -8, z: 9, shadow: "cut" },
+  { src: "/collage/board3d2/cut-camo.webp", left: -3, top: 84, w: 9, ratio: 0.892, rotate: 5, z: 10, shadow: "cut" },
+  { src: "/collage/board3d2/cut-sockets.webp", left: 41, top: 64, w: 12, ratio: 1.374, rotate: -9, z: 10, shadow: "cut" },
+  { src: "/collage/board3d/cut-pods.webp", left: 65, top: 92, w: 11, ratio: 1.675, rotate: 6, z: 10, shadow: "cut" },
+
+  // one more print and a manual page in the last seams
+  { src: "/collage/board3d2/print-manuals.webp", left: 80, top: 4, w: 15, ratio: 1.5, rotate: -4, z: 6, shadow: "print" },
+  { src: "/collage/board3d2/eph-chalk.webp", left: 30, top: 30, w: 6.5, ratio: 1.161, rotate: 8, z: 16, shadow: "eph" },
+  { src: "/collage/board3d2/eph-polaroid.webp", left: 46, top: 60, w: 7, ratio: 0.937, rotate: -6, z: 16, shadow: "eph" },
+  { src: "/collage/board3d2/cut-pod.webp", left: 6, top: 76, w: 8, ratio: 0.692, rotate: 7, z: 11, shadow: "cut" },
+  { src: "/collage/board3d2/print-pegboard.webp", left: 61, top: 62, w: 16, ratio: 1.5, rotate: -5, z: 7, shadow: "print" },
+
+  // fasteners, on top of everything
+  { src: "/collage/board3d/pins-trio.webp", left: 33, top: 0, w: 5.5, ratio: 1.513, rotate: 3, z: 40, shadow: "cut" },
+  { src: "/collage/board3d/tape-single.webp", left: 15, top: 44, w: 12, ratio: 2.89, rotate: -14, z: 40, shadow: "cut" },
+];
+
+/** One thing pinned to the board. Purely decorative: never interactive. */
+function BoardPiece({ piece }: { piece: BoardProp }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute"
+      style={{
+        left: `${piece.left}%`,
+        top: `${piece.top}%`,
+        width: `${piece.w}%`,
+        aspectRatio: `${piece.ratio}`,
+        transform: `rotate(${piece.rotate}deg)`,
+        zIndex: piece.z,
+      }}
+    >
+      <Image
+        src={piece.src}
+        alt=""
+        fill
+        sizes="(max-width: 768px) 0px, 420px"
+        className={
+          piece.shadow === "print"
+            ? "object-cover shadow-[var(--shadow-scrap)]"
+            : piece.shadow === "eph"
+              ? "object-contain drop-shadow-[0_5px_9px_rgba(36,26,21,0.45)]"
+              : "object-contain drop-shadow-[0_6px_8px_rgba(36,26,21,0.4)]"
+        }
+      />
+    </div>
+  );
+}
 
 function BoardFlyer({
   club,
   index,
+  place,
   interactive,
   unpinning,
   onOpen,
 }: {
   club: HallwayClub;
   index: number;
+  place: (typeof SHEETS)[number];
   interactive: boolean;
   unpinning: boolean;
   onOpen: () => void;
 }) {
+  // a sheet's type rides its own `s` multiplier, so a narrow sheet is a smaller
+  // page with its own type size, not a shrunk copy of the big one
+  const sc = (v: number) => u(v * place.s);
   return (
     <div
-      className="relative h-full w-full"
-      style={{ transform: `rotate(${TILT[index % TILT.length]}deg)`, transition: "transform 220ms cubic-bezier(0.2,0.8,0.2,1)" }}
+      className="absolute"
+      style={{
+        left: `${place.left}%`,
+        top: `${place.top}%`,
+        width: `${place.w}%`,
+        height: `${place.h}%`,
+        zIndex: place.z,
+        transform: `rotate(${place.tilt}deg)`,
+        transition: "transform 220ms cubic-bezier(0.2,0.8,0.2,1)",
+      }}
     >
       <div className="hallway-sheet-idle h-full w-full" style={{ animationDelay: `${index * 1.3}s` }}>
         <button
@@ -798,7 +907,7 @@ function BoardFlyer({
             <span aria-hidden className="pin absolute" style={{ width: pu(12), height: pu(12) }} />
           </span>
           <span
-            className={`torn-soft flex h-full w-full flex-col justify-between bg-paper px-[7%] py-[6%] shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
+            className={`torn-soft block h-full w-full overflow-hidden bg-paper shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
               interactive ? "group-hover:-translate-y-2 group-hover:scale-[1.015] group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-ink" : ""
             } motion-reduce:transition-none`}
             style={
@@ -807,41 +916,8 @@ function BoardFlyer({
                 : undefined
             }
           >
-            <span className="flex items-start justify-between" style={{ gap: u(12) }}>
-              <span className="font-mono uppercase tracking-[0.16em] text-ink-soft" style={{ fontSize: u(10) }}>
-                {club.tag}
-              </span>
-              <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: u(10) }}>
-                {String(index + 1).padStart(2, "0")} / 04
-              </span>
-            </span>
-
-            <span className="block font-serif leading-[0.9] text-ink" style={{ marginTop: u(4), fontSize: u(30) }}>
-              {club.name}
-            </span>
-            <span className="scrawl block leading-[1.1] text-ink" style={{ marginTop: u(4), fontSize: u(15) }}>
-              {club.tagline}
-            </span>
-
-            <span className="block border-t border-ink/15" style={{ marginTop: u(8), paddingTop: u(8) }}>
-              <span className="block font-mono uppercase tracking-[0.1em] text-ink-2" style={{ fontSize: u(9.5) }}>
-                {club.cadence}
-              </span>
-              <span className="block font-mono uppercase tracking-[0.1em] text-ink-3" style={{ marginTop: u(2), fontSize: u(9.5) }}>
-                {club.nextEvent ? `next · ${club.nextEvent.when}` : "no date pinned"}
-              </span>
-            </span>
-
-            <span className="flex items-center justify-between" style={{ marginTop: u(8), gap: u(8) }}>
-              <span className="font-mono uppercase tracking-[0.14em] text-ink-soft" style={{ fontSize: u(9) }}>
-                {club.status === "active" ? "running now" : "chartering"}
-              </span>
-              <span
-                className="font-mono uppercase tracking-[0.14em] text-ink-3 underline decoration-ink/25"
-                style={{ fontSize: u(9), textUnderlineOffset: u(3) }}
-              >
-                unpin →
-              </span>
+            <span className="block h-full w-full">
+              <ClubPoster club={club} index={index} sc={sc} compact={place.w < 26} />
             </span>
           </span>
         </button>
@@ -919,7 +995,8 @@ function CorridorBoard({
     <div
       className="h-full w-full"
       style={{
-        padding: u(26),
+        // a thin frame, so the cork — not the wood — is what fills the frame
+        padding: u(11),
         backgroundImage: "linear-gradient(160deg, #7a5836, #5c4026 58%, #6b4b2e)",
       }}
     >
@@ -935,27 +1012,45 @@ function CorridorBoard({
       >
         <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,rgba(255,246,224,0.24),transparent_62%)]" />
 
-        <div className="pointer-events-none absolute inset-x-0 top-[2.4%] flex items-start justify-between px-[3%]">
+        {/* struck kraft under everything, so the sheets sit on paper and not on
+            bare cork */}
+        <span
+          aria-hidden
+          className="tex-kraft pointer-events-none absolute left-[3%] top-[12%] h-[52%] w-[40%] rotate-[-1.6deg] opacity-60"
+          style={{ clipPath: "polygon(0% 3%, 26% 0%, 54% 2%, 80% 0%, 100% 3%, 99% 97%, 70% 100%, 44% 98%, 20% 100%, 1% 97%)" }}
+        />
+        <span
+          aria-hidden
+          className="tex-kraft pointer-events-none absolute right-[2%] top-[46%] h-[44%] w-[34%] rotate-[1.8deg] opacity-45"
+          style={{ clipPath: "polygon(1% 4%, 52% 0%, 100% 3%, 98% 96%, 49% 100%, 0% 97%)" }}
+        />
+
+        {/* labels, in the top seam rather than a tidy row of pills */}
+        <div className="pointer-events-none absolute inset-x-0 top-[1.4%] flex items-start justify-between px-[2.4%]">
           <span
-            className="bg-paper font-mono uppercase tracking-[0.16em] text-ink-2 shadow-[var(--shadow-scrap)]"
-            style={{ padding: `${u(4)} ${u(12)}`, fontSize: u(10) }}
+            className="rotate-[-1.2deg] bg-paper font-mono uppercase tracking-[0.16em] text-ink-2 shadow-[var(--shadow-scrap)]"
+            style={{ padding: `${u(3)} ${u(9)}`, fontSize: u(9) }}
           >
             founders, inc. · pier 2
           </span>
           <span
-            className="rotate-[-2deg] bg-paper/90 font-mono uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]"
-            style={{ padding: `${u(4)} ${u(10)}`, fontSize: u(10) }}
+            className="rotate-[1.8deg] bg-paper/90 font-mono uppercase tracking-[0.14em] text-ink-soft shadow-[var(--shadow-scrap)]"
+            style={{ padding: `${u(3)} ${u(8)}`, fontSize: u(9) }}
           >
             the four clubs
           </span>
         </div>
 
-        <div className="absolute inset-x-[3.4%] bottom-[4%] top-[12%] grid grid-cols-2 grid-rows-2 gap-x-[3.4%] gap-y-[4%]">
+        <div className="absolute inset-0">
+          {PROPS.map((piece) => (
+            <BoardPiece key={piece.src} piece={piece} />
+          ))}
           {clubs.map((club, index) => (
             <BoardFlyer
               key={club.slug}
               club={club}
               index={index}
+              place={SHEETS[index % SHEETS.length]}
               interactive={armed}
               unpinning={unpinning === index}
               onOpen={() => open(index)}
