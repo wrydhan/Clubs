@@ -19,9 +19,10 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Pin } from "@/components/collage/paper";
 import { BoardCollage } from "./board-collage";
+import { RoomDressing } from "./scene-dressing";
 import type { HallwayClub } from "./types";
 
 export type { HallwayClub };
@@ -451,8 +452,21 @@ export function Hallway({ clubs }: { clubs: HallwayClub[] }) {
       {view === "corridor" ? <Corridor clubs={clubs} onOpen={openFlyer} /> : view === "still" ? <HallwayStill clubs={clubs} /> : <StageShell />}
 
       {/* ------------------------------------------------ the board (server-rendered) */}
-      <section id="board" className="scroll-mt-20 bg-paper px-4 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-14">
-        <div className="mx-auto max-w-[1360px]">
+      {/* `content-visibility: auto` keeps the collage — forty-odd images and four
+          shadowed sheets — out of the paint and the compositor until the walk is
+          over and the section is near the viewport. It is the single cheapest win
+          on this page: the walk no longer shares the main thread with a board
+          nobody can see yet. The intrinsic size is the section's own height, so
+          nothing shifts when it wakes up. */}
+      <section
+        id="board"
+        className="relative scroll-mt-20 bg-paper px-4 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-14"
+        style={{ contentVisibility: "auto", containIntrinsicSize: "auto 1500px" } as CSSProperties}
+      >
+        {/* the room the board hangs in: dado, skirting, bunting, a clock, a coat
+            hook, a shelf and a few things on the floor, all inert */}
+        <RoomDressing />
+        <div className="relative z-10 mx-auto max-w-[1360px]">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p className="label">The board · Pier 2, Fort Mason</p>

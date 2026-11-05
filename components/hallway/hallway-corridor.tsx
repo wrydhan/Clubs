@@ -43,10 +43,61 @@
  * Only `transform` and `opacity` are written, once per animation frame.
  */
 
-import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { HallwayClub } from "./types";
+import { BoardDressing } from "./scene-dressing";
+
+/* ----------------------------------------------------------------- the budget
+ *
+ * This scene is DOM and CSS 3D, not WebGL, so the cost is not draw calls — it is
+ * composited layers, raster area and main-thread work. Everything below keeps
+ * that list short:
+ *
+ *  · ONE moving part. A frame writes the camera transform, two custom properties
+ *    and the flat board's whole-pixel offset. Nothing else is touched.
+ *  · NO LAYOUT IN THE FRAME. Stage size and `--fit` are measured on mount, in a
+ *    `ResizeObserver` and on resize — never inside the loop. Reading
+ *    `clientWidth` while also writing the stage's style forced a synchronous
+ *    layout on every frame of the walk, which is what made it stutter on
+ *    integrated graphics and older laptops.
+ *  · NO ALLOCATION IN THE FRAME. `cameraAtInto` fills one reusable pose object,
+ *    and a DOM write is skipped when the value has not moved by a hundredth of a
+ *    pixel or a thousandth of a degree.
+ *  · A DETAIL LEVEL, not one scene for every machine. Anything past the board sits
+ *    15–26 m off and is only ever seen in a glancing taper, so it is drawn as a
+ *    flat locker face instead of a four-plane box: a quarter of the layers, no
+ *    grain, no vents, no handle.
+ *  · LATE FAR END. The banks beyond the board mount on the first idle frame, so
+ *    the first paint only pays for the stretch the walk starts in.
+ *  · MEASURED DEGRADE. If the first seconds of walking cannot hold ~45 fps the
+ *    scene drops itself to detail 0 and switches `--hallway-grain` off: the
+ *    multiply-blend grains are the most expensive thing on this page. One way,
+ *    once — no flip-flopping.
+ *
+ * The extra props hang off the same budget. At detail 0 they are simply not
+ * rendered, so a slow machine gets the lean hall and a capable one the dressing.
+ */
+type Detail = 0 | 1 | 2; /* 0 flat faces · 1 boxes · 2 boxes + fittings */
+
+/** Cheap, non-authoritative machine hint — picks a starting detail. It never
+ *  hides anything from a machine that can draw it, and the frame-time watchdog
+ *  is what actually decides. */
+function deviceDetail(): Detail {
+  if (typeof navigator === "undefined") return 1;
+  const cores = navigator.hardwareConcurrency ?? 4;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+  if (cores <= 4 || memory <= 4) return 0;
+  return 2;
+}
+
+/** Near the board the hall is seen close up; past it, only in the taper. */
+const lodAt = (z: number): Detail => (z > -700 ? 2 : z > -2000 ? 1 : 0);
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+const round4 = (n: number) => Math.round(n * 10000) / 10000;
 
 /* ------------------------------------------------------------------ geometry */
 
@@ -152,33 +203,40 @@ type Eye = { x: number; y: number; z: number };
  * take at the end of the walk is built on.
  */
 function pose(eye: Eye, yawDeg: number, pitch = 0, roll = 0): Camera {
+  return poseInto({ x: 0, y: 0, z: 0, yaw: 0, pitch: 0, roll: 0 }, eye.x, eye.y, eye.z, yawDeg, pitch, roll);
+}
+
+/** The same maths into a caller-owned object — the frame loop's form. Filling a
+ *  pose it already owns is what keeps a sixty-hertz loop off the allocator. */
+function poseInto(out: Camera, eyeX: number, eyeY: number, eyeZ: number, yawDeg: number, pitch = 0, roll = 0): Camera {
   const r = (yawDeg * Math.PI) / 180;
   const cos = Math.cos(r);
   const sin = Math.sin(r);
-  return {
-    x: -(eye.x * cos + eye.z * sin),
-    y: -eye.y,
-    z: PERSPECTIVE + eye.x * sin - eye.z * cos,
-    yaw: yawDeg,
-    pitch,
-    roll,
-  };
+  out.x = -(eyeX * cos + eyeZ * sin);
+  out.y = -eyeY;
+  out.z = PERSPECTIVE + eyeX * sin - eyeZ * cos;
+  out.yaw = yawDeg;
+  out.pitch = pitch;
+  out.roll = roll;
+  return out;
 }
 
-/** Progress → eye position, head angle and roll. Pure, so it is testable. */
-export function cameraAt(p: number): Camera {
+/** Progress → eye position, head angle and roll, written into `out`.
+ *
+ *  Pure, and the frame loop's form: it fills a pose object it already owns rather
+ *  than returning a fresh one sixty times a second. */
+export function cameraAtInto(p: number, out: Camera): Camera {
   const t = clamp(p);
 
   if (t <= WALK_END) {
     const k = t / WALK_END;
     // A walking bob and a faint sway, both dying out as the walk ends, and the
     // first few degrees of the head turn over the last fifth — the double take.
-    return pose(
-      {
-        x: 0,
-        y: Math.sin(k * Math.PI * 8) * 6 * (1 - k * 0.55),
-        z: EYE_START_Z + (EYE_APPROACH_Z - EYE_START_Z) * k,
-      },
+    return poseInto(
+      out,
+      0,
+      Math.sin(k * Math.PI * 8) * 6 * (1 - k * 0.55),
+      EYE_START_Z + (EYE_APPROACH_Z - EYE_START_Z) * k,
       Math.sin(k * Math.PI * 4) * 0.9 * (1 - k * 0.4) + smooth((k - 0.8) / 0.2) * YAW_NOTICE,
       0,
       Math.sin(k * Math.PI * 2) * 0.35,
@@ -186,14 +244,18 @@ export function cameraAt(p: number): Camera {
   }
 
   const s = smooth((t - WALK_END) / (1 - WALK_END));
-  return pose(
-    {
-      x: EYE_TURN_X * s,
-      y: 0,
-      z: EYE_APPROACH_Z + (BOARD_Z - EYE_APPROACH_Z) * s,
-    },
+  return poseInto(
+    out,
+    EYE_TURN_X * s,
+    0,
+    EYE_APPROACH_Z + (BOARD_Z - EYE_APPROACH_Z) * s,
     YAW_NOTICE + (EYE_TURN_YAW - YAW_NOTICE) * s,
   );
+}
+
+/** Progress → a fresh camera. Kept for callers outside the frame loop. */
+export function cameraAt(p: number): Camera {
+  return cameraAtInto(p, { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, roll: 0 });
 }
 
 /** How much the whole projection has to shrink for the settled board to fit. */
@@ -244,7 +306,9 @@ function Grain({ src, size = 420, opacity = 0.3 }: { src: string; size?: number;
       style={{
         backgroundImage: `url(${src})`,
         backgroundSize: `${size}px`,
-        opacity,
+        // The multiply blend is the expensive part: `--hallway-grain` takes the
+        // whole layer out of the blend group when the watchdog trips.
+        opacity: `calc(var(--hallway-grain, 1) * ${opacity})`,
         mixBlendMode: "multiply",
       }}
     />
@@ -329,18 +393,22 @@ function Ceiling() {
   );
 }
 
-/** Recessed strip lights, in two planes each: a housing well and a lit lens. */
-function CeilingLights() {
+/** Recessed strip lights, in two planes each: a housing well and a lit lens.
+ *  The housing is a detail you only read from underneath, so a lean budget draws
+ *  the lens alone. */
+function CeilingLights({ detail = 2 }: { detail?: Detail }) {
   return (
     <>
       {run(60, -3300, 340).map((z) => (
         <div key={z}>
-          <Plane w={300} h={110} y={CEIL_Y + 2} z={z} rx={90}>
-            <span
-              className="absolute inset-0 rounded-[4px]"
-              style={{ background: "linear-gradient(#c8b99e, #dccfb6)", boxShadow: "inset 0 0 0 2px rgba(70,52,34,0.35)" }}
-            />
-          </Plane>
+          {detail > 0 && (
+            <Plane w={300} h={110} y={CEIL_Y + 2} z={z} rx={90}>
+              <span
+                className="absolute inset-0 rounded-[4px]"
+                style={{ background: "linear-gradient(#c8b99e, #dccfb6)", boxShadow: "inset 0 0 0 2px rgba(70,52,34,0.35)" }}
+              />
+            </Plane>
+          )}
           <Plane w={252} h={64} y={CEIL_Y + 5} z={z} rx={90}>
             <span
               className="absolute inset-0 rounded-[3px]"
@@ -456,19 +524,39 @@ const LOCKER_W = 110;
 const LOCKER_H = 420;
 const LOCKER_D = 72;
 
-function Locker({ z }: { z: number }) {
+function Locker({ z, detail = 2 }: { z: number; detail?: Detail }) {
   const frontX = HALL_HALF - LOCKER_D;
   const yc = FLOOR_Y - LOCKER_H / 2;
   const midX = frontX + LOCKER_D / 2;
+
+  /* Past the board a locker is an edge and a colour, not a box: at 20 m the top,
+     the side return and the shadow land inside a couple of pixels. One plane
+     instead of four is a quarter of the composited layers for that stretch. */
+  if (detail === 0) {
+    return (
+      <Plane w={LOCKER_W} h={LOCKER_H} x={frontX} y={yc} z={z} ry={-90} className="hallway-locker">
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(to right, #5d7267, #748a7e 40%, #5f7469)",
+            boxShadow: "inset 0 0 0 2px rgba(36,44,38,0.55), inset 0 -8px 16px rgba(20,28,24,0.4)",
+          }}
+        />
+      </Plane>
+    );
+  }
+
   return (
     <Fragment>
       {/* the shadow the box throws back onto the wall */}
-      <Plane w={LOCKER_W + 10} h={LOCKER_H + 8} x={HALL_HALF - 1} y={yc + 8} z={z} ry={-90}>
-        <span
-          className="absolute inset-0"
-          style={{ background: "radial-gradient(75% 62% at 50% 42%, rgba(28,22,14,0.5), rgba(28,22,14,0) 74%)" }}
-        />
-      </Plane>
+      {detail === 2 && (
+        <Plane w={LOCKER_W + 10} h={LOCKER_H + 8} x={HALL_HALF - 1} y={yc + 8} z={z} ry={-90}>
+          <span
+            className="absolute inset-0"
+            style={{ background: "radial-gradient(75% 62% at 50% 42%, rgba(28,22,14,0.5), rgba(28,22,14,0) 74%)" }}
+          />
+        </Plane>
+      )}
 
       {/* the top: you look down onto it as you pass */}
       <Plane w={LOCKER_D} h={LOCKER_W} x={midX} y={FLOOR_Y - LOCKER_H} z={z} rx={90}>
@@ -509,27 +597,116 @@ function Locker({ z }: { z: number }) {
                 "inset 0 3px 0 rgba(255,255,255,0.12), inset 0 -3px 8px rgba(20,28,24,0.5), 0 0 0 1px rgba(30,40,34,0.35)",
             }}
           >
-            {/* vents */}
-            <span
-              className="absolute inset-x-[20%] top-[6%] h-[9%]"
-              style={{ backgroundImage: "repeating-linear-gradient(to bottom, rgba(24,34,28,0.6) 0 2px, transparent 2px 6px)" }}
-            />
-            {/* number plate */}
-            <span
-              className="absolute left-1/2 top-[24%] h-[7%] w-[38%] -translate-x-1/2 rounded-[1px]"
-              style={{ background: "linear-gradient(#d9cdb2, #c2b394)", boxShadow: "inset 0 0 0 1px rgba(40,34,24,0.35)" }}
-            />
-            {/* handle and hasp */}
-            <span
-              className="absolute left-1/2 top-[44%] h-[14px] w-[16px] -translate-x-1/2 rounded-[2px]"
-              style={{ background: "#c9b489", boxShadow: "0 1px 2px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.35)" }}
-            />
+            {detail === 2 && (
+              <>
+                {/* vents */}
+                <span
+                  className="absolute inset-x-[20%] top-[6%] h-[9%]"
+                  style={{ backgroundImage: "repeating-linear-gradient(to bottom, rgba(24,34,28,0.6) 0 2px, transparent 2px 6px)" }}
+                />
+                {/* number plate */}
+                <span
+                  className="absolute left-1/2 top-[24%] h-[7%] w-[38%] -translate-x-1/2 rounded-[1px]"
+                  style={{ background: "linear-gradient(#d9cdb2, #c2b394)", boxShadow: "inset 0 0 0 1px rgba(40,34,24,0.35)" }}
+                />
+                {/* handle and hasp */}
+                <span
+                  className="absolute left-1/2 top-[44%] h-[14px] w-[16px] -translate-x-1/2 rounded-[2px]"
+                  style={{ background: "#c9b489", boxShadow: "0 1px 2px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.35)" }}
+                />
+              </>
+            )}
           </span>
           {/* plinth: the box stands on a dark kick, so it meets the floor */}
           <span className="absolute inset-x-0 bottom-0 h-[4.5%]" style={{ background: "rgba(20,16,11,0.4)" }} />
         </span>
       </Plane>
     </Fragment>
+  );
+}
+
+/* ------------------------------------------------------------------- dressing
+ *
+ * The things that make a corridor a corridor: a bin somebody never took back, two
+ * chairs stacked out of the way, an extinguisher on its bracket, a notice nobody
+ * reads, the tape line across the floor. One plane each, all of them static, and
+ * none of them in front of the walk — they sit against the walls and on the floor
+ * beside the eye line. A lean budget drops the whole set (see `the budget`).
+ */
+
+function HallDressing() {
+  const wall = HALL_HALF - 2;
+  return (
+    <>
+      {/* the stack of chairs nobody has put back */}
+      <Plane w={210} h={330} x={-wall} y={FLOOR_Y - 165} z={-380} ry={90}>
+        <span
+          className="absolute inset-x-0 bottom-0 h-[46%]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, #6c5540, #8b6f52 55%, #6a523d)",
+            boxShadow: "inset 0 0 0 2px rgba(38,28,18,0.5)",
+          }}
+        />
+        <span
+          className="absolute inset-x-[8%] top-[6%] h-[40%] rounded-t-[6px]"
+          style={{
+            backgroundImage: "linear-gradient(to right, #7d6349, #9a7d5d 52%, #755c43)",
+            boxShadow: "inset 0 0 0 2px rgba(38,28,18,0.45)",
+          }}
+        />
+        <span className="absolute inset-x-[14%] top-[46%] h-[3px] bg-[rgba(30,22,14,0.5)]" />
+      </Plane>
+
+      {/* a notice taped up and never taken down */}
+      <Plane w={190} h={140} x={-wall} y={FLOOR_Y - 300} z={-700} ry={90}>
+        <span className="absolute inset-0 bg-[#f2ecdc] shadow-[inset_0_0_0_2px_rgba(60,44,28,0.35)]" />
+        <span className="absolute inset-x-[10%] top-[12%] h-[7px] bg-[rgba(60,44,28,0.45)]" />
+        <span className="absolute inset-x-[10%] top-[30%] h-[3px] bg-[rgba(60,44,28,0.28)]" />
+        <span className="absolute inset-x-[10%] top-[42%] h-[3px] bg-[rgba(60,44,28,0.28)]" />
+        <span className="absolute inset-x-[10%] top-[54%] h-[3px] bg-[rgba(60,44,28,0.28)]" />
+        <span className="absolute inset-x-[10%] top-[66%] h-[3px] bg-[rgba(60,44,28,0.22)]" />
+        <span className="absolute -top-[6%] left-[18%] h-[12%] w-[24%] -rotate-[8deg] bg-[rgba(226,216,190,0.75)]" />
+      </Plane>
+
+      {/* the bin, stood out from the lockers */}
+      <Plane w={96} h={124} x={HALL_HALF - 108} y={FLOOR_Y - 62} z={-470}>
+        <span
+          className="absolute inset-x-[6%] bottom-0 h-[92%] rounded-b-[6px]"
+          style={{
+            backgroundImage: "linear-gradient(to right, #4d5f56, #66796e 52%, #47584f)",
+            boxShadow: "inset 0 0 0 2px rgba(26,34,29,0.55), 0 10px 18px -10px rgba(24,18,12,0.6)",
+          }}
+        />
+        <span className="absolute inset-x-0 top-0 h-[9%] rounded-[3px] bg-[#3c4b43]" />
+        <span className="absolute inset-x-[26%] top-[30%] h-[34%] bg-[rgba(214,206,186,0.14)]" />
+      </Plane>
+
+      {/* extinguisher on its bracket, on the wall beside the board */}
+      <Plane w={72} h={196} x={wall} y={FLOOR_Y - 250} z={-1330} ry={-90}>
+        <span
+          className="absolute inset-x-[30%] top-[14%] bottom-0 rounded-[10px]"
+          style={{
+            backgroundImage: "linear-gradient(to right, #7c3226, #9a4331 48%, #742e23)",
+            boxShadow: "inset 0 0 0 2px rgba(40,16,12,0.5)",
+          }}
+        />
+        <span className="absolute left-1/2 top-[4%] h-[12%] w-[16%] -translate-x-1/2 rounded-[2px] bg-[#2f2a24]" />
+        <span className="absolute inset-x-[24%] top-[30%] h-[26%] bg-[rgba(244,237,225,0.8)]" />
+      </Plane>
+
+      {/* the tape line across the floor, marking where the queue starts */}
+      <Plane w={HALL_W - 140} h={46} y={FLOOR_Y - 1} z={-840} rx={90}>
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(to right, rgba(214,198,158,0.85) 0 46px, transparent 46px 78px)",
+            opacity: 0.55,
+          }}
+        />
+      </Plane>
+    </>
   );
 }
 
@@ -540,7 +717,8 @@ function Locker({ z }: { z: number }) {
  * board is reachable — it is there so the corridor reads as a building rather than
  * a backdrop.
  */
-function LockerWall() {
+function LockerWall({ detail = 2, farMounted }: { detail?: Detail; farMounted: boolean }) {
+  const lod = (z: number): Detail => Math.min(detail, lodAt(z)) as Detail;
   return (
     <>
       <Plane w={HALL_LEN} h={HALL_H} x={HALL_HALF} y={(FLOOR_Y + CEIL_Y) / 2} z={MID_Z} ry={-90} style={{ overflow: "hidden" }}>
@@ -564,29 +742,31 @@ function LockerWall() {
       </Plane>
 
       {run(60, -560, 118).map((z) => (
-        <Locker key={`a${z}`} z={z} />
+        <Locker key={`a${z}`} z={z} detail={lod(z)} />
       ))}
 
-      {[-1420].map((z) => (
-        <Door key={z} z={z} />
-      ))}
-      {run(-1660, -1900, 118).map((z) => (
-        <Locker key={`b${z}`} z={z} />
-      ))}
+      {/* everything past the board — the doors and the three banks that run on to
+          the stairwell — waits for the first idle frame, so the first paint only
+          pays for the stretch the walk actually starts in. It is all 15–26 m off
+          and off the settle's sightline, so nothing pops into view. */}
+      {farMounted && (
+        <>
+          <Door z={-1420} />
+          {run(-1660, -1900, 118).map((z) => (
+            <Locker key={`b${z}`} z={z} detail={lod(z)} />
+          ))}
 
-      {[-2170].map((z) => (
-        <Door key={z} z={z} />
-      ))}
-      {run(-2360, -2620, 118).map((z) => (
-        <Locker key={`c${z}`} z={z} />
-      ))}
+          <Door z={-2170} />
+          {run(-2360, -2620, 118).map((z) => (
+            <Locker key={`c${z}`} z={z} detail={lod(z)} />
+          ))}
 
-      {[-2910].map((z) => (
-        <Door key={z} z={z} />
-      ))}
-      {run(-3080, -3220, 118).map((z) => (
-        <Locker key={`d${z}`} z={z} />
-      ))}
+          <Door z={-2910} />
+          {run(-3080, -3220, 118).map((z) => (
+            <Locker key={`d${z}`} z={z} detail={lod(z)} />
+          ))}
+        </>
+      )}
     </>
   );
 }
@@ -1057,6 +1237,11 @@ function CorridorBoard({
           style={{ clipPath: "polygon(1% 4%, 52% 0%, 100% 3%, 98% 96%, 49% 100%, 0% 97%)" }}
         />
 
+        {/* bunting, a grease-pencil ring, spare pins and a strip of tape — the
+            board dressing rides percentages of the cork, so it reads the same in
+            the walk plane and in the settled display layer */}
+        <BoardDressing />
+
         {/* labels, in the top seam rather than a tidy row of pills */}
         <div className="pointer-events-none absolute inset-x-0 top-[1.4%] flex items-start justify-between px-[2.4%]">
           <span
@@ -1096,12 +1281,17 @@ function CorridorBoard({
 
 /* --------------------------------------------------------------- component */
 
+/* The sheets breathe only once the board is settled on the hoisted layer. The
+   same animation running inside the projected plane is a permanent re-raster of a
+   3D-transformed layer for as long as the page is open — the single most
+   expensive thing on the page for no visible gain, because during the walk the
+   sheets are edge-on and moving. */
 const IDLE_CSS = `
 @keyframes hallway-sheet-idle {
   0%, 100% { transform: rotate(-0.35deg); }
   50% { transform: rotate(0.35deg); }
 }
-.hallway-sheet-idle { animation: hallway-sheet-idle 7.5s ease-in-out infinite; }
+.hallway-settled .hallway-sheet-idle { animation: hallway-sheet-idle 7.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .hallway-sheet-idle { animation: none; }
 }
@@ -1115,25 +1305,59 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
   // outside the walk loop as well as inside it.
   const headRef = useRef({ x: 0, y: 0, yaw: 0, pitch: 0 });
 
+  // The pose last written, in plain numbers: `repaint` writes only what has
+  // visibly moved, so a pointer wobble that ends where it started costs nothing.
+  const poseRef = useRef({ p: 0, head: { x: 0, y: 0, yaw: 0, pitch: 0 } });
+  // Stage size and `--fit`, measured outside the frame loop (see `the budget`).
+  const metricsRef = useRef({ w: 0, h: 0, fit: 1 });
+  const paintedRef = useRef({ x: NaN, y: NaN, z: NaN, yaw: NaN, pitch: NaN, roll: NaN, p: NaN, fx: NaN, fy: NaN });
+  const scratchRef = useRef<Camera>({ x: 0, y: 0, z: 0, yaw: 0, pitch: 0, roll: 0 });
+
   // Seeded from the media query at mount (this module is client-only, see
   // hallway.tsx) so a reduced-motion visitor starts already settled instead of
   // being settled from inside the effect, which React's compiler rules forbid.
   const prefersReduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const [armed, setArmed] = useState(prefersReduced);
   const [locked, setLocked] = useState(prefersReduced);
+  // How much of the hall to draw. Picked from a device hint, then lowered for
+  // good if the walk cannot hold its frame budget.
+  const [detail, setDetail] = useState<Detail>(deviceDetail);
+  // The banks and doors past the board, mounted on the first idle frame.
+  const [farMounted, setFarMounted] = useState(false);
 
-  const paint = useCallback((p: number, head: { x: number; y: number; yaw: number; pitch: number }) => {
+  /* Paint the current pose. Reads refs only — never the DOM — so it is safe to
+     call from a frame, from a resize, or from a lock transition, and it can never
+     force a synchronous layout. */
+  const repaint = useCallback(() => {
     const stage = stageRef.current;
     const camera = cameraRef.current;
     if (!stage || !camera) return;
-    const c = cameraAt(p);
-    camera.style.transform = `translate3d(${(c.x + head.x).toFixed(2)}px, ${(c.y + head.y).toFixed(2)}px, ${c.z.toFixed(2)}px) rotateY(${(c.yaw + head.yaw).toFixed(3)}deg) rotateX(${(c.pitch + head.pitch).toFixed(3)}deg) rotateZ(${c.roll.toFixed(3)}deg)`;
-    stage.style.setProperty("--p", p.toFixed(4));
-    // The board is a fixed piece of the wall now, so the only per-viewport
-    // correction is a single 2D scale on the projection: narrow screens shrink the
-    // settled view instead of cropping the flyers off the edge of the board.
-    const fit = fitScale(stage.clientWidth, stage.clientHeight);
-    stage.style.setProperty("--fit", fit.toFixed(4));
+
+    const { p, head } = poseRef.current;
+    const c = cameraAtInto(p, scratchRef.current);
+    const x = round2(c.x + head.x);
+    const y = round2(c.y + head.y);
+    const z = round2(c.z);
+    const yaw = round3(c.yaw + head.yaw);
+    const pitch = round3(c.pitch + head.pitch);
+    const roll = round3(c.roll);
+
+    const was = paintedRef.current;
+    if (x !== was.x || y !== was.y || z !== was.z || yaw !== was.yaw || pitch !== was.pitch || roll !== was.roll) {
+      camera.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${yaw}deg) rotateX(${pitch}deg) rotateZ(${roll}deg)`;
+      was.x = x;
+      was.y = y;
+      was.z = z;
+      was.yaw = yaw;
+      was.pitch = pitch;
+      was.roll = roll;
+    }
+
+    const pr = round4(p);
+    if (pr !== was.p) {
+      stage.style.setProperty("--p", String(pr));
+      was.p = pr;
+    }
 
     /* The hoisted board gets the same head motion the camera gets, as a small 2D
        translate — it is the one plane that no longer goes through the projection.
@@ -1142,20 +1366,72 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
        to it (`SETTLE_Z`) × sin θ, then magnified. Whole pixels, so the type is not
        resampled frame to frame. */
     const flat = flatRef.current;
-    if (flat) {
-      const yaw = (head.yaw * Math.PI) / 180;
-      const pitch = (head.pitch * Math.PI) / 180;
-      const dx = Math.round((head.x + SETTLE_Z * Math.sin(yaw)) * SETTLE_MAG * fit);
-      const dy = Math.round((head.y - SETTLE_Z * Math.sin(pitch)) * SETTLE_MAG * fit);
+    if (!flat) return;
+    const fit = metricsRef.current.fit;
+    const yawR = (head.yaw * Math.PI) / 180;
+    const pitchR = (head.pitch * Math.PI) / 180;
+    const dx = Math.round((head.x + SETTLE_Z * Math.sin(yawR)) * SETTLE_MAG * fit);
+    const dy = Math.round((head.y - SETTLE_Z * Math.sin(pitchR)) * SETTLE_MAG * fit);
+    if (dx !== was.fx || dy !== was.fy) {
       flat.style.transform = `translate(${dx}px, ${dy}px)`;
+      was.fx = dx;
+      was.fy = dy;
     }
   }, []);
+
+  /* Measure the stage here, not in the frame: `--fit` is the single 2D scale on
+     the projection (narrow screens shrink the settled view instead of cropping
+     the flyers off the board), and it only changes when the window does. */
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const measure = () => {
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      if (w === metricsRef.current.w && h === metricsRef.current.h) return;
+      const fit = fitScale(w, h);
+      metricsRef.current = { w, h, fit };
+      stage.style.setProperty("--fit", fit.toFixed(4));
+      repaint();
+    };
+    measure();
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    ro?.observe(stage);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [repaint]);
 
   /* The hoisted board mounts when the walk locks; paint it once from here so it
      takes the pointer's parallax at that instant instead of snapping in centred. */
   useEffect(() => {
-    if (locked) paint(1, headRef.current);
-  }, [locked, paint]);
+    if (locked) repaint();
+  }, [locked, repaint]);
+
+  /* The far end of the hall is 15–26 m off and off the settle's sightline. Mount
+     it on the first idle frame (or just after the module lands) so the first
+     paint only pays for the stretch the walk starts in — and so nothing can pop
+     into view, because the walk is nowhere near it by then. */
+  useEffect(() => {
+    let cancelled = false;
+    const arm = () => {
+      if (!cancelled) setFarMounted(true);
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(arm, { timeout: 900 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback?.(id);
+      };
+    }
+    const id = window.setTimeout(arm, 300);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(id);
+    };
+  }, []);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -1180,7 +1456,26 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
     head.pitch = 0;
     const headTarget = { x: 0, y: 0, yaw: 0, pitch: 0 };
 
-    paint(current, head);
+    /* The loop's only output. `repaint` writes the camera, `--p` and the flat
+       board's offset — and nothing at all if none of them moved. */
+    const writePose = () => {
+      const pose = poseRef.current;
+      pose.p = current;
+      pose.head.x = head.x;
+      pose.head.y = head.y;
+      pose.head.yaw = head.yaw;
+      pose.head.pitch = head.pitch;
+      repaint();
+    };
+
+    writePose();
+
+    /* Frame-time watchdog. The walk is the only thing on screen when it runs, so
+       a sustained ~45 fps or worse is this scene's fault, not the page's: drop to
+       the flat-face hall and take the blend grains out. One way, once — a machine
+       that recovers does not get its layers back mid-walk. */
+    let slowFrames = 0;
+    let degraded = false;
 
     const wake = () => {
       if (raf) return;
@@ -1191,6 +1486,15 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
     const tick = (now: number) => {
       const dt = last ? Math.min(64, now - last) : 16;
       last = now;
+
+      if (!degraded) {
+        slowFrames = dt > 26 ? slowFrames + 1 : Math.max(0, slowFrames - 2);
+        if (slowFrames > 30) {
+          degraded = true;
+          stage.style.setProperty("--hallway-grain", "0");
+          setDetail(0);
+        }
+      }
 
       // exponential damp — frame-rate independent, no overshoot, no steps
       const follow = 1 - Math.exp(-dt / 90);
@@ -1203,7 +1507,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
       head.yaw += (headTarget.yaw - head.yaw) * hFollow;
       head.pitch += (headTarget.pitch - head.pitch) * hFollow;
 
-      paint(current, head);
+      writePose();
 
       if (!isArmed && current > 0.88) {
         isArmed = true;
@@ -1216,7 +1520,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
         isLocked = true;
         target = 1;
         current = 1;
-        paint(current, head);
+        writePose();
         setLocked(true);
       }
 
@@ -1296,7 +1600,9 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
       wake();
     };
 
-    const onResize = () => paint(current, head);
+    // A resize re-measures in its own effect and calls `repaint`; this only has
+    // to make sure the pose we hold is the pose on screen.
+    const onResize = () => writePose();
     const onReduceChange = () => {
       if (isReduced()) {
         target = 1;
@@ -1305,7 +1611,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
         isArmed = true;
         setArmed(true);
         setLocked(true);
-        paint(current, head);
+        writePose();
       }
     };
 
@@ -1338,7 +1644,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
       io.disconnect();
       if (raf) window.cancelAnimationFrame(raf);
     };
-  }, [paint]);
+  }, [repaint]);
 
   return (
     <div
@@ -1351,7 +1657,17 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
         id="hallway-stage"
         ref={stageRef}
         className="absolute inset-0 overflow-hidden bg-[#e6dbc9]"
-        style={{ "--p": 0, touchAction: "pan-x" } as CSSProperties}
+        style={
+          {
+            "--p": 0,
+            // `--hallway-grain` is the render budget's switch for the multiply
+            // blend layers; the watchdog turns it off rather than re-rendering.
+            "--hallway-grain": 1,
+            touchAction: "pan-x",
+            // the stage paints its own box and lays nothing out against the page
+            contain: "layout paint style",
+          } as CSSProperties
+        }
       >
         <p className="sr-only">
           A first-person walk down the Pier 2 hallway to the club pinboard. Scroll to walk, or use
@@ -1378,10 +1694,14 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
           >
             <Floor />
             <Ceiling />
-            <CeilingLights />
+            <CeilingLights detail={detail} />
             <WindowWall />
-            <LockerWall />
+            <LockerWall detail={detail} farMounted={farMounted} />
             <Stairwell />
+            {/* objects on the floor and walls of the stretch you actually walk:
+                a bin, an extinguisher, stacked chairs, taped notices. Detail work
+                only — a lean budget leaves them out entirely. */}
+            {detail > 0 && <HallDressing />}
 
             {/* --------- the pinboard, on the right-hand wall --------- */}
             <Plane
@@ -1431,6 +1751,7 @@ export default function HallwayCorridor({ clubs, onOpen }: { clubs: HallwayClub[
         {locked && (
           <div
             ref={flatRef}
+            className="hallway-settled"
             style={{
               position: "absolute",
               left: `calc(50% - ${(FLAT_W / 2).toFixed(2)}px * var(--fit, 1))`,
