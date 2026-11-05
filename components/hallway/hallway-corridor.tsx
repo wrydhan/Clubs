@@ -46,7 +46,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ClubPoster } from "@/components/collage/club-poster";
 import type { HallwayClub } from "./types";
 
 /* ------------------------------------------------------------------ geometry */
@@ -907,7 +906,7 @@ function BoardFlyer({
             <span aria-hidden className="pin absolute" style={{ width: pu(12), height: pu(12) }} />
           </span>
           <span
-            className={`torn-soft block h-full w-full overflow-hidden bg-paper shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
+            className={`torn-soft flex h-full w-full flex-col justify-between bg-paper px-[6.5%] py-[5.5%] shadow-[var(--shadow-lift)] transition-[transform,opacity] duration-300 ease-[var(--ease-paper)] ${
               interactive ? "group-hover:-translate-y-2 group-hover:scale-[1.015] group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-offset-4 group-focus-visible:outline-ink" : ""
             } motion-reduce:transition-none`}
             style={
@@ -916,8 +915,41 @@ function BoardFlyer({
                 : undefined
             }
           >
-            <span className="block h-full w-full">
-              <ClubPoster club={club} index={index} sc={sc} compact={place.w < 26} />
+            <span className="flex items-start justify-between" style={{ gap: sc(12) }}>
+              <span className="font-mono uppercase tracking-[0.16em] text-ink-soft" style={{ fontSize: sc(9.5) }}>
+                {club.tag}
+              </span>
+              <span className="tnum font-mono uppercase tracking-[0.16em] text-ink-3" style={{ fontSize: sc(9.5) }}>
+                {String(index + 1).padStart(2, "0")} / 04
+              </span>
+            </span>
+
+            <span className="block font-serif leading-[0.9] text-ink" style={{ marginTop: sc(4), fontSize: sc(29) }}>
+              {club.name}
+            </span>
+            <span className="scrawl block leading-[1.1] text-ink" style={{ marginTop: sc(3), fontSize: sc(14.5) }}>
+              {club.tagline}
+            </span>
+
+            <span className="block border-t border-ink/15" style={{ marginTop: sc(7), paddingTop: sc(7) }}>
+              <span className="block font-mono uppercase tracking-[0.1em] text-ink-2" style={{ fontSize: sc(9) }}>
+                {club.cadence}
+              </span>
+              <span className="block font-mono uppercase tracking-[0.1em] text-ink-3" style={{ marginTop: sc(2), fontSize: sc(9) }}>
+                {club.nextEvent ? `next · ${club.nextEvent.when}` : "no date pinned"}
+              </span>
+            </span>
+
+            <span className="flex items-center justify-between" style={{ marginTop: sc(7), gap: sc(8) }}>
+              <span className="font-mono uppercase tracking-[0.14em] text-ink-soft" style={{ fontSize: sc(8.5) }}>
+                {club.status === "active" ? "running now" : "chartering"}
+              </span>
+              <span
+                className="font-mono uppercase tracking-[0.14em] text-ink-3 underline decoration-ink/25"
+                style={{ fontSize: sc(8.5), textUnderlineOffset: sc(3) }}
+              >
+                unpin →
+              </span>
             </span>
           </span>
         </button>
