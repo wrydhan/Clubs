@@ -6,7 +6,7 @@ import { formatMonthDay, formatTime, formatWeekday } from "@/lib/format";
 export const metadata: Metadata = {
   title: "The hallway — Founders, Inc. Clubs",
   description:
-    "Walk the Pier 2 hallway to the club pinboard. Four flyers, one per club — unpin one, read it up close, then go through to the club page.",
+    "Walk the Pier 2 hallway to the club pinboard. A flyer per club — unpin one, read it up close, then go through to the club page.",
   alternates: { canonical: "/clubs" },
   openGraph: {
     title: "The hallway — Founders, Inc. Clubs",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 /** The Clubs entrance: the scroll is the walk down the hallway, the pinboard is
-    where it lands, and the same four flyers are the interactive board after it. */
+    where it lands, and the same flyers are the interactive board after it. */
 export default function ClubsPage() {
   const now = new Date();
   const clubs: HallwayClub[] = getClubs().map((club) => {

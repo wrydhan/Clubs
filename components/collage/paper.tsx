@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 
-/** A scrap of paper on the board. Rotation is deliberate: nothing sits square. */
+/** A sheet of printer paper on the board, cut from the f.inc tokens. */
 export function Scrap({
   children,
   className = "",
@@ -23,7 +23,7 @@ export function Scrap({
   id?: string;
   as?: "div" | "aside";
 }) {
-  const texture = tone === "kraft" ? "tex-kraft" : tone === "news" ? "tex-news" : "bg-paper";
+  const texture = tone === "kraft" ? "bg-surface" : tone === "news" ? "bg-white" : "bg-paper";
   return (
     <Tag
       id={id}
