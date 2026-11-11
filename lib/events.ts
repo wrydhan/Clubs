@@ -1,13 +1,13 @@
 import { pacificToUtc } from "@/lib/dates";
 
 /**
- * One general Founders, Inc. club with a rotating calendar of events.
+ * Founders, Inc. club events.
  *
  * Events are defined inline here — the fastest path to a live page, and the
  * single source the calendar reads. To add an event, add an object to
  * `eventSeeds`. Dates are Pacific wall-clock; the calendar converts them.
  *
- * No per-club split, no filter chips: every event belongs to the one club.
+ * No per-club split, no filter chips: every event belongs to the club.
  */
 
 export type EventSeed = {
@@ -56,12 +56,13 @@ export const eventSeeds: EventSeed[] = [
     title: "3v3 Basketball Tournament",
     kind: "Tournament",
     location: "Moscone Rec Center · 1800 Chestnut St, San Francisco",
+    rsvpUrl: "https://luma.com/finc-basketball",
     description:
-      "Founders, Inc. Hoops Club takes over Moscone Rec Center for a single-elimination 3v3 tournament. Twenty teams of three, sixty players, one $10,000 prize on the line. Games run 6:00–10:00 PM. Bring a squad or come watch — courtside is open to the campus.",
+      "Founders, Inc. Hoops Club takes over Moscone Rec Center for a single-elimination 3v3 tournament. Twenty teams of three, sixty players, a mystery grand prize on the line. Games run 6:00–10:00 PM. Bring a squad or come watch — courtside is open to the campus.",
     facts: [
       { label: "Format", value: "3v3 · 20 teams" },
       { label: "Players", value: "60" },
-      { label: "Prize", value: "$10,000" },
+      { label: "Prize", value: "Mystery grand prize" },
       { label: "Doors", value: "6:00–10:00 PM" },
     ],
     date: { year: 2026, month: 12, day: 14, hour: 18, minute: 0 },

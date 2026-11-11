@@ -6,12 +6,12 @@ import { getEvents } from "@/lib/events";
 export const metadata: Metadata = {
   title: "Founders, Inc. Clubs — Calendar",
   description:
-    "One Founders, Inc. club with a rotating calendar of events in San Francisco — tournaments, track days, workshops and field days. Fort Mason, Pier 2.",
+    "What's coming up at Founders, Inc. — tournaments, track days, workshops and field days in San Francisco.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Founders, Inc. Clubs — Calendar",
     description:
-      "One club, a rotating calendar. Tournaments, track days, workshops and field days at Fort Mason, San Francisco.",
+      "Tournaments, track days, workshops and field days at Founders, Inc. in San Francisco.",
     url: "/",
   },
 };
@@ -32,10 +32,6 @@ export default function Home() {
               What&apos;s coming up.
             </h2>
           </div>
-          <p className="max-w-[40ch] text-sm leading-relaxed text-ink-2">
-            One club, a rotating roster of nights. Everything on the schedule lands here — dates,
-            formats, and how to get in.
-          </p>
         </div>
 
         <div className="mt-12">

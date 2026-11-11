@@ -3,15 +3,12 @@
 import { useMemo, useState } from "react";
 import {
   addCalendarDays,
-  compareYmd,
   laParts,
   pacificToUtc,
   sameYmd,
-  startOfWeekMonday,
-  ymdKey,
   type YMD,
 } from "@/lib/dates";
-import { formatMonth, formatMonthDay, formatTime, formatWeekday, formatYmd, laYmdFromIso } from "@/lib/format";
+import { formatMonth, formatTime, laYmdFromIso } from "@/lib/format";
 import { subscribeUrl } from "@/lib/site";
 import type { SiteEvent } from "@/lib/events";
 
@@ -21,13 +18,8 @@ const MONDAY_INDEX: Record<string, number> = {
   Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6,
 };
 
-function weekLabel(start: YMD, today: YMD): string {
-  const thisWeek = startOfWeekMonday(pacificToUtc(today.year, today.month, today.day, 12, 0));
-  const nextWeek = addCalendarDays(thisWeek.year, thisWeek.month, thisWeek.day, 7);
-  if (sameYmd(start, thisWeek)) return "This week";
-  if (sameYmd(start, nextWeek)) return "Next week";
-  const end = addCalendarDays(start.year, start.month, start.day, 6);
-  return `${formatYmd(start)} – ${formatYmd(end)}`;
+function ymdKey(ymd: YMD): string {
+  return `${ymd.year}-${ymd.month}-${ymd.day}`;
 }
 
 function monthCells(year: number, month: number): { ymd: YMD; inMonth: boolean }[] {
@@ -53,30 +45,20 @@ export function ClubCalendar({
 }) {
   const today = laYmdFromIso(todayIso);
   const [cursor, setCursor] = useState({ year: today.year, month: today.month });
+  const featured = events[0];
 
-  const weeks = useMemo(() => {
-    if (events.length === 0) return [];
-    const thisWeek = startOfWeekMonday(pacificToUtc(today.year, today.month, today.day, 12, 0));
-    const last = laYmdFromIso(events[events.length - 1].datetime);
-    const lastWeek = startOfWeekMonday(pacificToUtc(last.year, last.month, last.day, 12, 0));
-    const buckets: { start: YMD; events: SiteEvent[] }[] = [];
-    let cursorWeek = thisWeek;
-    let guard = 0;
-    while (compareYmd(cursorWeek, lastWeek) <= 0 && guard < 520) {
-      const key = ymdKey(cursorWeek);
-      const inWeek = events.filter((event) => ymdKey(startOfWeekMonday(new Date(event.datetime))) === key);
-      if (inWeek.length > 0) buckets.push({ start: cursorWeek, events: inWeek });
-      cursorWeek = addCalendarDays(cursorWeek.year, cursorWeek.month, cursorWeek.day, 7);
-      guard += 1;
+  const byDay = useMemo(() => {
+    const map = new Map<string, SiteEvent[]>();
+    for (const event of events) {
+      const key = ymdKey(laYmdFromIso(event.datetime));
+      const list = map.get(key) ?? [];
+      list.push(event);
+      map.set(key, list);
     }
-    return buckets;
-  }, [events, today]);
+    return map;
+  }, [events]);
 
   const cells = monthCells(cursor.year, cursor.month);
-  const monthEvents = events.filter((event) => {
-    const ymd = laYmdFromIso(event.datetime);
-    return ymd.year === cursor.year && ymd.month === cursor.month;
-  });
 
   function shiftMonth(delta: number) {
     const next = addCalendarDays(cursor.year, cursor.month, 1, delta > 0 ? 32 : -2);
@@ -84,150 +66,179 @@ export function ClubCalendar({
   }
 
   return (
-    <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14">
-      {/* Agenda */}
-      <div>
-        {events.length === 0 ? (
-          <div className="border-t border-ink/15 py-12">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3">Schedule</p>
-            <p className="mt-3 font-serif text-3xl text-ink sm:text-4xl">No events on the books yet.</p>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-2">
-              The next session is being confirmed. Subscribe and the dates land in your calendar the
-              moment they are set.
-            </p>
-            <a href={subscribeUrl} className="pill-btn mt-6 inline-flex text-xs">
-              Subscribe to the calendar
-            </a>
+    <div className="flex flex-col gap-10 sm:gap-12">
+      {/* Big month calendar */}
+      <div className="border border-ink/15 bg-paper p-4 sm:p-7">
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="font-serif text-2xl text-ink sm:text-[2.2rem]">
+            {formatMonth(cursor.year, cursor.month)}
+          </h3>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => shiftMonth(-1)}
+              aria-label="Previous month"
+              className="flex h-10 w-10 items-center justify-center border border-ink/15 font-mono text-sm text-ink-2 transition-colors hover:bg-ink hover:text-paper"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => shiftMonth(1)}
+              aria-label="Next month"
+              className="flex h-10 w-10 items-center justify-center border border-ink/15 font-mono text-sm text-ink-2 transition-colors hover:bg-ink hover:text-paper"
+            >
+              →
+            </button>
           </div>
-        ) : (
-          <div className="flex flex-col gap-12">
-            {weeks.map((week) => (
-              <section key={ymdKey(week.start)} aria-labelledby={`week-${ymdKey(week.start)}`}>
-                <div className="flex items-center gap-3 border-b border-ink/15 pb-3">
-                  <span className="h-1.5 w-1.5 rounded-full bg-ink/50" />
-                  <h3 id={`week-${ymdKey(week.start)}`} className="font-serif text-2xl text-ink sm:text-[1.9rem]">
-                    {weekLabel(week.start, today)}
-                  </h3>
-                </div>
-                <ul className="mt-5 flex flex-col gap-4">
-                  {week.events.map((event) => (
-                    <li key={event.id} id={event.id} className="scroll-mt-24">
-                      <EventRow event={event} />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
 
-      {/* Month grid */}
-      <div className="order-first lg:order-none lg:sticky lg:top-24">
-        <div className="border border-ink/15 bg-paper p-5 sm:p-6">
-          <div className="flex items-center justify-between">
-            <h3 className="font-serif text-xl text-ink">{formatMonth(cursor.year, cursor.month)}</h3>
-            <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={() => shiftMonth(-1)}
-                aria-label="Previous month"
-                className="flex h-8 w-8 items-center justify-center border border-ink/15 text-ink-2 transition-colors hover:bg-ink hover:text-paper"
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                onClick={() => shiftMonth(1)}
-                aria-label="Next month"
-                className="flex h-8 w-8 items-center justify-center border border-ink/15 text-ink-2 transition-colors hover:bg-ink hover:text-paper"
-              >
-                →
-              </button>
+        <div
+          className="mt-5 grid grid-cols-7 gap-px border border-ink/10 bg-ink/10"
+          role="grid"
+          aria-label={formatMonth(cursor.year, cursor.month)}
+        >
+          {WEEKDAYS.map((day) => (
+            <div
+              key={day}
+              className="bg-paper py-2.5 text-center font-mono text-[9px] uppercase tracking-[0.12em] text-ink-3 sm:text-[10px]"
+            >
+              {day}
             </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-7 gap-1 text-center" role="grid" aria-label={formatMonth(cursor.year, cursor.month)}>
-            {WEEKDAYS.map((day) => (
-              <div key={day} className="py-1 font-mono text-[9px] uppercase tracking-wide text-ink-3">
-                {day}
+          ))}
+          {cells.map((cell) => {
+            const isToday = sameYmd(cell.ymd, today);
+            const dayEvents = byDay.get(ymdKey(cell.ymd)) ?? [];
+            const hasEvent = dayEvents.length > 0;
+            return (
+              <div
+                key={ymdKey(cell.ymd)}
+                className={`flex min-h-[3.6rem] flex-col gap-1 bg-paper p-1.5 sm:min-h-[6.5rem] sm:p-2.5 ${
+                  cell.inMonth ? "" : "bg-paperdeep/40"
+                }`}
+              >
+                <span
+                  className={`flex h-6 w-6 items-center justify-center font-mono text-[11px] tnum sm:h-7 sm:w-7 sm:text-[13px] ${
+                    isToday
+                      ? "bg-ink text-paper"
+                      : cell.inMonth
+                        ? "text-ink"
+                        : "text-ink-3/50"
+                  }`}
+                >
+                  {cell.ymd.day}
+                </span>
+                {hasEvent ? (
+                  <div className="flex flex-col gap-1">
+                    {dayEvents.map((event) => (
+                      <a
+                        key={event.id}
+                        href={`#${event.id}`}
+                        className="block border-l-2 border-ink bg-ink/5 px-1.5 py-1 font-mono text-[9px] leading-tight text-ink transition-colors hover:bg-ink hover:text-paper sm:text-[10px]"
+                      >
+                        <span className="hidden sm:block">{formatTime(event.datetime)}</span>
+                        <span className="block truncate">{event.title}</span>
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-            ))}
-            {cells.map((cell) => {
-              const isToday = sameYmd(cell.ymd, today);
-              const dayEvents = monthEvents.filter((ev) => sameYmd(laYmdFromIso(ev.datetime), cell.ymd));
-              const hasEvent = dayEvents.length > 0;
-              return (
-                <div
-                  key={ymdKey(cell.ymd)}
-                  className={`flex h-9 flex-col items-center justify-center font-mono text-[11px] tnum ${
-                    cell.inMonth ? "text-ink" : "text-ink-3/50"
-                  } ${isToday ? "bg-ink text-paper" : hasEvent ? "bg-ink/10 font-semibold" : ""}`}
-                >
-                  <span>{cell.ymd.day}</span>
-                  {hasEvent && !isToday ? <span className="mt-0.5 block h-1 w-1 rounded-full bg-ink" /> : null}
-                </div>
-              );
-            })}
-          </div>
+            );
+          })}
+        </div>
 
-          {monthEvents.length > 0 ? (
-            <div className="mt-4 space-y-1.5 border-t border-ink/15 pt-4">
-              {monthEvents.map((event) => (
-                <a
-                  key={event.id}
-                  href={`#${event.id}`}
-                  className="block font-mono text-[11px] text-ink-2 transition-colors hover:text-ink"
-                >
-                  {formatMonthDay(event.datetime)} · {event.title}
-                </a>
-              ))}
-            </div>
-          ) : null}
-
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-ink/15 pt-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+            {events.length === 0 ? "No events scheduled" : `${events.length} upcoming`}
+          </p>
           <a
             href={subscribeUrl}
-            className="mt-5 flex w-full items-center justify-center border border-ink/20 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2 transition-colors hover:bg-ink hover:text-paper"
+            className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2 underline underline-offset-4 transition-colors hover:text-ink"
           >
             Sync calendar (.ics)
           </a>
         </div>
       </div>
+
+      {/* Big event card */}
+      {featured ? (
+        <FeaturedEvent event={featured} />
+      ) : (
+        <div className="border border-ink/15 bg-paper px-6 py-12 text-center">
+          <p className="font-serif text-3xl text-ink sm:text-4xl">No events on the books yet.</p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-2">
+            The next session is being confirmed. Subscribe and the dates land in your calendar the
+            moment they are set.
+          </p>
+          <a href={subscribeUrl} className="pill-btn mt-6 inline-flex text-xs">
+            Subscribe to the calendar
+          </a>
+        </div>
+      )}
     </div>
   );
 }
 
-function EventRow({ event }: { event: SiteEvent }) {
+function FeaturedEvent({ event }: { event: SiteEvent }) {
+  const day = new Date(event.datetime).toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    day: "numeric",
+  });
+  const weekday = new Date(event.datetime).toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    weekday: "long",
+  });
+  const month = new Date(event.datetime).toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    month: "long",
+  });
+
   return (
-    <article className="group relative border border-ink/15 bg-paper px-5 py-6 transition-colors hover:border-ink/30 sm:px-7 sm:py-7">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-7">
-        <div className="shrink-0 sm:w-24">
-          <span className="block font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">
-            {formatWeekday(event.datetime)}
+    <article
+      id={event.id}
+      className="scroll-mt-24 border border-ink/20 bg-paper px-5 py-8 sm:px-10 sm:py-12"
+    >
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-14">
+        {/* Date block */}
+        <div className="flex shrink-0 items-start gap-4 border-ink/15 lg:w-56 lg:flex-col lg:gap-1 lg:border-r lg:pr-14">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">
+            {weekday}
           </span>
-          <span className="my-1 block font-serif text-[2.4rem] leading-none text-ink">
-            {new Date(event.datetime).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", day: "numeric" })}
+          <span className="font-serif text-[3.4rem] leading-[0.85] text-ink sm:text-[4.4rem]">
+            {day}
           </span>
-          <span className="block font-mono text-[11px] tnum text-ink-2">
-            {formatTime(event.datetime)}
-            {event.endDatetime ? `–${formatTime(event.endDatetime)}` : ""}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-2">
+              {month}
+            </span>
+            <span className="font-mono text-[11px] tnum text-ink-2">
+              {formatTime(event.datetime)}
+              {event.endDatetime ? `–${formatTime(event.endDatetime)}` : ""}
+            </span>
+          </div>
         </div>
 
+        {/* Details */}
         <div className="min-w-0 flex-1">
-          <span className="inline-flex items-center border border-ink/25 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-2">
+          <span className="inline-flex items-center border border-ink/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-ink-2">
             {event.kind}
           </span>
-          <h4 className="mt-3 font-serif text-2xl leading-tight text-ink sm:text-[1.9rem]">{event.title}</h4>
-          <p className="mt-1 font-mono text-[11px] text-ink-3">{event.location}</p>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-2">{event.description}</p>
+          <h3 className="mt-4 font-serif text-[2.1rem] leading-[0.95] text-ink sm:text-[3.2rem]">
+            {event.title}
+          </h3>
+          <p className="mt-2 font-mono text-[11px] text-ink-3">{event.location}</p>
+          <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-2">
+            {event.description}
+          </p>
 
           {event.facts.length > 0 ? (
-            <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
+            <dl className="mt-7 grid grid-cols-2 gap-x-8 gap-y-4 border-t border-ink/15 pt-6 sm:grid-cols-4">
               {event.facts.map((fact) => (
                 <div key={fact.label}>
-                  <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-3">{fact.label}</dt>
-                  <dd className="mt-0.5 font-serif text-base text-ink">{fact.value}</dd>
+                  <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-3">
+                    {fact.label}
+                  </dt>
+                  <dd className="mt-1 font-serif text-lg leading-tight text-ink">{fact.value}</dd>
                 </div>
               ))}
             </dl>
@@ -238,12 +249,12 @@ function EventRow({ event }: { event: SiteEvent }) {
               href={event.rsvpUrl}
               target="_blank"
               rel="noreferrer"
-              className="pill-btn mt-6 inline-flex text-xs"
+              className="pill-btn mt-8 inline-flex text-sm"
             >
-              RSVP →
+              Register your team →
             </a>
           ) : (
-            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+            <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
               Registration opens soon
             </p>
           )}

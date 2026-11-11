@@ -111,10 +111,6 @@ export function AsciiHero() {
 
   return (
     <section className="relative flex min-h-[88svh] flex-col items-center justify-center px-4 pb-12 pt-20 sm:px-8">
-      <p className="mb-9 font-mono text-[10px] uppercase tracking-[0.38em] text-ink-3">
-        One club · a rotating calendar
-      </p>
-
       <h1 className="sr-only">Founders, Inc. Clubs — events calendar</h1>
 
       <div ref={wrapRef} className="w-full max-w-[1560px] text-center">
@@ -136,15 +132,6 @@ export function AsciiHero() {
         <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-ink-2">
           Clubs · Fort Mason, San Francisco
         </p>
-        <a
-          href="#calendar"
-          className="group inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-3 transition-colors hover:text-ink"
-        >
-          Scroll to the calendar
-          <span aria-hidden className="inline-block animate-bounce">
-            ↓
-          </span>
-        </a>
       </div>
     </section>
   );

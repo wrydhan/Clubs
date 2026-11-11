@@ -14,8 +14,8 @@ export function Footer() {
               <span className="font-serif text-lg italic leading-none text-ink">Clubs</span>
             </div>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-2">
-              One club, a rotating calendar. Tournaments, track days, workshops and field days for the
-              Founders, Inc. campus at Fort Mason Pier 2, San Francisco.
+              Tournaments, track days, workshops and field days for the Founders, Inc. campus at Fort
+              Mason Pier 2, San Francisco.
             </p>
           </div>
 
