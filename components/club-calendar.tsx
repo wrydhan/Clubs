@@ -67,6 +67,22 @@ export function ClubCalendar({
 
   return (
     <div className="flex flex-col gap-10 sm:gap-12">
+      {/* Big event card */}
+      {featured ? (
+        <FeaturedEvent event={featured} />
+      ) : (
+        <div className="border border-ink/15 bg-paper px-6 py-12 text-center">
+          <p className="font-serif text-3xl text-ink sm:text-4xl">No events on the books yet.</p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-2">
+            The next session is being confirmed. Subscribe and the dates land in your calendar the
+            moment they are set.
+          </p>
+          <a href={subscribeUrl} className="pill-btn mt-6 inline-flex text-xs">
+            Subscribe to the calendar
+          </a>
+        </div>
+      )}
+
       {/* Big month calendar */}
       <div className="border border-ink/15 bg-paper p-4 sm:p-7">
         <div className="flex items-center justify-between gap-4">
@@ -159,22 +175,6 @@ export function ClubCalendar({
           </a>
         </div>
       </div>
-
-      {/* Big event card */}
-      {featured ? (
-        <FeaturedEvent event={featured} />
-      ) : (
-        <div className="border border-ink/15 bg-paper px-6 py-12 text-center">
-          <p className="font-serif text-3xl text-ink sm:text-4xl">No events on the books yet.</p>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-2">
-            The next session is being confirmed. Subscribe and the dates land in your calendar the
-            moment they are set.
-          </p>
-          <a href={subscribeUrl} className="pill-btn mt-6 inline-flex text-xs">
-            Subscribe to the calendar
-          </a>
-        </div>
-      )}
     </div>
   );
 }

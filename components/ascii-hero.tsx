@@ -30,7 +30,9 @@ export function AsciiHero() {
       const avail = wrap.clientWidth;
       if (!avail) return;
       pre.style.fontSize = "10px";
-      const widthAt10 = pre.getBoundingClientRect().width;
+      // offsetWidth is layout-only: the settled pulse's transform can never
+      // feed a scaled width back into the fit and make the logo creep.
+      const widthAt10 = pre.offsetWidth;
       if (!widthAt10) return;
       const pxPerFontPx = widthAt10 / 10;
       const fs = Math.min(avail / pxPerFontPx, 15);
@@ -110,14 +112,16 @@ export function AsciiHero() {
   }, []);
 
   return (
-    <section className="relative flex min-h-[88svh] flex-col items-center justify-center px-4 pb-12 pt-20 sm:px-8">
+    <section className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-x-clip px-4 pb-12 pt-20 sm:px-8">
       <h1 className="sr-only">Founders, Inc. Clubs — events calendar</h1>
 
       <div ref={wrapRef} className="w-full max-w-[1560px] text-center">
         <pre
           ref={preRef}
           aria-hidden="true"
-          className="inline-block whitespace-pre text-left font-mono leading-[1.15] text-ink"
+          className={`inline-block whitespace-pre text-left font-mono leading-[1.15] text-ink ${
+            settled ? "logo-pulse" : ""
+          }`}
           style={{ letterSpacing: 0, fontSize: "6px" }}
         >
           {ASCII_ART.join("\n")}

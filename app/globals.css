@@ -355,6 +355,19 @@ textarea {
   animation: peel-in 620ms var(--ease-paper) both;
 }
 
+/* The settled ASCII lockup breathes gently — a slow opacity/scale pulse that
+   starts only after the decode reveal finishes. */
+@keyframes logo-pulse {
+  0%, 100% { opacity: 0.86; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.012); }
+}
+
+.logo-pulse {
+  animation: logo-pulse 4.2s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: opacity, transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -366,6 +379,11 @@ textarea {
   }
   .peel-in {
     animation: none;
+  }
+  .logo-pulse {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 
