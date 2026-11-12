@@ -120,7 +120,7 @@ export function AsciiHero() {
           ref={preRef}
           aria-hidden="true"
           className={`inline-block whitespace-pre text-left font-mono leading-[1.15] text-ink ${
-            settled ? "logo-pulse" : ""
+            settled ? "logo-wave" : ""
           }`}
           style={{ letterSpacing: 0, fontSize: "6px" }}
         >

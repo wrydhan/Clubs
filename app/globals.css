@@ -355,17 +355,50 @@ textarea {
   animation: peel-in 620ms var(--ease-paper) both;
 }
 
-/* The settled ASCII lockup breathes gently — a slow opacity/scale pulse that
-   starts only after the decode reveal finishes. */
-@keyframes logo-pulse {
-  0%, 100% { opacity: 0.86; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.012); }
+/* A wave travels ACROSS the settled lockup: a soft crest of lighter ink sweeps
+   left-to-right through the glyphs and loops. It is a gradient train clipped to
+   the text, so each character picks up the crest at its own column — a real
+   travelling wave through the letters, with no extra DOM and no layout shift.
+
+   The image is twice the element width with crests every 50% of it, i.e. one
+   element-width apart; sliding it by exactly one width per cycle means the tile
+   that leaves on the right is the one arriving on the left, so the loop is
+   seamless rather than a restart. */
+@keyframes logo-wave {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
 }
 
-.logo-pulse {
-  animation: logo-pulse 4.2s ease-in-out infinite;
-  transform-origin: center center;
-  will-change: opacity, transform;
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .logo-wave {
+    background-image: linear-gradient(
+      90deg,
+      #eae7df 0%,
+      #cdc7b8 4%,
+      #8f887c 9%,
+      var(--color-ink) 16%,
+      var(--color-ink) 34%,
+      #8f887c 41%,
+      #cdc7b8 46%,
+      #eae7df 50%,
+      #cdc7b8 54%,
+      #8f887c 59%,
+      var(--color-ink) 66%,
+      var(--color-ink) 84%,
+      #8f887c 91%,
+      #cdc7b8 96%,
+      #eae7df 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: repeat;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: logo-wave 6.5s linear infinite;
+    will-change: background-position;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -380,10 +413,13 @@ textarea {
   .peel-in {
     animation: none;
   }
-  .logo-pulse {
+  /* Reduced motion: the lockup is simply the finished logo — solid ink, no
+     wave, nothing frozen mid-crest. */
+  .logo-wave {
     animation: none;
-    opacity: 1;
-    transform: none;
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--color-ink);
   }
 }
 
