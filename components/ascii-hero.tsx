@@ -8,6 +8,48 @@ import { ASCII_ART, ASCII_WIDTH } from "@/components/ascii-art";
    logo resolving out of noise rather than random ASCII. */
 const NOISE = "#%*+-.:=@/\\|<>_abcdefghijklmnopqrstuvwxyz0123456789";
 
+/* Which crest the settled lockup runs.
+   "size" — each glyph swells as the crest passes it (the default).
+   "fade" — the earlier sweep of lighter ink (see .logo-ink-fade in
+            app/globals.css). Flip this one value to swap back. */
+const LOGO_ANIMATION: "size" | "fade" = "size";
+
+/**
+ * Swap the pre's text for one inline-block box per glyph so each character can
+ * scale on its own. Spaces stay as plain text nodes and rows keep their own
+ * newlines, so the monospace grid, the 298-column width and every line break
+ * survive exactly as they were.
+ */
+function paintGlyphs(
+  pre: HTMLPreElement,
+  final: string[],
+  rows: number,
+  cols: number,
+) {
+  const frag = document.createDocumentFragment();
+  for (let y = 0; y < rows; y += 1) {
+    // Rows trail the columns a touch, so the crest reads as a wave rolling
+    // through the mark rather than a straight vertical bar.
+    const rowLag = (y / rows) * 0.03;
+    for (let x = 0; x < cols; x += 1) {
+      const ch = final[y][x];
+      if (ch === " ") {
+        frag.appendChild(document.createTextNode(" "));
+      } else {
+        const glyph = document.createElement("span");
+        glyph.className = "logo-glyph";
+        glyph.textContent = ch;
+        glyph.style.setProperty("--crest", (x / cols + rowLag).toFixed(4));
+        frag.appendChild(glyph);
+      }
+      if (x === cols - 1 && y < rows - 1) {
+        frag.appendChild(document.createTextNode("\n"));
+      }
+    }
+  }
+  pre.replaceChildren(frag);
+}
+
 /**
  * The Founders, Inc. ASCII lockup, full-bleed, decoding left-to-right on load.
  * The art is 298 columns wide, so it is scaled to the container width with the
@@ -86,7 +128,18 @@ export function AsciiHero() {
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Park the finished lockup, in whichever form the crest needs.
+    const settle = () => {
+      if (LOGO_ANIMATION === "size") {
+        paintGlyphs(pre, final, rows, cols);
+      } else {
+        pre.textContent = final.join("\n");
+      }
+      setSettled(true);
+    };
+
     if (reduce) {
+      // No crest at all: plain solid ink at its resting size.
       pre.textContent = final.join("\n");
       // Defer past the effect body so we don't set state synchronously.
       const id = requestAnimationFrame(() => setSettled(true));
@@ -103,12 +156,22 @@ export function AsciiHero() {
       if (t < 1) {
         raf = requestAnimationFrame(tick);
       } else {
-        pre.textContent = final.join("\n");
-        setSettled(true);
+        settle();
       }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // 1350 glyphs are animating; park the crest while the lockup is offscreen.
+  useEffect(() => {
+    const pre = preRef.current;
+    if (!pre || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => {
+      pre.classList.toggle("logo-paused", !entry.isIntersecting);
+    });
+    io.observe(pre);
+    return () => io.disconnect();
   }, []);
 
   return (
@@ -120,7 +183,7 @@ export function AsciiHero() {
           ref={preRef}
           aria-hidden="true"
           className={`inline-block whitespace-pre text-left font-mono leading-[1.15] text-ink ${
-            settled ? "logo-wave" : ""
+            settled && LOGO_ANIMATION === "fade" ? "logo-ink-fade" : ""
           }`}
           style={{ letterSpacing: 0, fontSize: "6px" }}
         >

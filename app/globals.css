@@ -355,22 +355,65 @@ textarea {
   animation: peel-in 620ms var(--ease-paper) both;
 }
 
-/* A wave travels ACROSS the settled lockup: a soft crest of lighter ink sweeps
-   left-to-right through the glyphs and loops. It is a gradient train clipped to
-   the text, so each character picks up the crest at its own column — a real
-   travelling wave through the letters, with no extra DOM and no layout shift.
+/* ---------------------- the ASCII lockup: size wave ---------------------- */
 
-   The image is twice the element width with crests every 50% of it, i.e. one
-   element-width apart; sliding it by exactly one width per cycle means the tile
-   that leaves on the right is the one arriving on the left, so the loop is
-   seamless rather than a restart. */
-@keyframes logo-wave {
+/* A crest travels ACROSS the settled lockup: each glyph swells as the crest
+   reaches its column, then drops back to its resting size, and the sweep loops.
+
+   The swell is a per-glyph scale, so it needs one inline-block box per glyph —
+   the hero builds those after the decode reveal. A transform touches paint
+   only, so the 298-column monospace grid keeps its exact metrics: nothing
+   reflows, nothing wraps, no neighbour is shoved sideways.
+
+   --crest is a glyph's position in the sweep, normalised 0 (left edge) to 1
+   (right edge). A negative animation-delay of --crest x duration drops each
+   glyph that far into the same cycle, which is what turns one resting
+   animation into one travelling crest. Keeping the swell inside 9% of the
+   cycle means only ~27 columns are cresting at any moment, and the peak is a
+   swell rather than a jump, so the mark stays readable all the way through. */
+@keyframes logo-glyph-crest {
+  0%,
+  9%,
+  100% {
+    transform: scale(1);
+  }
+  4.5% {
+    transform: scale(1.3);
+  }
+}
+
+.logo-glyph {
+  display: inline-block;
+  /* Baseline alignment puts the box exactly where the bare glyph sat, so the
+     swell spreads around each character instead of lifting the row. */
+  vertical-align: baseline;
+  transform-origin: 50% 55%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .logo-glyph {
+    animation: logo-glyph-crest 6.5s ease-in-out infinite;
+    animation-delay: calc(var(--crest, 0) * -6.5s);
+  }
+}
+
+/* Offscreen the crest costs nothing. */
+.logo-paused .logo-glyph {
+  animation-play-state: paused;
+}
+
+/* The earlier ink fade, kept so it can be swapped back in one line: set
+   LOGO_ANIMATION = "fade" in components/ascii-hero.tsx. A gradient train
+   clipped to the text, so a soft crest of lighter ink sweeps the glyphs; the
+   image is twice the element width with crests one element-width apart, so
+   sliding it exactly one width per cycle is seamless. Off by default. */
+@keyframes logo-ink-fade {
   from { background-position: 100% 0; }
   to { background-position: 0% 0; }
 }
 
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .logo-wave {
+  .logo-ink-fade {
     background-image: linear-gradient(
       90deg,
       #eae7df 0%,
@@ -396,7 +439,7 @@ textarea {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    animation: logo-wave 6.5s linear infinite;
+    animation: logo-ink-fade 6.5s linear infinite;
     will-change: background-position;
   }
 }
@@ -413,9 +456,13 @@ textarea {
   .peel-in {
     animation: none;
   }
-  /* Reduced motion: the lockup is simply the finished logo — solid ink, no
-     wave, nothing frozen mid-crest. */
-  .logo-wave {
+  /* Reduced motion: the lockup is simply the finished logo — solid ink at its
+     resting size, no crest, nothing frozen mid-swell. */
+  .logo-glyph {
+    animation: none;
+    transform: none;
+  }
+  .logo-ink-fade {
     animation: none;
     background-image: none;
     -webkit-text-fill-color: currentColor;
