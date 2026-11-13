@@ -14,6 +14,10 @@ const NOISE = "#%*+-.:=@/\\|<>_abcdefghijklmnopqrstuvwxyz0123456789";
             app/globals.css). Flip this one value to swap back. */
 const LOGO_ANIMATION: "size" | "fade" = "size";
 
+/* One full pass of the crest, in seconds. Long and slow: the swell is big
+   (1 -> 1.55), so a fast sweep would flash rather than roll. */
+const LOGO_WAVE_SECONDS = 9.5;
+
 /**
  * Swap the pre's text for one inline-block box per glyph so each character can
  * scale on its own. Spaces stay as plain text nodes and rows keep their own
@@ -26,11 +30,15 @@ function paintGlyphs(
   rows: number,
   cols: number,
 ) {
+  // The crest's timing and its travel direction both come from CSS; this is
+  // the one place the cycle length is written down.
+  pre.style.setProperty("--logo-wave-duration", `${LOGO_WAVE_SECONDS}s`);
+
   const frag = document.createDocumentFragment();
   for (let y = 0; y < rows; y += 1) {
     // Rows trail the columns a touch, so the crest reads as a wave rolling
-    // through the mark rather than a straight vertical bar.
-    const rowLag = (y / rows) * 0.03;
+    // diagonally through the mark rather than a straight vertical bar.
+    const rowLag = (y / rows) * 0.04;
     for (let x = 0; x < cols; x += 1) {
       const ch = final[y][x];
       if (ch === " ") {
@@ -39,7 +47,12 @@ function paintGlyphs(
         const glyph = document.createElement("span");
         glyph.className = "logo-glyph";
         glyph.textContent = ch;
-        glyph.style.setProperty("--crest", (x / cols + rowLag).toFixed(4));
+        // 1 at the left edge, 0 at the right: the crest leaves on the right and
+        // travels left, opposite to the decode reveal.
+        glyph.style.setProperty(
+          "--crest",
+          (1 - x / cols + rowLag).toFixed(4),
+        );
         frag.appendChild(glyph);
       }
       if (x === cols - 1 && y < rows - 1) {

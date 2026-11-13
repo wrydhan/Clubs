@@ -359,26 +359,30 @@ textarea {
 
 /* A crest travels ACROSS the settled lockup: each glyph swells as the crest
    reaches its column, then drops back to its resting size, and the sweep loops.
+   It runs right-to-left, over --logo-wave-duration (set from the hero, 9.5s),
+   and the swell is deliberately big: a 1 -> 1.55 -> 1 scale over ~13% of the
+   cycle, so roughly 39 columns are growing at once and the crest reads clearly
+   from across the room.
 
    The swell is a per-glyph scale, so it needs one inline-block box per glyph —
    the hero builds those after the decode reveal. A transform touches paint
    only, so the 298-column monospace grid keeps its exact metrics: nothing
    reflows, nothing wraps, no neighbour is shoved sideways.
 
-   --crest is a glyph's position in the sweep, normalised 0 (left edge) to 1
-   (right edge). A negative animation-delay of --crest x duration drops each
-   glyph that far into the same cycle, which is what turns one resting
-   animation into one travelling crest. Keeping the swell inside 9% of the
-   cycle means only ~27 columns are cresting at any moment, and the peak is a
-   swell rather than a jump, so the mark stays readable all the way through. */
+   --crest is a glyph's position in the sweep, normalised 1 (left edge) to 0
+   (right edge), so the crest leaves on the right and travels left. A negative
+   animation-delay of --crest x duration drops each glyph that far into the
+   same cycle, which is what turns one resting animation into one travelling
+   crest. The edge values 0 and 1 both land on the start of the cycle, so the
+   loop closes seamlessly with no restart at the wrap. */
 @keyframes logo-glyph-crest {
   0%,
-  9%,
+  13%,
   100% {
     transform: scale(1);
   }
-  4.5% {
-    transform: scale(1.3);
+  6.5% {
+    transform: scale(1.55);
   }
 }
 
@@ -392,8 +396,8 @@ textarea {
 
 @media (prefers-reduced-motion: no-preference) {
   .logo-glyph {
-    animation: logo-glyph-crest 6.5s ease-in-out infinite;
-    animation-delay: calc(var(--crest, 0) * -6.5s);
+    animation: logo-glyph-crest var(--logo-wave-duration) ease-in-out infinite;
+    animation-delay: calc(var(--crest, 0) * var(--logo-wave-duration) * -1);
   }
 }
 
