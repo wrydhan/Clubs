@@ -355,9 +355,12 @@ textarea {
   animation: peel-in 620ms var(--ease-paper) both;
 }
 
-/* ---------------------- the ASCII lockup: size wave ---------------------- */
+/* ------------------- the ASCII lockup: crest animations ------------------- */
 
-/* A crest travels ACROSS the settled lockup: each glyph swells as the crest
+/* ALTERNATE (off by default): the size wave. Set LOGO_ANIMATION = "size" in
+   components/ascii-hero.tsx to run this instead of the ambient ink fade below.
+
+   A crest travels ACROSS the settled lockup: each glyph swells as the crest
    reaches its column, then drops back to its resting size, and the sweep loops.
    It runs right-to-left, over --logo-wave-duration (set from the hero, 9.5s),
    and the swell is deliberately big: a 1 -> 1.55 -> 1 scale over ~13% of the
@@ -406,11 +409,11 @@ textarea {
   animation-play-state: paused;
 }
 
-/* The earlier ink fade, kept so it can be swapped back in one line: set
-   LOGO_ANIMATION = "fade" in components/ascii-hero.tsx. A gradient train
-   clipped to the text, so a soft crest of lighter ink sweeps the glyphs; the
-   image is twice the element width with crests one element-width apart, so
-   sliding it exactly one width per cycle is seamless. Off by default. */
+/* LIVE DEFAULT: the ambient ink fade. A gradient train clipped to the text, so
+   a soft crest of lighter ink sweeps through the glyphs; the image is twice the
+   element width with crests one element-width apart, so sliding it exactly one
+   width per cycle is seamless. Set LOGO_ANIMATION = "size" in
+   components/ascii-hero.tsx to swap to the per-glyph size wave above. */
 @keyframes logo-ink-fade {
   from { background-position: 100% 0; }
   to { background-position: 0% 0; }
@@ -461,7 +464,7 @@ textarea {
     animation: none;
   }
   /* Reduced motion: the lockup is simply the finished logo — solid ink at its
-     resting size, no crest, nothing frozen mid-swell. */
+     resting size, whichever crest is live: nothing frozen mid-sweep. */
   .logo-glyph {
     animation: none;
     transform: none;

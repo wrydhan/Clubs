@@ -9,10 +9,11 @@ import { ASCII_ART, ASCII_WIDTH } from "@/components/ascii-art";
 const NOISE = "#%*+-.:=@/\\|<>_abcdefghijklmnopqrstuvwxyz0123456789";
 
 /* Which crest the settled lockup runs.
-   "size" — each glyph swells as the crest passes it (the default).
-   "fade" — the earlier sweep of lighter ink (see .logo-ink-fade in
-            app/globals.css). Flip this one value to swap back. */
-const LOGO_ANIMATION: "size" | "fade" = "size";
+   "fade" — ambient sweep of lighter ink through the glyphs (the default; see
+            .logo-ink-fade in app/globals.css).
+   "size" — each glyph swells as the crest passes it (see .logo-glyph and
+            paintGlyphs below). Flip this one value to swap. */
+const LOGO_ANIMATION: "size" | "fade" = "fade";
 
 /* One full pass of the crest, in seconds. Long and slow: the swell is big
    (1 -> 1.55), so a fast sweep would flash rather than roll. */
