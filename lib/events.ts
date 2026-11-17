@@ -58,7 +58,7 @@ export const eventSeeds: EventSeed[] = [
     location: "Moscone Rec Center · 1800 Chestnut St, San Francisco",
     rsvpUrl: "https://luma.com/finc-basketball",
     description:
-      "Founders, Inc. Hoops Club takes over Moscone Rec Center for a double-elimination 3v3 tournament. One loss drops you to the losers' bracket, two and you're out. A mystery grand prize on the line. Games run 6:00–10:00 PM. Bring a squad or come watch — courtside is open to the campus.",
+      "Founders, Inc. Clubs takes over Moscone Rec Center for a double elimination 3v3 tournament. With an exclusive Grand Prize on the line the tournament runs from 6:00-10:00 PM. Bring a squad or some watch.",
     facts: [
       { label: "Format", value: "3v3 · double elimination" },
       { label: "Prize", value: "Mystery grand prize" },
