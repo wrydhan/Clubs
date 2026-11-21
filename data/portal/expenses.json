@@ -1,0 +1,114 @@
+[
+  {
+    "id": "exp-bball-venue",
+    "eventId": "evt-basketball-3v3",
+    "category": "venue",
+    "lineItem": "Court rental (full court, 6-10 PM)",
+    "vendor": "Moscone Rec Center",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "No quote on file yet.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-swag-tees",
+    "eventId": "evt-basketball-3v3",
+    "category": "swag",
+    "lineItem": "Tournament tees (90 @ ~$16 printed)",
+    "budgeted": 144000,
+    "actual": null,
+    "status": "quoted",
+    "note": "90 shirts: S 4, M 27, L 34, XL 19, XXL 6.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-production-crest",
+    "eventId": "evt-basketball-3v3",
+    "category": "production",
+    "lineItem": "Chest print — chevron, one colour",
+    "vendor": "Custom Inc",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Left chest only, ~3in, silk screen. Priced with the tee order.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-prizes",
+    "eventId": "evt-basketball-3v3",
+    "category": "prizes",
+    "lineItem": "Grand Prize",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Prize not selected yet.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-banners",
+    "eventId": "evt-basketball-3v3",
+    "category": "production",
+    "lineItem": "Banners and court decal",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Banners confirmed as in scope; no quote on file.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-snacks",
+    "eventId": "evt-basketball-3v3",
+    "category": "food-drink",
+    "lineItem": "Snacks and water (no catering)",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Snacks allowed in the venue, catering is out.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-venue",
+    "eventId": "evt-holiday-party",
+    "category": "venue",
+    "lineItem": "Building C, Room 300 (6-10 PM)",
+    "vendor": "Fort Mason Center",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "No quote on file yet.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-production",
+    "eventId": "evt-holiday-party",
+    "category": "production",
+    "lineItem": "Uplighting, Christmas tree, vinyl signage",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Tree may be available on site; vinyl cutter already on site.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-tables",
+    "eventId": "evt-holiday-party",
+    "category": "venue",
+    "lineItem": "Cocktail tables and black linens",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-food",
+    "eventId": "evt-holiday-party",
+    "category": "food-drink",
+    "lineItem": "Food and bar",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Menu not set.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  }
+]
