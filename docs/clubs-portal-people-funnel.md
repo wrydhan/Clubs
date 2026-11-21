@@ -22,7 +22,7 @@ One page inside the portal shell:
 | A — data | `data/clubs-portal/**`, `scripts/import-people.mjs`, schema docs below | `clubs-portal/people-data` |
 | B — funnel UI | `components/clubs-portal/funnel/**` | `clubs-portal/people-funnel-ui` |
 | C — people table | `components/clubs-portal/people-table/**` | `clubs-portal/people-table` |
-| Assembly | `app/clubs/people/**` (and mounting into the Track 1 shell) | `clubs-portal/people-funnel` |
+| Assembly | `components/portal/funnel-section.tsx`, `components/portal/people-coverage.tsx` | `clubs-portal/people-funnel-data` |
 
 The shared contract is `lib/clubs-portal/people/types.ts` plus
 `lib/clubs-portal/people/summarize.ts` and `lib/clubs-portal/people/load.ts`.
@@ -63,16 +63,57 @@ must label it as a ratio against the previous stage, not as "% converted".
     `checked_in_at`, plus the team columns when present.
   - **X engagement / follower lists** exported as CSV with `handle` (or `name`
     + `handle`). Engagement includes likes, replies, reposts and mentions.
-- Manual additions: append a `Person` to the seed file (or supply a CSV with
-  `name,handle,email,company,source,status,notes`).
-- The script is idempotent: re-running with the same inputs produces the same
-  file, and `generatedAt` is set from the newest input timestamp.
+- Manual additions: append a `Person` to `data/clubs-portal/people.manual.ts`
+  (not the generated seed — the next import would overwrite it).
+- The script is idempotent on rows: re-running with the same inputs produces the
+  same people and counts. `generatedAt` is the run time, so that one line changes
+  on every import.
 
 ## Data status
 
-Right now the seed is **sample data** (`isPlaceholder: true`). Real Luma
-basketball signups, check-ins and X engagement/follower exports still need to be
-imported; when they are, set `isPlaceholder: false` and drop the banner.
+The seeded rows are **real**: the Basketball 3v3 Luma guest export (8 people —
+5 approved, 3 declined, 0 checked in) was imported with
+`scripts/import-people.mjs` and `isPlaceholder` is `false`, so the sample banner
+does not render. What is still missing is the other half of the funnel:
+
+| Source | State | What it means |
+| --- | --- | --- |
+| Luma signups | Live | Imported from the guest export above. |
+| In-person check-ins | Partial | Read from the export's `checked_in_at`; nobody has checked in yet, so attendees reads 0. |
+| X followers | Not connected | Needs an X developer app with credits. |
+| X engagers | Not connected | Likes, replies, reposts and mentions are not imported. |
+| Manual rows | Live | `data/clubs-portal/people.manual.ts`, currently empty. |
+
+That table lives in `data/clubs-portal/sources.ts` and renders as the coverage
+strip under the charts, so a zero from "nothing happened" never looks like a
+zero from "never connected". Update a row in the same PR that connects a source.
+
+## Import path — what the script actually does
+
+```
+node scripts/import-people.mjs basketball-3v3=~/Downloads/luma-guests.csv
+```
+
+- Parses the Luma export as RFC 4180 CSV (quoted fields and embedded commas
+  included — the shirt-size column really does contain `"L, S"`).
+- One row per *ticket*, so a 3-person team appears three times with the same
+  `guest_id`. Rows are folded by `guest_id`; the last run folded 2 of 10 rows.
+- `approval_status` -> `status`: `approved` -> `signed_up`, `waitlist` ->
+  `waitlist`, `declined` -> `declined`, anything else -> `lead`; a non-empty
+  `checked_in_at` overrides all of them to `attended`.
+- `stages`: `signups` only for approved/attended, `attendees` only when checked
+  in. A decline is a row, not a funnel stage.
+- Merges into the existing generated file by `id`, so importing one event's
+  export never deletes people captured from another event.
+- Writes `data/clubs-portal/people.seed.ts` with a do-not-edit header and prints
+  the ticket-row count, duplicate count and the resulting status mix.
+- Manual rows are *never* touched: they live in
+  `data/clubs-portal/people.manual.ts`, and `loadPeopleDataset()` merges them
+  over the seed, with the manual row winning any field it sets.
+
+There is no database yet (Track 1 lists the store as an open decision), so the
+import is a commit-time step: import, review the diff, commit the seed. When a
+store lands, only `loadPeopleDataset()` changes.
 
 ## Not in this track
 
