@@ -22,6 +22,7 @@ page instead of rendering.
 | The session | `lib/portal/session.ts` | Mints and verifies the cookie token. One definition, used by both the gate and the layout. |
 | Login / logout | `app/clubs/portal/login/actions.ts` | Server actions: check the password, set the cookie, sign out. |
 | Second check | `app/clubs/portal/(dashboard)/layout.tsx` | Verifies the session again on the server before drawing any numbers. |
+| Machine access | `proxy.ts` + `machineTokenMatches` | Scheduled sync jobs may hit `/clubs/portal/api/*` with `Authorization: Bearer $CLUBS_SYNC_SECRET` instead of a cookie. Nothing else accepts it. |
 
 - **One password, no accounts.** `CLUBS_PORTAL_PASSWORD` is read at request
   time on the server and never shipped to the browser.
@@ -45,6 +46,21 @@ page instead of rendering.
 
 Changing the value signs everyone out everywhere, immediately — there is no
 session table to purge.
+
+### Machine access (for the live-data sync)
+
+A scheduled job — Luma/X pull, cron — cannot hold a login. Give it its own
+secret, separate from the password:
+
+```
+CLUBS_SYNC_SECRET=<openssl rand -base64 32>
+```
+
+Then `curl -H "Authorization: Bearer $CLUBS_SYNC_SECRET" https://clubs.f.inc/clubs/portal/api/sync`
+passes the gate. The bearer token is honoured **only** on the
+`/clubs/portal/api/` prefix — it can never open a page — and if the variable is
+unset, no machine token is accepted at all. Leaking one secret never grants the
+other.
 
 Without the variable the portal fails closed: the login page renders a "not
 configured" notice and no password is accepted.

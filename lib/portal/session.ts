@@ -125,3 +125,36 @@ export function safeNextPath(value: FormDataEntryValue | string | null | undefin
   if (raw.startsWith(`${PORTAL_PATH}//`)) return PORTAL_PATH;
   return raw;
 }
+
+/**
+ * Machine access for the sync job.
+ *
+ * Live data (Luma, X) arrives on a schedule, not from a person sitting at the
+ * login form, so the data track's `/clubs/portal/api/*` routes accept a bearer
+ * token instead of the session cookie. It is a separate secret from the portal
+ * password: leaking one never grants the other, and unset means no machine
+ * access at all. Everything outside `/clubs/portal/api/` still needs a human
+ * session — the proxy only honours this on that prefix.
+ */
+export function syncSecret(): string | null {
+  const value = process.env.CLUBS_SYNC_SECRET?.trim();
+  return value ? value : null;
+}
+
+export async function machineTokenMatches(authorizationHeader: string | null): Promise<boolean> {
+  const secret = syncSecret();
+  if (!secret || !authorizationHeader) return false;
+  const presented = authorizationHeader.startsWith("Bearer ")
+    ? authorizationHeader.slice("Bearer ".length).trim()
+    : "";
+  if (!presented) return false;
+  const [left, right] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(presented)),
+    crypto.subtle.digest("SHA-256", encoder.encode(secret)),
+  ]);
+  const a = new Uint8Array(left);
+  const b = new Uint8Array(right);
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a[i] ^ b[i];
+  return diff === 0;
+}

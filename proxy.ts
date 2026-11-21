@@ -1,5 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { PORTAL_COOKIE, PORTAL_LOGIN_PATH, verifySessionToken } from "@/lib/portal/session";
+import {
+  machineTokenMatches,
+  PORTAL_PATH,
+  PORTAL_COOKIE,
+  PORTAL_LOGIN_PATH,
+  verifySessionToken,
+} from "@/lib/portal/session";
 
 /**
  * The gate for the whole Clubs info portal and every page under it.
@@ -17,6 +23,14 @@ export async function proxy(request: NextRequest) {
   // and the server action that posts to it).
   if (pathname === PORTAL_LOGIN_PATH || pathname.startsWith(`${PORTAL_LOGIN_PATH}/`)) {
     return NextResponse.next();
+  }
+
+  // Scheduled sync jobs carry a bearer token instead of a cookie. Only the API
+  // prefix honours it, so a machine token can never open a page.
+  if (pathname.startsWith(`${PORTAL_PATH}/api/`)) {
+    if (await machineTokenMatches(request.headers.get("authorization"))) {
+      return NextResponse.next();
+    }
   }
 
   const token = request.cookies.get(PORTAL_COOKIE)?.value;
