@@ -1,0 +1,31 @@
+[
+  {
+    "id": "evt-basketball-3v3",
+    "name": "3v3 Basketball Tournament",
+    "date": "2026-12-14",
+    "startTime": "18:00",
+    "endTime": "22:00",
+    "venue": "Moscone Rec Center",
+    "owner": "Waleed Rydhan",
+    "status": "confirmed",
+    "attendance": "20 teams",
+    "budgetTotal": 500000,
+    "notes": "Double elimination, 10-min games, two games at once on one full court. Opening speech: Zaza Pachulia, 15-20 min. Winners-final winner takes it; no grand final reset.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "evt-holiday-party",
+    "name": "Founders, Inc. Holiday Party (black tie)",
+    "date": "2026-12-17",
+    "startTime": "18:00",
+    "endTime": "22:00",
+    "venue": "Fort Mason Center, Building C",
+    "room": "Room 300",
+    "owner": "Waleed Rydhan",
+    "status": "planning",
+    "attendance": "120 guests (target)",
+    "budgetTotal": null,
+    "notes": "Black tie. Lunch room dressed for the evening: uplighting, Christmas tree as the photo backdrop, vinyl cutter on site, tall cocktail tables.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  }
+]
