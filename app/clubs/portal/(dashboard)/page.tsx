@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { FunnelSection, PeopleSection } from "@/components/portal/funnel-section";
-import { PlanningSection, SpendSection } from "@/components/portal/expenses-section";
+import { PlanningSection, SpendSection } from "@/components/portal/spend-planning-sections";
 
 export const metadata: Metadata = {
   title: "Dashboard",
