@@ -1,19 +1,6 @@
-import type { Metadata } from "next";
-import { FunnelSection, PeopleSection } from "@/components/portal/funnel-section";
-import { PlanningSection, SpendSection } from "@/components/portal/spend-planning-sections";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-  robots: { index: false, follow: false },
-};
-
-export default function PortalDashboardPage() {
-  return (
-    <main className="flex flex-col gap-12">
-      <FunnelSection />
-      <PeopleSection />
-      <SpendSection />
-      <PlanningSection />
-    </main>
-  );
+/** The portal opens on the funnel; every other view is its own tab route. */
+export default function PortalIndexPage() {
+  redirect("/clubs/portal/funnel");
 }

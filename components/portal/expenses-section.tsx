@@ -110,7 +110,7 @@ export function ExpensesSection({ initial, showEventRollup = true }: Props) {
       </div>
 
       {error ? (
-        <p role="alert" className="mt-6 rounded-[8px] bg-[rgba(0,0,0,0.06)] px-4 py-3 text-sm">
+        <p role="alert" className="mt-6 rounded-[8px] bg-white/8 px-4 py-3 text-sm">
           {error}
         </p>
       ) : null}
@@ -155,7 +155,7 @@ export function ExpensesSection({ initial, showEventRollup = true }: Props) {
                     {row.lineCount - row.unbudgetedCount === 0 ? "—" : formatVariance(row.variance)}
                   </td>
                   <td className="py-2">
-                    <span className="block h-[6px] w-full max-w-[180px] rounded-full bg-[rgba(0,0,0,0.08)]">
+                    <span className="block h-[6px] w-full max-w-[180px] rounded-full bg-white/10">
                       <span
                         className="block h-full rounded-full bg-ink"
                         style={{ width: `${Math.round(parsePercent(row.budgeted, totals.budgeted || 1) * 100)}%` }}
@@ -208,7 +208,7 @@ export function ExpensesSection({ initial, showEventRollup = true }: Props) {
             <select
               value={openEventId}
               onChange={(event) => setOpenEventId(event.target.value)}
-              className="rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink"
+              className="rounded-[8px] bg-white/8 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-ink"
             >
               <option value="all">All</option>
               {events.map((event) => (
@@ -267,7 +267,7 @@ function Bar({ label, cents, peak, muted }: { label: string; cents: number; peak
         <span>{label}</span>
         <span className="tnum text-ink">{formatMoney(cents)}</span>
       </div>
-      <span className="mt-1 block h-[10px] w-full rounded-full bg-[rgba(0,0,0,0.08)]">
+      <span className="mt-1 block h-[10px] w-full rounded-full bg-white/10">
         <span
           className={`block h-full rounded-full ${muted ? "bg-[rgba(0,0,0,0.35)]" : "bg-ink"}`}
           style={{ width: `${width}%` }}
@@ -333,7 +333,7 @@ function ExpenseRow({
               onKeyDown={(event) => {
                 if (event.key === "Enter") event.currentTarget.blur();
               }}
-              className="tnum w-[92px] rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+              className="tnum w-[92px] rounded-[8px] bg-white/8 px-2 py-1 text-sm"
             />
           </span>
         </label>
@@ -351,7 +351,7 @@ function ExpenseRow({
               onKeyDown={(event) => {
                 if (event.key === "Enter") event.currentTarget.blur();
               }}
-              className="tnum w-[92px] rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+              className="tnum w-[92px] rounded-[8px] bg-white/8 px-2 py-1 text-sm"
             />
           </span>
         </label>
@@ -361,7 +361,7 @@ function ExpenseRow({
           <select
             value={row.status}
             onChange={(event) => onCommit({ status: event.target.value as ExpenseStatus })}
-            className="mt-1 rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+            className="mt-1 rounded-[8px] bg-white/8 px-2 py-1 text-sm"
           >
             {EXPENSE_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -376,7 +376,7 @@ function ExpenseRow({
           <select
             value={row.eventId ?? ""}
             onChange={(event) => onCommit({ eventId: event.target.value || null })}
-            className="mt-1 max-w-[190px] rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+            className="mt-1 max-w-[190px] rounded-[8px] bg-white/8 px-2 py-1 text-sm"
           >
             <option value="">Overhead</option>
             {options.map((event) => (

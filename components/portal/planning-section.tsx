@@ -110,7 +110,7 @@ export function PlanningSection({ initial }: Props) {
       </div>
 
       {error ? (
-        <p role="alert" className="mt-6 rounded-[8px] bg-[rgba(0,0,0,0.06)] px-4 py-3 text-sm">
+        <p role="alert" className="mt-6 rounded-[8px] bg-white/8 px-4 py-3 text-sm">
           {error}
         </p>
       ) : null}
@@ -166,7 +166,7 @@ export function PlanningSection({ initial }: Props) {
                     onKeyDown={(input) => {
                       if (input.key === "Enter") input.currentTarget.blur();
                     }}
-                    className="mt-1 w-[180px] rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+                    className="mt-1 w-[180px] rounded-[8px] bg-white/8 px-2 py-1 text-sm"
                   />
                 </label>
 
@@ -175,7 +175,7 @@ export function PlanningSection({ initial }: Props) {
                   <select
                     value={event.status}
                     onChange={(input) => commit(event, { status: input.target.value as EventStatus })}
-                    className="mt-1 rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+                    className="mt-1 rounded-[8px] bg-white/8 px-2 py-1 text-sm"
                   >
                     {EVENT_STATUSES.map((status) => (
                       <option key={status} value={status}>
@@ -195,7 +195,7 @@ export function PlanningSection({ initial }: Props) {
                         commit(event, { date: input.target.value });
                       }
                     }}
-                    className="mt-1 rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+                    className="mt-1 rounded-[8px] bg-white/8 px-2 py-1 text-sm"
                   />
                 </label>
 
@@ -216,7 +216,7 @@ export function PlanningSection({ initial }: Props) {
                         commit(event, { budgetTotal: cents });
                       }
                     }}
-                    className="tnum mt-1 w-[110px] rounded-[8px] bg-[rgba(0,0,0,0.05)] px-2 py-1 text-sm"
+                    className="tnum mt-1 w-[110px] rounded-[8px] bg-white/8 px-2 py-1 text-sm"
                   />
                 </label>
 
