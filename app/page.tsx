@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { AsciiHero } from "@/components/ascii-hero";
 import { ClubCalendar } from "@/components/club-calendar";
 import { getEvents } from "@/lib/events";
+import { getConfirmedPortalEvents, mergeCalendarEvents } from "@/lib/portal/public-events";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Founders, Inc. Clubs — Calendar",
@@ -16,9 +19,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
   const now = new Date();
-  const events = getEvents(now);
+  // Portal-confirmed events are part of the same calendar: confirm one on
+  // /clubs/portal/planning and it lands here with no second entry.
+  const events = mergeCalendarEvents(getEvents(now), await getConfirmedPortalEvents(now));
 
   return (
     <main>

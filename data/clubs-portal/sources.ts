@@ -23,7 +23,7 @@ export const sourceStatus: SourceStatus[] = [
     source: "luma",
     label: "Luma signups",
     state: "live",
-    detail: "Basketball 3v3 guest export, imported by scripts/import-people.mjs.",
+    detail: "Luma guest exports for Fireside with Thariq, Night Hack, Blueprint II Demo Day, Blueprint II Preview and the Basketball 3v3, imported by scripts/import-people.mjs.",
   },
   {
     source: "event",

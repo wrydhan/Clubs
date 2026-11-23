@@ -5,15 +5,23 @@
  *   node scripts/import-people.mjs <event-slug>=<export.csv> [...]
  *
  * Example:
- *   node scripts/import-people.mjs basketball-3v3=~/Downloads/luma-export.csv
+ *   node scripts/import-people.mjs basketball-3v3=~/data/basketball.csv
  *
  * The Luma guest export is one row per *ticket*, so a team registration shows up
  * once per member with the same `guest_id`. Rows are folded by `guest_id` before
  * anything is written, which is why a 3-person team is one person, not three.
+ * People are then folded across events by email, so someone who came to two
+ * events is one row with two event slugs.
  *
- * Output is `data/clubs-portal/people.manual.ts` — wait, no: manual rows are
- * hand-edited and never touched by this script. The generated file is
- * `data/clubs-portal/people.seed.ts`; it carries a do-not-edit header.
+ * Fields captured per person, when the export has them:
+ *   - email (every Luma export)
+ *   - company (`Company, fund, or affiliation`, `Company`)
+ *   - X handle (`X (Twitter)`, `Twitter`), normalised to bare handle
+ *   - notes: team name, and what they said they were building
+ *
+ * Hand-added rows live in `data/clubs-portal/people.manual.ts` and are never
+ * touched by this script. The generated file is `data/clubs-portal/people.seed.ts`
+ * and carries a do-not-edit header.
  *
  * Exit codes: 0 ok, 1 bad usage / unreadable file.
  */
@@ -107,6 +115,30 @@ function toStages(status, checkedInAt) {
 
 const isoDate = (value) => (value ? value.slice(0, 10) : undefined);
 
+const firstOf = (row, keys) => {
+  for (const key of keys) {
+    const value = row[key];
+    if (value && value.trim()) return value.trim();
+  }
+  return "";
+};
+
+/** "https://x.com/foo", "@foo", "twitter.com/foo" → "foo". */
+function normaliseHandle(raw) {
+  if (!raw) return "";
+  let value = raw.trim();
+  if (!value || /^(na|n\/a|none|-)$/i.test(value)) return "";
+  value = value
+    .replace(/^https?:\/\//i, "")
+    .replace(/^(www\.)?(x|twitter)\.com\//i, "")
+    .replace(/[?#].*$/, "")
+    .replace(/\/+$/, "")
+    .replace(/^@/, "")
+    .trim();
+  if (!value || value.includes(" ") || !/^[A-Za-z0-9_]{1,15}$/.test(value)) return "";
+  return value;
+}
+
 function foldRows(rows, eventSlug) {
   const byGuest = new Map();
   let ticketRows = 0;
@@ -117,42 +149,74 @@ function foldRows(rows, eventSlug) {
     if (!id) continue;
     ticketRows += 1;
 
-    const existing = byGuest.get(id);
-    if (existing) {
+    if (byGuest.has(id)) {
       duplicates += 1;
-      // Group registration: later rows carry the same guest, so keep the
-      // earliest seen date and merge notes instead of writing a second person.
+      // Group registration: later rows carry the same guest, so keep the first
+      // row and fold it as one person instead of writing a second one.
       continue;
     }
 
     const status = toStatus(row.approval_status, row.checked_in_at);
-    const team = row["Team Name"];
-    const notes = [team ? `Team: ${team}` : "", row["Any Questions?"] ? `Asked: ${row["Any Questions?"]}` : ""]
+    const team = firstOf(row, ["Team Name"]);
+    const building = firstOf(row, ["What are you building?", "What will you try to build and demo live by the end of Night Hack? No localhost allowed :)"]);
+    const notes = [
+      team ? `Team: ${team}` : "",
+      building ? `Building: ${building.slice(0, 140)}` : "",
+    ]
       .filter(Boolean)
       .join(". ");
 
     byGuest.set(id, {
       id,
       name: row.name || [row.first_name, row.last_name].filter(Boolean).join(" "),
-      email: row.email || undefined,
+      handle: normaliseHandle(firstOf(row, ["X (Twitter)", "Twitter", "Twitter handle", "X handle"])),
+      email: row.email || "",
+      company: firstOf(row, ["Company, fund, or affiliation", "Company"]),
       source: "luma",
       status,
       stages: toStages(status, row.checked_in_at),
       events: [eventSlug],
       firstSeen: isoDate(row.created_at) ?? "1970-01-01",
       lastSeen: isoDate(row.checked_in_at) ?? isoDate(row.created_at) ?? "1970-01-01",
-      ...(team ? { company: undefined } : {}),
-      ...(notes ? { notes } : {}),
+      notes,
     });
   }
 
   return { people: [...byGuest.values()], ticketRows, duplicates };
 }
 
+/** Deepest status wins when one person is on several exports. */
+const STATUS_RANK = {
+  lead: 0,
+  waitlist: 1,
+  declined: 2,
+  signed_up: 3,
+  engaged: 4,
+  following: 5,
+  attended: 6,
+};
+
+function mergePerson(a, b) {
+  const status = (STATUS_RANK[b.status] ?? 0) > (STATUS_RANK[a.status] ?? 0) ? b.status : a.status;
+  const notes = [a.notes, b.notes].filter(Boolean);
+  return {
+    ...a,
+    name: b.name || a.name,
+    handle: a.handle || b.handle,
+    email: a.email || b.email,
+    company: a.company || b.company,
+    status,
+    stages: [...new Set([...a.stages, ...b.stages])],
+    events: [...new Set([...a.events, ...b.events])],
+    firstSeen: a.firstSeen < b.firstSeen ? a.firstSeen : b.firstSeen,
+    lastSeen: a.lastSeen > b.lastSeen ? a.lastSeen : b.lastSeen,
+    notes: [...new Set(notes)].join(". "),
+  };
+}
+
 function readExistingPeople() {
   try {
-    const text = readFileSync(OUT, "utf8");
-    return text;
+    return readFileSync(OUT, "utf8");
   } catch {
     return null;
   }
@@ -187,23 +251,23 @@ function previouslyImported(text) {
     people.push({
       id,
       name: get("name") ?? id,
-      ...(get("handle") ? { handle: get("handle") } : {}),
-      ...(get("email") ? { email: get("email") } : {}),
-      ...(get("company") ? { company: get("company") } : {}),
+      handle: get("handle") ?? "",
+      email: get("email") ?? "",
+      company: get("company") ?? "",
       source: get("source") ?? "manual",
       status: get("status") ?? "lead",
       stages,
       events,
       firstSeen: get("firstSeen") ?? "1970-01-01",
       lastSeen: get("lastSeen") ?? "1970-01-01",
-      ...(get("notes") ? { notes: get("notes") } : {}),
+      notes: get("notes") ?? "",
     });
   }
   return people;
 }
 
 const q = (value) => JSON.stringify(value);
-const opt = (key, value) => (value ? `      ${key}: ${q(value)},\n` : "");
+const opt = (key, value) => (value ? `    ${key}: ${q(value)},\n` : "");
 
 function toTs(people) {
   const body = people
@@ -239,7 +303,7 @@ export const seedDataset: SeedDataset = {
   generatedAt: ${q(new Date().toISOString())},
   isPlaceholder: false,
   note: ${q(
-    "Luma guest exports only. X followers/engagers and in-person check-ins are not imported — those stages read 0 until the X sync is connected and someone is checked in.",
+    "Luma guest exports only, one row per person folded across events. X followers/engagers and in-person check-ins are not imported — those stages read 0 until the X sync is connected and someone is checked in.",
   )},
   people: [
 ${body}
@@ -280,30 +344,43 @@ function main() {
     imported.push(...folded.people);
   }
 
-  const prior = previouslyImported(readExistingPeople());
+  // id → person, then fold across events by email so a repeat guest is one row.
   const byId = new Map();
-  for (const person of prior) byId.set(person.id, person);
+  for (const person of previouslyImported(readExistingPeople())) byId.set(person.id, person);
   for (const person of imported) {
     const existing = byId.get(person.id);
-    if (existing) {
-      const events = [...new Set([...existing.events, ...person.events])];
-      byId.set(person.id, { ...existing, ...person, events });
-    } else {
-      byId.set(person.id, person);
-    }
+    byId.set(person.id, existing ? mergePerson(existing, person) : person);
   }
 
-  const people = [...byId.values()].sort((a, b) => (a.lastSeen < b.lastSeen ? 1 : -1));
+  const byIdentity = new Map();
+  for (const person of byId.values()) {
+    const key = person.email ? `email:${person.email.toLowerCase()}` : `id:${person.id}`;
+    const existing = byIdentity.get(key);
+    byIdentity.set(key, existing ? mergePerson(existing, person) : person);
+  }
+
+  const people = [...byIdentity.values()].sort((a, b) =>
+    a.lastSeen < b.lastSeen ? 1 : a.lastSeen > b.lastSeen ? -1 : a.name.localeCompare(b.name),
+  );
   writeFileSync(OUT, toTs(people));
 
   const counts = people.reduce((acc, person) => {
     acc[person.status] = (acc[person.status] ?? 0) + 1;
     return acc;
   }, {});
+  const withEmail = people.filter((p) => p.email).length;
+  const withCompany = people.filter((p) => p.company).length;
+  const withHandle = people.filter((p) => p.handle).length;
+  const perEvent = people.reduce((acc, person) => {
+    for (const slug of person.events) acc[slug] = (acc[slug] ?? 0) + 1;
+    return acc;
+  }, {});
 
   console.log(`read ${ticketRows} ticket rows, folded ${duplicates} duplicate ticket rows`);
   console.log(`wrote ${people.length} people to ${path.relative(ROOT, OUT)}`);
   console.log(`status: ${JSON.stringify(counts)}`);
+  console.log(`contact: email ${withEmail}, company ${withCompany}, x handle ${withHandle}`);
+  console.log(`events: ${JSON.stringify(perEvent)}`);
 }
 
 main();

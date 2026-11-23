@@ -1,4 +1,5 @@
 import { promises as fs } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { SEED_EVENTS, SEED_EXPENSES } from "@/lib/portal/seed";
 import { EXPENSE_CATEGORIES, EVENT_STATUSES, type Expense, type PlannedEvent } from "@/lib/portal/types";
@@ -17,9 +18,25 @@ import { EXPENSE_CATEGORIES, EVENT_STATUSES, type Expense, type PlannedEvent } f
  *    node host (or locally) the writes persist.
  */
 
-const DATA_DIR = path.join(process.cwd(), "data", "portal");
-const EXPENSES_FILE = path.join(DATA_DIR, "expenses.json");
-const EVENTS_FILE = path.join(DATA_DIR, "events.json");
+const DATA_DIR = process.env.CLUBS_PORTAL_DATA_DIR
+  ? path.resolve(process.env.CLUBS_PORTAL_DATA_DIR)
+  : path.join(process.cwd(), "data", "portal");
+/**
+ * Where writes land when the project directory is read-only — which is every
+ * serverless host, including Vercel. `/tmp` is writable there, so an edit at
+ * least takes effect for the life of that instance instead of failing outright.
+ * It is *not* durable across instances or deploys: for real persistence point
+ * CLUBS_PORTAL_DATA_DIR at a writable volume, or move this module to a database.
+ */
+const FALLBACK_DIR = path.join(os.tmpdir(), "clubs-portal-data");
+
+/** The directory reads and writes actually use for this process. */
+let activeDir: string | null = null;
+
+const files = (dir: string) => ({
+  expenses: path.join(dir, "expenses.json"),
+  events: path.join(dir, "events.json"),
+});
 
 async function readJsonFile<T>(file: string): Promise<T | null> {
   try {
@@ -32,32 +49,60 @@ async function readJsonFile<T>(file: string): Promise<T | null> {
 }
 
 async function writeJsonFile(file: string, value: unknown): Promise<void> {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+  const dir = path.dirname(file);
+  await fs.mkdir(dir, { recursive: true });
   const tmp = `${file}.${process.pid}.tmp`;
   await fs.writeFile(tmp, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   await fs.rename(tmp, file);
 }
 
+/** Try the project dir, then the writable temp dir. */
+async function currentDir(): Promise<string> {
+  if (activeDir) return activeDir;
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.access(DATA_DIR, fs.constants?.W_OK ?? 2);
+    activeDir = DATA_DIR;
+  } catch {
+    await fs.mkdir(FALLBACK_DIR, { recursive: true });
+    activeDir = FALLBACK_DIR;
+  }
+  return activeDir;
+}
+
+/** Read with the fallback in mind: a temp-dir copy wins if it exists. */
+async function readStoreJson<T>(name: "expenses" | "events"): Promise<T | null> {
+  const dir = await currentDir();
+  const primary = files(dir === DATA_DIR ? FALLBACK_DIR : DATA_DIR)[name];
+  const fallback = files(dir)[name];
+  return (await readJsonFile<T>(fallback)) ?? (await readJsonFile<T>(primary));
+}
+
+async function writeStoreJson(name: "expenses" | "events", value: unknown): Promise<void> {
+  const dir = await currentDir();
+  await writeJsonFile(files(dir)[name], value);
+}
+
 export async function readEvents(): Promise<PlannedEvent[]> {
-  const stored = await readJsonFile<PlannedEvent[]>(EVENTS_FILE);
+  const stored = await readStoreJson<PlannedEvent[]>("events");
   if (stored) return stored;
-  await writeJsonFile(EVENTS_FILE, SEED_EVENTS);
+  await writeStoreJson("events", SEED_EVENTS);
   return SEED_EVENTS;
 }
 
 export async function readExpenses(): Promise<Expense[]> {
-  const stored = await readJsonFile<Expense[]>(EXPENSES_FILE);
+  const stored = await readStoreJson<Expense[]>("expenses");
   if (stored) return stored;
-  await writeJsonFile(EXPENSES_FILE, SEED_EXPENSES);
+  await writeStoreJson("expenses", SEED_EXPENSES);
   return SEED_EXPENSES;
 }
 
 export async function writeEvents(events: PlannedEvent[]): Promise<void> {
-  await writeJsonFile(EVENTS_FILE, events);
+  await writeStoreJson("events", events);
 }
 
 export async function writeExpenses(expenses: Expense[]): Promise<void> {
-  await writeJsonFile(EXPENSES_FILE, expenses);
+  await writeStoreJson("expenses", expenses);
 }
 
 // ---------- input validation (shared by the API routes) ----------
