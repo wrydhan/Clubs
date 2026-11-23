@@ -1,25 +1,49 @@
 import type { Metadata, Viewport } from "next";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { siteUrl } from "@/lib/site";
+import { siteDescription, siteName, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 export const revalidate = 3600;
 
+/**
+ * Site-wide metadata. The canonical URL is set per page, never here: a root
+ * canonical would hand every portal page a link to the public home page.
+ *
+ * The 1200x630 card is the file convention (app/opengraph-image.tsx), which
+ * Next turns into og:image and the twitter:image fallback automatically.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  applicationName: siteName,
   title: {
-    default: "Founders, Inc. — Clubs",
+    default: "Founders, Inc. Clubs — events calendar, San Francisco",
     template: "%s | Founders, Inc. Clubs",
   },
-  description:
-    "Member-run clubs at Founders, Inc. Fort Mason Pier 2, San Francisco. Car Club track days, Hardware Workshop, Basketball, and Tactical Paintball.",
+  description: siteDescription,
   openGraph: {
-    siteName: "Founders, Inc. Clubs",
+    siteName,
     type: "website",
     locale: "en_US",
+    title: "Founders, Inc. Clubs — events calendar, San Francisco",
+    description: siteDescription,
   },
-  twitter: { card: "summary_large_image" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Founders, Inc. Clubs — events calendar, San Francisco",
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export const viewport: Viewport = {
