@@ -175,7 +175,78 @@ export function ClubCalendar({
           </a>
         </div>
       </div>
+
+      {/*
+        Event cards: the featured date above is the soonest one. Every other
+        confirmed date — including any event confirmed in /clubs/portal — gets
+        its own card here, so a portal event is never only a dot on the grid.
+      */}
+      {events.length > 1 ? (
+        <div className="grid gap-5 sm:grid-cols-2">
+          {events.slice(1).map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+/** A compact event card for the calendar's list below the month grid. */
+function EventCard({ event }: { event: SiteEvent }) {
+  const day = new Date(event.datetime).toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    day: "numeric",
+  });
+  const weekday = new Date(event.datetime).toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    weekday: "short",
+  });
+  const month = new Date(event.datetime).toLocaleDateString("en-US", {
+    timeZone: "America/Los_Angeles",
+    month: "short",
+  });
+
+  return (
+    <article
+      id={event.id}
+      className="flex scroll-mt-24 gap-5 border border-ink/20 bg-paper p-5 transition-colors hover:border-ink/40 sm:p-6"
+    >
+      {/* Date block */}
+      <div className="flex shrink-0 flex-col items-center justify-start border-r border-ink/15 pr-4 text-center sm:pr-5">
+        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-3">{weekday}</span>
+        <span className="font-serif text-[2.6rem] leading-none text-ink">{day}</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-2">{month}</span>
+      </div>
+
+      {/* Details */}
+      <div className="min-w-0 flex-1">
+        <span className="inline-flex items-center border border-ink/25 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-2">
+          {event.kind}
+        </span>
+        <h4 className="mt-2.5 font-serif text-[1.45rem] leading-[1.05] text-ink">{event.title}</h4>
+        <p className="mt-1.5 font-mono text-[10px] tnum text-ink-3">
+          {formatTime(event.datetime)}
+          {event.endDatetime ? `–${formatTime(event.endDatetime)}` : ""}
+        </p>
+        <p className="mt-1 truncate font-mono text-[10px] text-ink-3">{event.location}</p>
+        {event.description ? (
+          <p className="mt-2.5 line-clamp-3 text-[0.82rem] leading-relaxed text-ink-2">
+            {event.description}
+          </p>
+        ) : null}
+        {event.rsvpUrl ? (
+          <a
+            href={event.rsvpUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex font-mono text-[10px] uppercase tracking-[0.14em] text-ink underline underline-offset-4 transition-colors hover:text-ink-2"
+          >
+            Register →
+          </a>
+        ) : null}
+      </div>
+    </article>
   );
 }
 
