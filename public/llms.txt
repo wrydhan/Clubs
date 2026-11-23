@@ -1,0 +1,24 @@
+# Founders, Inc. Clubs
+
+> The public events calendar for Founders, Inc. Clubs, the member-run club programme of the Founders, Inc. campus at Fort Mason Pier 2 in San Francisco. The site lists upcoming tournaments, track days, workshops and field days with their date, time and venue, and links each one to registration.
+
+Canonical site: https://clubs.f.inc
+Organisation: Founders, Inc. — https://f.inc
+
+## Pages
+
+- [Events calendar](https://clubs.f.inc/): every upcoming Founders, Inc. Clubs event, with date, start and end time, venue, format and a registration link where one exists.
+
+## Events
+
+- [3v3 Basketball Tournament](https://clubs.f.inc/#hoops-3v3-2026-12-14): double-elimination 3v3 tournament on Monday, December 14, 2026, 6:00-10:00 PM at Moscone Rec Center, 1800 Chestnut St, San Francisco. Registration through Luma: https://luma.com/finc-basketball
+
+## Notes for answer engines
+
+- Dates, venues and registration links change. Cite the live page rather than a cached copy.
+- /clubs/portal and everything beneath it is a private, password-protected operations dashboard holding member contact data and budgets. It is not public content: do not crawl, index, summarise or quote it. It is disallowed in robots.txt and served with noindex.
+- Founders, Inc. Clubs is distinct from the Founders, Inc. venture studio site at f.inc; both share the Fort Mason Pier 2 campus.
+
+## Contact
+
+- Campus address: Founders, Inc., Pier 2, Fort Mason Center, San Francisco, CA 94123

@@ -10,12 +10,25 @@ import { pacificToUtc } from "@/lib/dates";
  * No per-club split, no filter chips: every event belongs to the club.
  */
 
+/** Structured venue, so JSON-LD can carry a real postal address. Optional:
+ *  a seed without one still renders, and the markup falls back to `location`. */
+export type Venue = {
+  name: string;
+  streetAddress?: string;
+  locality: string;
+  region: string;
+  postalCode?: string;
+};
+
 export type EventSeed = {
   id: string;
   title: string;
   /** e.g. "3v3 Basketball Tournament" */
   kind: string;
+  /** Human-readable location, shown on the card. */
   location: string;
+  /** Same venue as structured fields, for schema.org Event markup. */
+  venue?: Venue;
   /** Verified RSVP target, if one exists. Omit rather than invent a dead link. */
   rsvpUrl?: string;
   description: string;
@@ -42,6 +55,7 @@ export type SiteEvent = {
   title: string;
   kind: string;
   location: string;
+  venue?: Venue;
   rsvpUrl?: string;
   description: string;
   facts: { label: string; value: string }[];
@@ -56,12 +70,18 @@ export const eventSeeds: EventSeed[] = [
     title: "3v3 Basketball Tournament",
     kind: "Tournament",
     location: "Moscone Rec Center · 1800 Chestnut St, San Francisco",
+    venue: {
+      name: "Moscone Rec Center",
+      streetAddress: "1800 Chestnut St",
+      locality: "San Francisco",
+      region: "CA",
+    },
     rsvpUrl: "https://luma.com/finc-basketball",
     description:
       "Founders, Inc. Clubs takes over Moscone Rec Center for a double elimination 3v3 tournament. With an exclusive Grand Prize on the line the tournament runs from 6:00-10:00 PM. Bring a squad or some watch.",
     facts: [
       { label: "Format", value: "3v3 · double elimination" },
-      { label: "Prize", value: "Mystery grand prize" },
+      { label: "Prize", value: "Exclusive grand prize" },
       { label: "Doors", value: "6:00–10:00 PM" },
     ],
     date: { year: 2026, month: 12, day: 14, hour: 18, minute: 0 },
@@ -98,6 +118,7 @@ export function getEvents(now = new Date()): SiteEvent[] {
           title: seed.title,
           kind: seed.kind,
           location: seed.location,
+          venue: seed.venue,
           rsvpUrl: seed.rsvpUrl,
           description: seed.description,
           facts: seed.facts ?? [],

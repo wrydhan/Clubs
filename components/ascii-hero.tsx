@@ -190,7 +190,14 @@ export function AsciiHero() {
 
   return (
     <section className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-x-clip px-4 pb-12 pt-20 sm:px-8">
-      <h1 className="sr-only">Founders, Inc. Clubs — events calendar</h1>
+      {/*
+        The lockup itself is decorative ASCII (aria-hidden), so the page's single
+        h1 names the brand and the place in text a crawler and a screen reader can
+        both read. Everything visually loud stays exactly as it was.
+      */}
+      <h1 className="sr-only">
+        Founders, Inc. Clubs — events calendar for the Fort Mason campus in San Francisco
+      </h1>
 
       <div ref={wrapRef} className="w-full max-w-[1560px] text-center">
         <pre
