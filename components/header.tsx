@@ -15,7 +15,7 @@ export function Header() {
           <span className="font-serif text-lg italic leading-none text-ink">Clubs</span>
         </Link>
 
-        <nav className="flex shrink-0 items-center gap-5">
+        <nav aria-label="Primary" className="flex shrink-0 items-center gap-5">
           <a
             href="#calendar"
             className="hidden min-h-[36px] items-center text-[13px] font-medium tracking-tight text-ink-2 transition-colors hover:text-ink sm:inline-flex"

@@ -1,0 +1,139 @@
+[
+  {
+    "id": "exp-bball-venue",
+    "eventId": "evt-basketball-3v3",
+    "category": "venue",
+    "lineItem": "Court rental (full court, 6-10 PM)",
+    "vendor": "Moscone Rec Center",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "No quote on file yet.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-swag-tees",
+    "eventId": "evt-basketball-3v3",
+    "category": "swag",
+    "lineItem": "Tournament tees (100 @ ~$16 printed)",
+    "budgeted": 160000,
+    "actual": null,
+    "status": "quoted",
+    "note": "100 shirts: S 5, M 30, L 38, XL 21, XXL 6. Quote basis ~$16/shirt printed; no invoice on file.",
+    "updatedAt": "2026-11-23T22:10:00.000Z",
+    "vendor": "Custom Inc"
+  },
+  {
+    "id": "exp-bball-production-crest",
+    "eventId": "evt-basketball-3v3",
+    "category": "production",
+    "lineItem": "Chest print \u2014 chevron, one colour",
+    "vendor": "Custom Inc",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Left chest only, ~3in, silk screen. Priced with the tee order.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-prizes",
+    "eventId": "evt-basketball-3v3",
+    "category": "prizes",
+    "lineItem": "Grand Prize",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Prize not selected yet.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-banners",
+    "eventId": "evt-basketball-3v3",
+    "category": "production",
+    "lineItem": "Banners and court decal",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Banners confirmed as in scope; no quote on file.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-snacks",
+    "eventId": "evt-basketball-3v3",
+    "category": "food-drink",
+    "lineItem": "Snacks and water (no catering)",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Snacks allowed in the venue, catering is out.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-venue",
+    "eventId": "evt-holiday-party",
+    "category": "venue",
+    "lineItem": "Building C, Room 300 (6-10 PM)",
+    "vendor": "Fort Mason Center",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "No quote on file yet.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-production",
+    "eventId": "evt-holiday-party",
+    "category": "production",
+    "lineItem": "Uplighting, Christmas tree, vinyl signage",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Tree may be available on site; vinyl cutter already on site.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-tables",
+    "eventId": "evt-holiday-party",
+    "category": "venue",
+    "lineItem": "Cocktail tables and black linens",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-party-food",
+    "eventId": "evt-holiday-party",
+    "category": "food-drink",
+    "lineItem": "Food and bar",
+    "budgeted": null,
+    "actual": null,
+    "status": "planned",
+    "note": "Menu not set.",
+    "updatedAt": "2026-11-21T00:00:00.000Z"
+  },
+  {
+    "id": "exp-bball-merch-mercury",
+    "eventId": "evt-basketball-3v3",
+    "category": "swag",
+    "lineItem": "Merchandise \u2014 Mercury payment (merch allotment)",
+    "vendor": "Mercury",
+    "budgeted": null,
+    "actual": 500000,
+    "status": "paid",
+    "note": "$6,000 Mercury payment received (5k merch + 1k ops), per Waleed 21 + 23 Nov. No invoice on file. $5,000 merch share of a $6,000 total, $1,000 over the $5,000 event cap.",
+    "updatedAt": "2026-11-23T22:10:00.000Z"
+  },
+  {
+    "id": "exp-bball-ops-mercury",
+    "eventId": "evt-basketball-3v3",
+    "category": "misc",
+    "lineItem": "Event ops \u2014 Mercury payment (ops allotment)",
+    "vendor": "Mercury",
+    "budgeted": null,
+    "actual": 100000,
+    "status": "paid",
+    "note": "$1,000 ops share of the $6,000 Mercury payment (Waleed, 23 Nov). No invoice on file.",
+    "updatedAt": "2026-11-23T22:10:00.000Z"
+  }
+]
