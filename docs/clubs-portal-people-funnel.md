@@ -69,6 +69,33 @@ must label it as a ratio against the previous stage, not as "% converted".
   same people and counts. `generatedAt` is the run time, so that one line changes
   on every import.
 
+## Clubs events only
+
+Waleed's rule (24 Nov 2026): the portal's people data comes from **Clubs events
+only** — the track day, the 3v3 basketball tournament and the holiday party. The
+four non-Clubs imports that used to be in the seed (Fireside with Thariq 1,162,
+Blueprint II Demo Day 529, Blueprint II Preview 508, Night Hack 496) were dropped
+with `--fresh` and are not coming back.
+
+- `data/clubs-portal/clubs-events.ts` is the list of allowed events. It also
+  builds the per-event coverage block under the coverage strip.
+- `scripts/import-people.mjs` refuses any slug outside `track-day`,
+  `basketball-3v3`, `holiday-party`, so a stray export cannot re-add an event.
+- It writes `data/clubs-portal/luma-imports.ts`, recording which export fed which
+  event. An event with no record there renders at 0 rows with an
+  **Awaiting export** badge and says so in words — a missing export never reads
+  as a zero-turnout event.
+
+| Clubs event | Export | Rows |
+| --- | --- | --- |
+| Track Day | Not received | 0 — awaiting export |
+| 3v3 Basketball Tournament | `basketball-3v3.csv`, 10 ticket rows | 8 people (5 signed up, 3 declined) |
+| Holiday Party (Dec 17) | Not received | 0 — awaiting export |
+
+To add either missing event, export its Luma guest list and run
+`node scripts/import-people.mjs track-day=<file>.csv` (or
+`holiday-party=<file>.csv`) — no `--fresh`, so the basketball rows stay put.
+
 ## Data status
 
 The seeded rows are **real**: the Basketball 3v3 Luma guest export (8 people —
@@ -78,7 +105,7 @@ does not render. What is still missing is the other half of the funnel:
 
 | Source | State | What it means |
 | --- | --- | --- |
-| Luma signups | Live | Imported from the guest export above. |
+| Luma signups | Partial | The basketball export is imported; track day and holiday party have no export yet. |
 | In-person check-ins | Partial | Read from the export's `checked_in_at`; nobody has checked in yet, so attendees reads 0. |
 | X followers | Not connected | Needs an X developer app with credits. |
 | X engagers | Not connected | Likes, replies, reposts and mentions are not imported. |
@@ -91,8 +118,17 @@ zero from "never connected". Update a row in the same PR that connects a source.
 ## Import path — what the script actually does
 
 ```
-node scripts/import-people.mjs basketball-3v3=~/Downloads/luma-guests.csv
+node scripts/import-people.mjs [--fresh] basketball-3v3=~/Downloads/luma-guests.csv
 ```
+
+- Only `track-day`, `basketball-3v3` and `holiday-party` are accepted slugs; any
+  other event is refused before a single row is written.
+- `--fresh` rebuilds the seed from the exports named on that command line only
+  (this is how the dataset was reset to Clubs events). Without it, rows from
+  earlier imports are kept, so importing the track day later cannot delete the
+  basketball people.
+- Writes `data/clubs-portal/luma-imports.ts` beside the seed, so the portal can
+  show which Clubs events have an export and which are still waiting for one.
 
 - Parses the Luma export as RFC 4180 CSV (quoted fields and embedded commas
   included — the shirt-size column really does contain `"L, S"`).
