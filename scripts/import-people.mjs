@@ -2,10 +2,25 @@
 /**
  * Import Luma guest exports into the Clubs portal people dataset.
  *
- *   node scripts/import-people.mjs <event-slug>=<export.csv> [...]
+ *   node scripts/import-people.mjs [--fresh] <event-slug>=<export.csv> [...]
  *
  * Example:
  *   node scripts/import-people.mjs basketball-3v3=~/data/basketball.csv
+ *
+ * Only three event slugs are accepted (see CLUBS_EVENT_SLUGS): track-day,
+ * basketball-3v3 and holiday-party. The portal's people data is about Clubs
+ * events only, so an export from Fireside, Night Hack, Blueprint Demo Day or
+ * Blueprint Preview is refused rather than merged — those rows were removed
+ * from the seed on 24 Nov 2026 and must not come back.
+ *
+ * `--fresh` rebuilds the seed from the exports named on this command line and
+ * nothing else, which is how the dataset was reset to Clubs events. Without it,
+ * an import merges into the existing seed so importing the track day later
+ * cannot delete the basketball rows.
+ *
+ * It also writes data/clubs-portal/luma-imports.ts, recording which Clubs event
+ * each export fed, so the portal can tell "no export yet" apart from "nobody
+ * signed up".
  *
  * The Luma guest export is one row per *ticket*, so a team registration shows up
  * once per member with the same `guest_id`. Rows are folded by `guest_id` before
@@ -30,6 +45,10 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, "data/clubs-portal/people.seed.ts");
+const IMPORTS_OUT = path.join(ROOT, "data/clubs-portal/luma-imports.ts");
+
+/** Clubs events only. Keep in sync with data/clubs-portal/clubs-events.ts. */
+const CLUBS_EVENT_SLUGS = ["track-day", "basketball-3v3", "holiday-party"];
 
 /** Minimal RFC 4180 parser: quoted fields, doubled quotes, embedded newlines. */
 function parseCsv(text) {
@@ -266,6 +285,73 @@ function previouslyImported(text) {
   return people;
 }
 
+/** Prior import records, so a later export does not erase an earlier event. */
+function previousImportRecords() {
+  let text;
+  try {
+    text = readFileSync(IMPORTS_OUT, "utf8");
+  } catch {
+    return [];
+  }
+  const records = [];
+  const re = /\{\s*slug: "([^"]+)",\s*file: "([^"]*)",\s*ticketRows: (\d+),\s*importedAt: "([^"]*)",\s*\}/g;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    records.push({
+      slug: match[1],
+      file: match[2],
+      ticketRows: Number(match[3]),
+      importedAt: match[4],
+    });
+  }
+  return records;
+}
+
+function mergeImportRecords(runRecords) {
+  const merged = new Map();
+  for (const record of previousImportRecords()) merged.set(record.slug, record);
+  for (const record of runRecords) merged.set(record.slug, record);
+  return [...merged.values()].sort((a, b) => CLUBS_EVENT_SLUGS.indexOf(a.slug) - CLUBS_EVENT_SLUGS.indexOf(b.slug));
+}
+
+function toImportsTs(records) {
+  const body = records
+    .map(
+      (record) => `  {
+    slug: ${JSON.stringify(record.slug)},
+    file: ${JSON.stringify(record.file)},
+    ticketRows: ${record.ticketRows},
+    importedAt: ${JSON.stringify(record.importedAt)},
+  },`,
+    )
+    .join("\n");
+
+  return `/**
+ * GENERATED FILE — do not edit by hand.
+ *
+ * Written by \`node scripts/import-people.mjs\` next to
+ * \`data/clubs-portal/people.seed.ts\`. It records which Clubs event each export
+ * belongs to, so the portal can tell "0 rows because no export has arrived"
+ * apart from "0 rows because nobody signed up".
+ *
+ * The importer merges this file across runs; \`--fresh\` rewrites it to the
+ * exports named on that command line only.
+ */
+
+export interface LumaImport {
+  slug: string;
+  file: string;
+  /** Rows in the CSV, before folding group registrations by guest_id. */
+  ticketRows: number;
+  importedAt: string;
+}
+
+export const lumaImports: LumaImport[] = [
+${body}
+];
+`;
+}
+
 const q = (value) => JSON.stringify(value);
 const opt = (key, value) => (value ? `    ${key}: ${q(value)},\n` : "");
 
@@ -313,13 +399,17 @@ ${body}
 }
 
 function main() {
-  const args = process.argv.slice(2);
+  const argv = process.argv.slice(2);
+  const fresh = argv.includes("--fresh");
+  const args = argv.filter((arg) => arg !== "--fresh");
   if (args.length === 0) {
-    console.error("usage: node scripts/import-people.mjs <event-slug>=<export.csv> [...]");
+    console.error("usage: node scripts/import-people.mjs [--fresh] <event-slug>=<export.csv> [...]");
+    console.error(`allowed slugs: ${CLUBS_EVENT_SLUGS.join(", ")}`);
     process.exit(1);
   }
 
   const imported = [];
+  const runImports = [];
   let ticketRows = 0;
   let duplicates = 0;
 
@@ -330,6 +420,10 @@ function main() {
       process.exit(1);
     }
     const eventSlug = arg.slice(0, split);
+    if (!CLUBS_EVENT_SLUGS.includes(eventSlug)) {
+      console.error(`refusing ${eventSlug}: the portal only carries Clubs events (${CLUBS_EVENT_SLUGS.join(", ")}).`);
+      process.exit(1);
+    }
     const file = arg.slice(split + 1).replace(/^~/, process.env.HOME ?? "");
     let text;
     try {
@@ -342,11 +436,19 @@ function main() {
     ticketRows += folded.ticketRows;
     duplicates += folded.duplicates;
     imported.push(...folded.people);
+    runImports.push({
+      slug: eventSlug,
+      file: path.basename(file),
+      ticketRows: folded.ticketRows,
+      importedAt: new Date().toISOString(),
+    });
   }
 
   // id → person, then fold across events by email so a repeat guest is one row.
   const byId = new Map();
-  for (const person of previouslyImported(readExistingPeople())) byId.set(person.id, person);
+  if (!fresh) {
+    for (const person of previouslyImported(readExistingPeople())) byId.set(person.id, person);
+  }
   for (const person of imported) {
     const existing = byId.get(person.id);
     byId.set(person.id, existing ? mergePerson(existing, person) : person);
@@ -363,6 +465,7 @@ function main() {
     a.lastSeen < b.lastSeen ? 1 : a.lastSeen > b.lastSeen ? -1 : a.name.localeCompare(b.name),
   );
   writeFileSync(OUT, toTs(people));
+  writeFileSync(IMPORTS_OUT, toImportsTs(fresh ? runImports : mergeImportRecords(runImports)));
 
   const counts = people.reduce((acc, person) => {
     acc[person.status] = (acc[person.status] ?? 0) + 1;
