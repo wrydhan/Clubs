@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/clubs/portal/funnel", label: "Funnel" },
-  { href: "/clubs/portal/people", label: "People" },
-  { href: "/clubs/portal/spend", label: "Spend" },
-  { href: "/clubs/portal/planning", label: "What's next" },
+  { href: "/portal/funnel", label: "Funnel" },
+  { href: "/portal/people", label: "People" },
+  { href: "/portal/spend", label: "Spend" },
+  { href: "/portal/planning", label: "What's next" },
 ] as const;
 
 /** Tab bar. One route per tab, so nothing shares a page with anything else. */

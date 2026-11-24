@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-/** Everything under /clubs/portal is private: no indexing, no shared caching. */
+/** Everything under /portal is private: no indexing, no shared caching. */
 export const metadata: Metadata = {
   title: { default: "Clubs portal", template: "%s | Clubs portal" },
   robots: { index: false, follow: false, nocache: true },

@@ -56,7 +56,7 @@ export function PlanningSection({ initial }: Props) {
     setBusyId(event.id);
     setError(null);
     try {
-      const next = await requestSnapshot("/clubs/portal/api/events", {
+      const next = await requestSnapshot("/portal/api/events", {
         method: "PATCH",
         body: JSON.stringify({ id: event.id, ...patch }),
       });
@@ -72,7 +72,7 @@ export function PlanningSection({ initial }: Props) {
     setBusyId(event.id);
     setError(null);
     try {
-      const next = await requestSnapshot(`/clubs/portal/api/events?id=${encodeURIComponent(event.id)}`, {
+      const next = await requestSnapshot(`/portal/api/events?id=${encodeURIComponent(event.id)}`, {
         method: "DELETE",
       });
       setSnapshot(next);
@@ -266,7 +266,7 @@ function NewEventForm({
     setSaving(true);
     onError(null);
     try {
-      const next = await requestSnapshot("/clubs/portal/api/events", {
+      const next = await requestSnapshot("/portal/api/events", {
         method: "POST",
         body: JSON.stringify({
           name: name.trim(),

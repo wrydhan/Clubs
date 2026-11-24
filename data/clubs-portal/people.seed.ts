@@ -7,7 +7,7 @@
  *
  * This file contains real attendee names and emails: it is committed because the
  * portal is server-rendered behind the password gate, and it is excluded from
- * search indexing along with the rest of /clubs/portal.
+ * search indexing along with the rest of /portal.
  */
 
 import type { SeedDataset } from "@/lib/clubs-portal/people/types";

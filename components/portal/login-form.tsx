@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { signIn, type LoginState } from "@/app/clubs/portal/login/actions";
+import { signIn, type LoginState } from "@/app/portal/login/actions";
 
 const initialState: LoginState = { error: null };
 
