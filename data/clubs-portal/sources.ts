@@ -23,7 +23,8 @@ export const sourceStatus: SourceStatus[] = [
     source: "luma",
     label: "Luma signups",
     state: "live",
-    detail: "Luma guest exports for Fireside with Thariq, Night Hack, Blueprint II Demo Day, Blueprint II Preview and the Basketball 3v3, imported by scripts/import-people.mjs.",
+    detail:
+      "Luma guest exports for the three Clubs events only — Track Day, the 3v3 Basketball Tournament and the Holiday Party — imported by scripts/import-people.mjs. Only the 3v3 export is on file; Track Day and the Holiday Party have no export supplied yet, so they contribute no rows.",
   },
   {
     source: "event",

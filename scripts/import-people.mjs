@@ -303,7 +303,7 @@ export const seedDataset: SeedDataset = {
   generatedAt: ${q(new Date().toISOString())},
   isPlaceholder: false,
   note: ${q(
-    "Luma guest exports only, one row per person folded across events. X followers/engagers and in-person check-ins are not imported — those stages read 0 until the X sync is connected and someone is checked in.",
+    "Luma guest exports for the three Clubs events only (Track Day, 3v3 Basketball Tournament, Holiday Party), one row per person folded across events. X followers/engagers and in-person check-ins are not imported — those stages read 0 until the X sync is connected and someone is checked in.",
   )},
   people: [
 ${body}
