@@ -71,14 +71,23 @@ must label it as a ratio against the previous stage, not as "% converted".
 
 ## Data status
 
-The seeded rows are **real**: the Basketball 3v3 Luma guest export (8 people —
-5 approved, 3 declined, 0 checked in) was imported with
-`scripts/import-people.mjs` and `isPlaceholder` is `false`, so the sample banner
-does not render. What is still missing is the other half of the funnel:
+The seeded rows are **real** and cover **Clubs events only**. The allowlist in
+`data/clubs-portal/events.ts` names the three events allowed to contribute
+people — Track Day, the 3v3 Basketball Tournament and the Holiday Party — and
+`loadPeopleDataset()` drops any row whose events fall outside it. Fireside with
+Thariq, Night Hack and the Blueprint events are f.inc programme events, not
+Clubs events, and are not imported.
+
+Current state: the Basketball 3v3 Luma guest export (8 people — 5 approved, 3
+declined, 0 checked in) was imported with `scripts/import-people.mjs` and
+`isPlaceholder` is `false`, so the sample banner does not render. **Track Day
+and the Holiday Party have no Luma export on file yet**, so they contribute no
+rows until one is supplied. What is still missing is the other half of the
+funnel:
 
 | Source | State | What it means |
 | --- | --- | --- |
-| Luma signups | Live | Imported from the guest export above. |
+| Luma signups | Live | Imported from the Clubs-event exports above; only the 3v3 export is on file. |
 | In-person check-ins | Partial | Read from the export's `checked_in_at`; nobody has checked in yet, so attendees reads 0. |
 | X followers | Not connected | Needs an X developer app with credits. |
 | X engagers | Not connected | Likes, replies, reposts and mentions are not imported. |

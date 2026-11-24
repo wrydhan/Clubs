@@ -8,6 +8,7 @@ import {
   type PersonSource,
   type PersonStatus,
 } from "@/lib/clubs-portal/people/types";
+import { clubsEventLabels } from "@/data/clubs-portal/events";
 
 export interface PeopleTableProps {
   people: Person[];
@@ -79,7 +80,7 @@ function rowsToCsv(rows: Person[]): string {
         person.company ?? "",
         SOURCE_LABELS[person.source],
         STATUS_LABELS[person.status],
-        person.events.join("; "),
+        clubsEventLabels(person.events).join("; "),
         person.lastSeen,
       ]
         .map((cell) => csvEscape(cell))
@@ -342,7 +343,7 @@ export function PeopleTable({ people, statusCounts }: PeopleTableProps) {
             </thead>
             <tbody>
               {filtered.map((person) => {
-                const events = person.events.join(", ");
+                const events = clubsEventLabels(person.events).join(", ");
                 return (
                   <tr key={person.id} className="border-b border-line align-top">
                     <td className="py-3 pr-3">
