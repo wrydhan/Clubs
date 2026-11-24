@@ -11,7 +11,7 @@ import {
  * The gate for the whole Clubs info portal and every page under it.
  *
  * Next 16 renamed the middleware file convention to `proxy`; this runs before
- * any /clubs/portal route renders, so a new subpage is protected the moment it
+ * any /portal route renders, so a new subpage is protected the moment it
  * is added — nobody has to remember to guard it. The token check is the same
  * HMAC verification the dashboard layout performs, so there is exactly one
  * definition of signed-in and no route can drift from it.
@@ -43,10 +43,10 @@ export async function proxy(request: NextRequest) {
 
   const response = NextResponse.redirect(login);
   // A stale or forged cookie should not survive the bounce back to the form.
-  if (token) response.cookies.delete({ name: PORTAL_COOKIE, path: "/clubs/portal" });
+  if (token) response.cookies.delete({ name: PORTAL_COOKIE, path: "/portal" });
   return response;
 }
 
 export const config = {
-  matcher: ["/clubs/portal", "/clubs/portal/:path*"],
+  matcher: ["/portal", "/portal/:path*"],
 };

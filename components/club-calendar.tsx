@@ -178,7 +178,7 @@ export function ClubCalendar({
 
       {/*
         Event cards: the featured date above is the soonest one. Every other
-        confirmed date — including any event confirmed in /clubs/portal — gets
+        confirmed date — including any event confirmed in /portal — gets
         its own card here, so a portal event is never only a dot on the grid.
       */}
       {events.length > 1 ? (

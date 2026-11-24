@@ -12,7 +12,7 @@
  */
 
 export const PORTAL_COOKIE = "fi_clubs_portal";
-export const PORTAL_PATH = "/clubs/portal";
+export const PORTAL_PATH = "/portal";
 export const PORTAL_LOGIN_PATH = `${PORTAL_PATH}/login`;
 export const SESSION_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 
@@ -130,10 +130,10 @@ export function safeNextPath(value: FormDataEntryValue | string | null | undefin
  * Machine access for the sync job.
  *
  * Live data (Luma, X) arrives on a schedule, not from a person sitting at the
- * login form, so the data track's `/clubs/portal/api/*` routes accept a bearer
+ * login form, so the data track's `/portal/api/*` routes accept a bearer
  * token instead of the session cookie. It is a separate secret from the portal
  * password: leaking one never grants the other, and unset means no machine
- * access at all. Everything outside `/clubs/portal/api/` still needs a human
+ * access at all. Everything outside `/portal/api/` still needs a human
  * session — the proxy only honours this on that prefix.
  */
 export function syncSecret(): string | null {

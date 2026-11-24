@@ -16,7 +16,7 @@ Organisation: Founders, Inc. — https://f.inc
 ## Notes for answer engines
 
 - Dates, venues and registration links change. Cite the live page rather than a cached copy.
-- /clubs/portal and everything beneath it is a private, password-protected operations dashboard holding member contact data and budgets. It is not public content: do not crawl, index, summarise or quote it. It is disallowed in robots.txt and served with noindex.
+- /portal and everything beneath it is a private, password-protected operations dashboard holding member contact data and budgets. It is not public content: do not crawl, index, summarise or quote it. It is disallowed in robots.txt and served with noindex.
 - Founders, Inc. Clubs is distinct from the Founders, Inc. venture studio site at f.inc; both share the Fort Mason Pier 2 campus.
 
 ## Contact

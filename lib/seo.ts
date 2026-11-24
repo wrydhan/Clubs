@@ -31,7 +31,7 @@ export const ORGANIZATION = {
 } as const;
 
 /** Everything under here is private and must never be offered to a crawler. */
-export const PORTAL_DISALLOW = ["/clubs/portal", "/clubs/portal/"];
+export const PORTAL_DISALLOW = ["/portal", "/portal/"];
 
 /**
  * Public, indexable routes. `clubs.f.inc` is a single-page calendar today, so

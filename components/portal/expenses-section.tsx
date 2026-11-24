@@ -55,7 +55,7 @@ export function ExpensesSection({ initial, showEventRollup = true }: Props) {
     setBusyId(row.id);
     setError(null);
     try {
-      const next = await requestSnapshot("/clubs/portal/api/expenses", {
+      const next = await requestSnapshot("/portal/api/expenses", {
         method: "PATCH",
         body: JSON.stringify({ id: row.id, ...patch }),
       });
@@ -71,7 +71,7 @@ export function ExpensesSection({ initial, showEventRollup = true }: Props) {
     setBusyId(row.id);
     setError(null);
     try {
-      const next = await requestSnapshot(`/clubs/portal/api/expenses?id=${encodeURIComponent(row.id)}`, {
+      const next = await requestSnapshot(`/portal/api/expenses?id=${encodeURIComponent(row.id)}`, {
         method: "DELETE",
       });
       setSnapshot(next);
@@ -432,7 +432,7 @@ function NewExpenseForm({
       } catch {
         throw new Error("Budgeted must be a dollar amount, or blank");
       }
-      const next = await requestSnapshot("/clubs/portal/api/expenses", {
+      const next = await requestSnapshot("/portal/api/expenses", {
         method: "POST",
         body: JSON.stringify({
           lineItem: lineItem.trim(),
