@@ -6,7 +6,7 @@ import { readEvents } from "@/lib/portal/store";
  * Confirmed portal events on the public calendar.
  *
  * The portal's planning tab and the public page must not drift: an event marked
- * `confirmed` in `/clubs/portal/planning` shows up on the main-page calendar with
+ * `confirmed` in `/portal/planning` shows up on the main-page calendar with
  * no second entry anywhere. Same file, same rows.
  *
  * Only `confirmed` (and later-stage: locked / live) events are published. A date

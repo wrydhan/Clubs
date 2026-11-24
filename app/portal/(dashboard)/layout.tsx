@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { signOut } from "@/app/clubs/portal/login/actions";
+import { signOut } from "@/app/portal/login/actions";
 import { PortalTabs } from "@/components/portal/dark/tabs";
 import { PORTAL_COOKIE, PORTAL_LOGIN_PATH, verifySessionToken } from "@/lib/portal/session";
 
@@ -24,7 +24,7 @@ export default async function PortalDashboardLayout({
     <div className="mx-auto w-full max-w-[1180px] px-4 pb-16 pt-6 sm:px-7">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <Link href="/clubs/portal/funnel" className="text-[15px] font-semibold tracking-tight text-ink">
+          <Link href="/portal/funnel" className="text-[15px] font-semibold tracking-tight text-ink">
             Clubs
           </Link>
           <span className="rounded-full bg-white/8 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-soft">

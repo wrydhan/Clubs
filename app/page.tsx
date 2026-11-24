@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default async function Home() {
   const now = new Date();
   // Portal-confirmed events are part of the same calendar: confirm one on
-  // /clubs/portal/planning and it lands here with no second entry.
+  // /portal/planning and it lands here with no second entry.
   const events = mergeCalendarEvents(getEvents(now), await getConfirmedPortalEvents(now));
 
   return (

@@ -1,39 +1,39 @@
 # Clubs info portal — auth and shell
 
-The private back office lives at **`/clubs/portal`**. It tracks who has come to
+The private back office lives at **`/portal`**. It tracks who has come to
 a club (attended, signed up, reacted, commented, follows), the funnel behind
 those numbers, and spend + the forward event plan.
 
-Everything under `/clubs/portal` is behind one shared password. Signed out,
+Everything under `/portal` is behind one shared password. Signed out,
 every URL — including subpages that do not exist yet — redirects to the login
 page instead of rendering.
 
 ```
-/clubs/portal          dashboard (protected)
-/clubs/portal/login    the only public page
-/clubs/portal/<any>    protected automatically
+/portal          dashboard (protected)
+/portal/login    the only public page
+/portal/<any>    protected automatically
 ```
 
 ## How the gate works
 
 | Piece | File | Job |
 | --- | --- | --- |
-| The gate | `proxy.ts` | Runs before every `/clubs/portal/*` request. No valid session → redirect to login with `?next=`. |
+| The gate | `proxy.ts` | Runs before every `/portal/*` request. No valid session → redirect to login with `?next=`. |
 | The session | `lib/portal/session.ts` | Mints and verifies the cookie token. One definition, used by both the gate and the layout. |
-| Login / logout | `app/clubs/portal/login/actions.ts` | Server actions: check the password, set the cookie, sign out. |
-| Second check | `app/clubs/portal/(dashboard)/layout.tsx` | Verifies the session again on the server before drawing any numbers. |
-| Machine access | `proxy.ts` + `machineTokenMatches` | Scheduled sync jobs may hit `/clubs/portal/api/*` with `Authorization: Bearer $CLUBS_SYNC_SECRET` instead of a cookie. Nothing else accepts it. |
+| Login / logout | `app/portal/login/actions.ts` | Server actions: check the password, set the cookie, sign out. |
+| Second check | `app/portal/(dashboard)/layout.tsx` | Verifies the session again on the server before drawing any numbers. |
+| Machine access | `proxy.ts` + `machineTokenMatches` | Scheduled sync jobs may hit `/portal/api/*` with `Authorization: Bearer $CLUBS_SYNC_SECRET` instead of a cookie. Nothing else accepts it. |
 
 - **One password, no accounts.** `CLUBS_PORTAL_PASSWORD` is read at request
   time on the server and never shipped to the browser.
 - **Signed cookie, 12 hours.** The cookie holds `v1.<expiry>.<signature>`, an
   HMAC-SHA256 keyed from the password itself. Nothing is stored server-side, and
   the cookie is worthless without the password. `HttpOnly`, `SameSite=Lax`,
-  `Secure` in production, path-scoped to `/clubs/portal`.
+  `Secure` in production, path-scoped to `/portal`.
 - **New subpages are protected by default.** The proxy matcher covers
-  `/clubs/portal/:path*`, so adding a route needs no extra guard.
+  `/portal/:path*`, so adding a route needs no extra guard.
 - **No indexing, no caching.** Portal routes are `force-dynamic` and carry
-  `noindex`; `app/robots.ts` disallows `/clubs/portal`.
+  `noindex`; `app/robots.ts` disallows `/portal`.
 - **No open redirect.** Post-login `?next=` only accepts paths inside the portal.
 
 ## Setting the password
@@ -56,9 +56,9 @@ secret, separate from the password:
 CLUBS_SYNC_SECRET=<openssl rand -base64 32>
 ```
 
-Then `curl -H "Authorization: Bearer $CLUBS_SYNC_SECRET" https://clubs.f.inc/clubs/portal/api/sync`
+Then `curl -H "Authorization: Bearer $CLUBS_SYNC_SECRET" https://clubs.f.inc/portal/api/sync`
 passes the gate. The bearer token is honoured **only** on the
-`/clubs/portal/api/` prefix — it can never open a page — and if the variable is
+`/portal/api/` prefix — it can never open a page — and if the variable is
 unset, no machine token is accepted at all. Leaking one secret never grants the
 other.
 
@@ -96,4 +96,4 @@ shell and the section `id` — the page and the nav keep working untouched.
 Data must be loaded on the server (a function in `lib/portal/…`) and passed
 down, never fetched from the browser: the password protects pages, not a public
 JSON endpoint. If a section needs its own JSON route, put it under
-`/clubs/portal/api/…` so the proxy covers it.
+`/portal/api/…` so the proxy covers it.

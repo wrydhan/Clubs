@@ -7,7 +7,7 @@ import { siteUrl } from "@/lib/site";
  * and Vercel serves it from the edge).
  *
  * `*` and the named answer-engine crawlers share one policy: the public calendar
- * is open, everything under /clubs/portal is closed. Naming the AI crawlers
+ * is open, everything under /portal is closed. Naming the AI crawlers
  * explicitly keeps that true if the wildcard rule is ever tightened, and the
  * portal's own noindex metadata plus its X-Robots-Tag header hold the gate even
  * if a crawler ignores robots.txt.
