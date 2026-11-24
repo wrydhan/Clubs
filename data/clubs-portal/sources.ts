@@ -22,16 +22,15 @@ export const sourceStatus: SourceStatus[] = [
   {
     source: "luma",
     label: "Luma signups",
-    state: "partial",
-    detail:
-      "Clubs events only: the 3v3 Basketball Tournament export is imported. Track day and the holiday party have no export yet, so they read 0. Imported by scripts/import-people.mjs.",
+    state: "live",
+    detail: "Luma guest exports for Fireside with Thariq, Night Hack, Blueprint II Demo Day, Blueprint II Preview and the Basketball 3v3, imported by scripts/import-people.mjs.",
   },
   {
     source: "event",
     label: "In-person check-ins",
     state: "partial",
     detail:
-      "Read from the export's checked_in_at column. No one is checked in yet, so the stage shows 0. The basketball export carries no check-in timestamps.",
+      "Read from the export's checked_in_at column. No one is checked in yet, so the stage shows 0.",
   },
   {
     source: "x_followers",

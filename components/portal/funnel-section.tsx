@@ -28,7 +28,7 @@ export function FunnelSection() {
       id="reach"
       owner="Section 01"
       title="Reach → signups"
-      blurb="How many people saw the club, and how many of them turned up. Clubs events only — the track day, the 3v3 tournament and the holiday party. Each stage is a cohort: someone can be a follower and never sign up, or sign up without following. The ratio under each stage is its count over the stage above, not a conversion rate."
+      blurb="How many people saw the club, and how many of them turned up. Each stage is a cohort: someone can be a follower and never sign up, or sign up without following. The ratio under each stage is its count over the stage above, not a conversion rate."
       meta={
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-soft">
           {total} {total === 1 ? "person" : "people"} on file · imported{" "}
@@ -47,7 +47,7 @@ export function FunnelSection() {
           />
           <SourceBreakdown sources={data.sources} />
         </div>
-        <PeopleCoverage statuses={data.sourceStatus} events={data.eventCoverage} />
+        <PeopleCoverage statuses={data.sourceStatus} />
       </div>
     </SectionFrame>
   );

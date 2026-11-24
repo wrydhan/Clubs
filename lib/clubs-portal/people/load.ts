@@ -1,4 +1,3 @@
-import { clubsEventCoverage, type ClubsEventCoverage } from "@/data/clubs-portal/clubs-events";
 import { manualPeople } from "@/data/clubs-portal/people.manual";
 import { seedDataset } from "@/data/clubs-portal/people.seed";
 import { sourceStatus } from "@/data/clubs-portal/sources";
@@ -18,8 +17,6 @@ import type { PeopleDataset, Person } from "./types";
  */
 export function loadPeopleDataset(): PeopleDataset & {
   sourceStatus: typeof sourceStatus;
-  /** Rows per Clubs event, and whether that event's export has landed. */
-  eventCoverage: ClubsEventCoverage[];
 } {
   const byId = new Map<string, Person>();
 
@@ -31,15 +28,12 @@ export function loadPeopleDataset(): PeopleDataset & {
     byId.set(person.id, manual ? { ...person, ...manual } : person);
   }
 
-  const people = [...byId.values()];
-
   return {
-    ...summarizePeople(people, {
+    ...summarizePeople([...byId.values()], {
       generatedAt: seedDataset.generatedAt,
       isPlaceholder: seedDataset.isPlaceholder,
       note: seedDataset.note,
     }),
     sourceStatus,
-    eventCoverage: clubsEventCoverage(people),
   };
 }
